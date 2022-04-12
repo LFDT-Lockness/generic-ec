@@ -1,20 +1,24 @@
 # General elliptic curve cryptography
 
-The library provides a set of simple abstractions boosting your experience of doing elliptic curve arithmetic
+The library provides a set of simple abstractions boosting experience of doing elliptic curve arithmetic
 in Rust. Aim is to **stay simple**, **generic**, and **secure**. It's handy for developers who implement MPC,
 zero-knowledge protocols, or any other elliptic crypto algorithms. 
 
 ## Overview
 
-Crate provides three primitives: `Point<E>` which stands for elliptic point, `Scalar<E>` that's an integer modulus 
-group order, and `SecretScalar<E>` which is a scalar representing some sensitive value (e.g. secret key). `E` here
-indicates the choice of elliptic curve, it could be any [supported curve][supported curves], e.g. `Point<Secp256k1>` is 
-an elliptic point on secp256k1 curve.
+Crate provides three primitives: a point on elliptic curve `Point<E>`, an integer modulus group order `Scalar<E>`,
+and a secret scalar carrying some sensitive value (e.g. secret key) `SecretScalar<E>`. `E` stands for a choice of 
+elliptic curve, it could be any [supported curve][supported curves], e.g. `Point<Secp256k1>` is an elliptic point 
+on secp256k1 curve.
 
-## Arithmetic
+## Exposed API
 
-All arithmetic operations are supported: you can add two points, multiply point by a scalar, inverse the scalar 
-modulo group order, and so on. See [examples] sections.
+Limiting API is exposed: elliptic point arithmetic (points addition, negation, multiplying at scalar), scalar
+arithmetic (addition, multiplication, inverse modulo prime group order), encode/decode to bytes represenstation,
+hash to curve, and hash to scalar.
+
+We intentionally do not expose primitives like retrieveing point coordinates, field elements (integers modulo curve 
+order).
 
 ## Security & guarantees
 
@@ -30,16 +34,16 @@ Library mitigates a bunch of attacks (such as small-group attack) by design by e
   Combining to fact that scalar is guaranteed to be modulo group order, it basically means that result of
   multiplication (non-zero point × non-zero scalar) is always a valid non-zero point.
 
-By saying "it's guaranteed" we mean that point or scalar not meeting above requirements cannot be constructed, 
-as these checks are always enforced. E.g. if you're deserializing a sequence of bytes that represents an invalid 
-point, deserialization will result into error.
+Point or scalar not meeting above requirements cannot be constructed (in safe Rust), as these checks are 
+always enforced. E.g. if you're deserializing a sequence of bytes that represents an invalid point, 
+deserialization will result into error.
 
 ### `SecretScalar<E>`
 
 Sometimes your scalar represents some sensitive value like secret key, and you want to keep it safer.
-`SecretScalar<E>` is in-place replacement of `Scalar<E>` just for that! It enforces additional security
-by storing the scalar value on the heap, and erasing the value on drop. Its advantage is that it doesn't
-leave any trace in memory dump after it's dropped (which is not guaranteed by regular `Scalar<E>`). 
+`SecretScalar<E>` is in-place replacement of `Scalar<E>` that enforces additional security by storing 
+the scalar value on the heap, and erasing it on drop. Its advantage is that it doesn't leave any trace 
+in memory dump after it's dropped (which is not guaranteed by regular `Scalar<E>`). 
 
 But keep in mind that we can't control the OS which could potentially load RAM page containing sensitive value 
 to the swap disk (i.e. on your HDD/SSD) if you're running low on memory. Or it could do any other fancy stuff.
@@ -63,10 +67,10 @@ Crate provides support for following elliptic curves out of box:
 | secp256r1  | `curve-secp256r1`  | [RustCrypto/p256]                     |
 | Curve25519 | `curve-25519`      | [dalek-cryptography/curve25519-dalek] |
 | Ristretto  | `curve-ristretto`  | [dalek-cryptography/curve25519-dalek] |
+
 \* enabled by default
 
-
-[rust-bitcoin/rust-secp256k1]: https://github.com/rust-bitcoin/rust-secp256k1/
+[RustCrypto/k256]: https://github.com/RustCrypto/elliptic-curves/tree/master/k256
 [RustCrypto/p256]: https://github.com/RustCrypto/elliptic-curves/tree/master/p256
 [dalek-cryptography/curve25519-dalek]: https://github.com/dalek-cryptography/curve25519-dalek
 
@@ -95,7 +99,7 @@ using the same handy primitives `Point<YOUR_EC>`, `Scalar<YOUR_EC>`, and etc.
 ## Features
 
 * `curve-{name}` enables specified curve support. See list of [supported curves].
-* `serde` enables points/scalar (de)serialization support.
+* `serde` enables points/scalar (de)serialization support. (enabled by default)
 
 ## Examples
 
@@ -151,13 +155,13 @@ let _ = some_generic_computation(point2);
 // ...
 ```
 
-[examples]: 123
-[supported curves]: 123
+[examples]: #examples
+[supported curves]: #supported-curves
 [`Curve` trait]: 123
 
-## Similar crates
+## Similar projects
 
-* [ZenGo-X/curv] crate, provides similar tools for general elliptic cryptography, plus big number arithmetic, and a bunch 
+* [ZenGo-X/curv](https://github.com/ZenGo-X/curv) crate, provides similar tools for general elliptic cryptography, plus big number arithmetic, and a bunch 
   of implemented zero-knowledge proofs.
 
 ## License 
