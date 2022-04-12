@@ -63,8 +63,8 @@ Crate provides support for following elliptic curves out of box:
 | secp256r1  | `curve-secp256r1`  | [RustCrypto/p256]                     |
 | Curve25519 | `curve-25519`      | [dalek-cryptography/curve25519-dalek] |
 | Ristretto  | `curve-ristretto`  | [dalek-cryptography/curve25519-dalek] |
-\* enabled by default
 
+\* enabled by default
 
 [rust-bitcoin/rust-secp256k1]: https://github.com/rust-bitcoin/rust-secp256k1/
 [RustCrypto/p256]: https://github.com/RustCrypto/elliptic-curves/tree/master/p256
