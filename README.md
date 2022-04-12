@@ -151,8 +151,8 @@ let _ = some_generic_computation(point2);
 // ...
 ```
 
-[examples]: 123
-[supported curves]: 123
+[examples]: #examples
+[supported curves]: #supported-curves
 [`Curve` trait]: 123
 
 ## Similar crates
