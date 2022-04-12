@@ -6,8 +6,8 @@ zero-knowledge protocols, or any other elliptic crypto algorithms.
 
 ## Overview
 
-Crate provides three primitives: `Point<E>` which stands for elliptic point, `Scalar<E>` that's an integer modulus 
-group order, and `SecretScalar<E>` which is a scalar representing some sensitive value (e.g. secret key). `E` here
+Crate provides three primitives: `Point<E>` which stands for elliptic point, `Scalar<E>` is an integer modulus 
+group order, and `SecretScalar<E>` is a scalar that carries some sensitive value (e.g. secret key). `E` here
 indicates the choice of elliptic curve, it could be any [supported curve][supported curves], e.g. `Point<Secp256k1>` is 
 an elliptic point on secp256k1 curve.
 
