@@ -157,7 +157,7 @@ let _ = some_generic_computation(point2);
 
 ## Similar crates
 
-* [ZenGo-X/curv] crate, provides similar tools for general elliptic cryptography, plus big number arithmetic, and a bunch 
+* [ZenGo-X/curv](https://github.com/ZenGo-X/curv) crate, provides similar tools for general elliptic cryptography, plus big number arithmetic, and a bunch 
   of implemented zero-knowledge proofs.
 
 ## License 
