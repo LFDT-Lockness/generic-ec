@@ -155,7 +155,7 @@ let _ = some_generic_computation(point2);
 [supported curves]: #supported-curves
 [`Curve` trait]: 123
 
-## Similar crates
+## Similar projects
 
 * [ZenGo-X/curv](https://github.com/ZenGo-X/curv) crate, provides similar tools for general elliptic cryptography, plus big number arithmetic, and a bunch 
   of implemented zero-knowledge proofs.
