@@ -1,13 +1,6 @@
-[package]
-name = "generic-ec"
-version = "0.0.0"
-edition = "2021"
-license = "MIT OR Apache-2.0"
-description = "Placeholder for upcoming library"
-
-keywords = []
-categories = []
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+[workspace]
+members = [
+  "generic-ec",
+  "generic-ec-core",
+  "generic-ec-curves",
+]
