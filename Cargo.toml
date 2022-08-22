@@ -11,3 +11,19 @@ categories = []
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+generic-array = "0.14"
+subtle = { version = "2.4", default-features = false }
+rand_core = { version = "0.6", default-features = false }
+zeroize = { version = "1.5", default-features = false }
+serde = { version = "1", features = ["derive"], default-features = false, optional = true }
+serde_with = { version = "2", features = ["macros"], default-features = false, optional = true }
+hex = { version = "0.4", default-features = false, optional = true }
+
+[dev-dependencies]
+rand_dev = "0.1"
+serde_test = "1"
+
+[features]
+default = ["std", "serde"]
+std = ["hex?/std"]
+serde = ["dep:serde", "hex", "serde_with"]
