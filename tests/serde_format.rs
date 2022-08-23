@@ -7,7 +7,10 @@ use rand_core::RngCore;
 use rand_dev::DevRng;
 use serde_test::{assert_de_tokens, assert_tokens, Configure, Token};
 
-use generic_ec::{coords::Coordinate, dummy_curve::DummyCurve};
+use generic_ec::{
+    coords::{Coordinate, Parity, Sign},
+    dummy_curve::DummyCurve,
+};
 
 #[test]
 fn coordinate() {
@@ -36,5 +39,63 @@ fn coordinate() {
         .collect::<Vec<_>>();
 
         assert_de_tokens(&coord.readable(), &tokens);
+    }
+}
+
+#[test]
+fn parity() {
+    let possible_values = [(Parity::Odd, 0, "Odd"), (Parity::Even, 1, "Even")];
+    for (parity, _repr_int, repr_str) in possible_values {
+        // TODO: `_repr_int` is not asserted due to limitation of `serde_test`
+        // See: https://github.com/serde-rs/serde/issues/2265
+
+        // (De)serialization in compact format
+        assert_tokens(
+            &parity.compact(),
+            &[Token::UnitVariant {
+                name: "Parity",
+                variant: repr_str,
+            }],
+        );
+
+        // (De)serialization in human-readable format
+        assert_tokens(
+            &parity.readable(),
+            &[Token::UnitVariant {
+                name: "Parity",
+                variant: repr_str,
+            }],
+        );
+    }
+}
+
+#[test]
+fn sign() {
+    let possible_values = [
+        (Sign::Negative, 0, "Negative"),
+        (Sign::NonNegative, 1, "NonNegative"),
+    ];
+    for (sign, _repr_int, repr_str) in possible_values {
+        // TODO: `_repr_int` is not asserted due to limitation of `serde_test`
+        // See: https://github.com/serde-rs/serde/issues/2265
+
+        // (De)serialization in compact format
+
+        assert_tokens(
+            &sign.compact(),
+            &[Token::UnitVariant {
+                name: "Sign",
+                variant: repr_str,
+            }],
+        );
+
+        // (De)serialization in human-readable format
+        assert_tokens(
+            &sign.readable(),
+            &[Token::UnitVariant {
+                name: "Sign",
+                variant: repr_str,
+            }],
+        );
     }
 }

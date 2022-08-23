@@ -1,4 +1,13 @@
-use core::{fmt, str::FromStr};
+//! # Elliptic points coordinates
+//!
+//! Elliptic points are defined differently for different types of curves:
+//! * Curves in non-complete form (Weierstrass or Montgomery curves): \
+//!   Points have $(x, y)$ coordinates that must satisfy curve equation unless it's **point at infinity**
+//!   that has no coordinates (see [points at infinity](crate::TODO))
+//! * Curves in complete form (Edwards curves): \
+//!   Points always have $(x, y)$ coordinates that must satisfy curve equation
+//!
+//!
 
 use generic_array::GenericArray;
 use subtle::{Choice, CtOption};
@@ -6,7 +15,7 @@ use subtle::{Choice, CtOption};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
-use crate::traits::Curve;
+use crate::{errors::InvalidCoordinate, traits::Curve};
 
 pub trait HasAffineX: Curve {
     fn x(point: &Self::Point) -> CtOption<GenericArray<u8, Self::CoordinateSize>>;
@@ -88,12 +97,32 @@ impl Parity {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Coordinate<E: Curve>(GenericArray<u8, E::CoordinateSize>);
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(bound = ""))]
+pub struct Coordinates<E: Curve> {
+    pub x: Coordinate<E>,
+    pub y: Coordinate<E>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Coordinate<E: Curve>(CoordinateBytes<E>);
+
+type CoordinateBytes<E> = GenericArray<u8, <E as Curve>::CoordinateSize>;
 
 impl<E: Curve> Coordinate<E> {
+    /// Serializes a coordinate as bytes
     #[inline(always)]
     pub fn to_bytes(&self) -> &[u8] {
         &self.0
+    }
+
+    /// Parses coordinate
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, InvalidCoordinate> {
+        let mut coord = Self::default();
+        if coord.to_bytes().len() != bytes.len() {
+            return Err(InvalidCoordinate);
+        }
+        coord.as_mut().copy_from_slice(bytes);
+        Ok(coord)
     }
 }
 

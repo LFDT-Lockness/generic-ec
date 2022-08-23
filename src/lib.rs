@@ -6,4 +6,4 @@ pub mod errors;
 #[cfg(feature = "serde")]
 mod serde_utils;
 pub mod traits;
-mod wrappers;
+pub mod wrappers;
