@@ -15,8 +15,8 @@ pub trait HasAffineXAndParity: Curve + HasAffineX {
         point: &Self::Point,
     ) -> (Choice, Parity, GenericArray<u8, Self::CoordinateSize>);
     fn from_x_and_parity(
-        y_parity: Parity,
         x: &GenericArray<u8, Self::CoordinateSize>,
+        y_parity: Parity,
     ) -> CtOption<Self::Point>;
 }
 
@@ -50,6 +50,7 @@ pub trait AlwaysHasAffineYAndSign: Curve + AlwaysHasAffineY {
     ) -> Option<Self::Point>;
 }
 
+/// Sign of coordinate
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(u8)]
@@ -59,6 +60,7 @@ pub enum Sign {
 }
 
 impl Sign {
+    /// Checks whether coordinate is negative
     #[inline(always)]
     pub fn is_negative(&self) -> Choice {
         let is_non_negative = *self as u8;
@@ -66,6 +68,7 @@ impl Sign {
     }
 }
 
+/// Parity of coordinate
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(u8)]
@@ -75,11 +78,13 @@ pub enum Parity {
 }
 
 impl Parity {
+    /// Checks whether coordinate is odd
     #[inline(always)]
     pub fn is_odd(&self) -> Choice {
         !self.is_even()
     }
 
+    /// Checks whether coordinate is even
     #[inline(always)]
     pub fn is_even(&self) -> Choice {
         Choice::from(*self as u8)

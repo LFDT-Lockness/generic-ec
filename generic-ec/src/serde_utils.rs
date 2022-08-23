@@ -1,11 +1,10 @@
 use core::{fmt, marker::PhantomData};
 
-use generic_array::{ArrayLength, GenericArray};
 use serde::{
     de::{self, Visitor},
     Deserializer, Serializer,
 };
-use serde_with::{serde_as, DeserializeAs, SerializeAs};
+use serde_with::{DeserializeAs, SerializeAs};
 
 pub use self::expectation::Expectation;
 

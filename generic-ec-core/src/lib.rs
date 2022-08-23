@@ -5,12 +5,12 @@ use core::hash::Hash;
 
 use generic_array::ArrayLength;
 use rand_core::{CryptoRng, RngCore};
-use subtle::{Choice, ConstantTimeEq, CtOption};
+use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
 
 pub mod coords;
 
-pub trait Curve: Debug + Copy + Eq + Ord + Hash {
+pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default {
     type Point: Additive
         + Multiplicative<Self::Scalar>
         + Multiplicative<CurveGenerator>
@@ -22,7 +22,9 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash {
         + Eq
         + ConstantTimeEq
         + Hash
-        + Ord;
+        + Ord
+        + ConditionallySelectable
+        + Default;
     type Scalar: Additive
         + Multiplicative
         + Invertible
@@ -34,7 +36,9 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash {
         + Eq
         + ConstantTimeEq
         + Hash
-        + Ord;
+        + Ord
+        + ConditionallySelectable
+        + Default;
 
     type CompressedPointSize: ArrayLength<u8>;
     type UncompressedPointSize: ArrayLength<u8>;
@@ -81,7 +85,7 @@ pub trait Samplable {
 }
 
 pub trait SmallFactor {
-    fn is_torsion_free(&self) -> bool;
+    fn is_torsion_free(&self) -> Choice;
 }
 
 pub struct CurveGenerator;
