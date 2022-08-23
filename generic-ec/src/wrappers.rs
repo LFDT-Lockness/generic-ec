@@ -3,7 +3,7 @@ use zeroize::Zeroizing;
 
 use crate::{
     coords::{Coordinate, HasAffineX},
-    traits::Curve,
+    ec_core::Curve,
 };
 
 pub struct Point<E: Curve>(E::Point);

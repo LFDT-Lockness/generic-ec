@@ -1,3 +1,5 @@
+#![no_std]
+
 use core::fmt::Debug;
 use core::hash::Hash;
 
@@ -6,7 +8,7 @@ use rand_core::{CryptoRng, RngCore};
 use subtle::{Choice, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
 
-use crate::errors::HashToCurveError;
+pub mod coords;
 
 pub trait Curve: Debug + Copy + Eq + Ord + Hash {
     type Point: Additive
@@ -40,8 +42,8 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash {
 }
 
 pub trait HashToCurve: Curve {
-    fn hash_to_curve(ctx: &[u8], msgs: &[&[u8]]) -> Result<Self::Point, HashToCurveError>;
-    fn hash_to_scalar(ctx: &[u8], msgs: &[&[u8]]) -> Result<Self::Scalar, HashToCurveError>;
+    fn hash_to_curve(ctx: &[u8], msgs: &[&[u8]]) -> Result<Self::Point, Error>;
+    fn hash_to_scalar(ctx: &[u8], msgs: &[&[u8]]) -> Result<Self::Scalar, Error>;
 }
 
 pub trait Additive {
@@ -83,3 +85,5 @@ pub trait SmallFactor {
 }
 
 pub struct CurveGenerator;
+
+pub struct Error;

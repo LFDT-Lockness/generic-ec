@@ -1,7 +1,7 @@
 use subtle::ConstantTimeEq;
 use zeroize::Zeroize;
 
-use crate::traits::*;
+use crate::ec_core::*;
 
 #[derive(Debug, Clone, Copy, PartialEq, PartialOrd, Eq, Ord, Hash)]
 pub struct DummyCurve;
