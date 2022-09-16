@@ -3,20 +3,19 @@
 use core::fmt::Debug;
 use core::hash::Hash;
 
-use generic_array::ArrayLength;
+use generic_array::{ArrayLength, GenericArray};
 use rand_core::{CryptoRng, RngCore};
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
 
 pub mod coords;
 
-pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default {
+pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send {
     type Point: Additive
-        + Multiplicative<Self::Scalar>
-        + Multiplicative<CurveGenerator>
         + From<CurveGenerator>
         + Zero
         + Zeroize
+        + OnCurve
         + SmallFactor
         + Copy
         + Eq
@@ -24,25 +23,36 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default {
         + Hash
         + Ord
         + ConditionallySelectable
-        + Default;
+        + Default
+        + Encoding<Self::CompressedPointArray>
+        + Encoding<Self::UncompressedPointArray>
+        + Sync
+        + Send;
     type Scalar: Additive
-        + Multiplicative
+        + Multiplicative<Self::Scalar, Output = Self::Scalar>
+        + Multiplicative<CurveGenerator, Output = Self::Point>
+        + Multiplicative<Self::Point, Output = Self::Point>
         + Invertible
         + Zero
         + One
         + Samplable
         + Zeroize
+        + Canonical
         + Copy
         + Eq
         + ConstantTimeEq
         + Hash
         + Ord
         + ConditionallySelectable
-        + Default;
+        + Default
+        + Encoding<Self::ScalarArray>
+        + Sync
+        + Send;
 
-    type CompressedPointSize: ArrayLength<u8>;
-    type UncompressedPointSize: ArrayLength<u8>;
-    type CoordinateSize: ArrayLength<u8>;
+    type CompressedPointArray: ByteArray;
+    type UncompressedPointArray: ByteArray;
+    type ScalarArray: ByteArray;
+    type CoordinateArray: ByteArray;
 }
 
 pub trait HashToCurve: Curve {
@@ -52,15 +62,13 @@ pub trait HashToCurve: Curve {
 
 pub trait Additive {
     fn add(a: &Self, b: &Self) -> Self;
-    fn add_assign(a: &mut Self, b: &Self);
     fn sub(a: &Self, b: &Self) -> Self;
-    fn sub_assign(a: &mut Self, b: &Self);
     fn negate(x: &Self) -> Self;
 }
 
-pub trait Multiplicative<Rhs = Self> {
-    fn mul(a: &Self, b: &Rhs) -> Self;
-    fn mul_assign(a: &mut Self, b: &Rhs);
+pub trait Multiplicative<Rhs> {
+    type Output;
+    fn mul(a: &Self, b: &Rhs) -> Self::Output;
 }
 
 pub trait Invertible
@@ -84,10 +92,52 @@ pub trait Samplable {
     fn random<R: RngCore + CryptoRng>(rng: &mut R) -> Self;
 }
 
+pub trait OnCurve {
+    fn is_on_curve(&self) -> Choice;
+}
+
 pub trait SmallFactor {
     fn is_torsion_free(&self) -> Choice;
 }
 
 pub struct CurveGenerator;
 
+pub trait Encoding<A>: Sized {
+    fn encode(&self) -> A;
+    fn decode(encoding: &A) -> Result<Self, Error>;
+}
+
+pub trait Canonical {
+    fn is_canonical(&self) -> Choice;
+    fn reduce(&self) -> Self;
+}
+
 pub struct Error;
+
+pub trait ByteArray:
+    AsRef<[u8]> + AsMut<[u8]> + Clone + Send + Sync + Sized + Eq + Ord + Hash + Debug
+{
+    const SIZE: usize;
+
+    /// New byte array of zeroes
+    ///
+    /// Alternative to [`Default`] that is not implemented for generic `[T; N]`
+    /// (see [tracking issue](https://github.com/rust-lang/rust/issues/61415))
+    fn zeroes() -> Self;
+}
+
+impl<const N: usize> ByteArray for [u8; N] {
+    const SIZE: usize = N;
+
+    fn zeroes() -> Self {
+        [0; N]
+    }
+}
+
+impl<N: ArrayLength<u8>> ByteArray for GenericArray<u8, N> {
+    const SIZE: usize = N::USIZE;
+
+    fn zeroes() -> Self {
+        GenericArray::default()
+    }
+}

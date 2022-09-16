@@ -17,36 +17,21 @@ impl Curve for DummyCurve {
 
     type Scalar = DummyScalar;
 
-    type CompressedPointSize = generic_array::typenum::U32;
+    type CompressedPointArray = [u8; 32];
 
-    type UncompressedPointSize = generic_array::typenum::U32;
+    type UncompressedPointArray = [u8; 32];
 
-    type CoordinateSize = generic_array::typenum::U32;
+    type CoordinateArray = [u8; 32];
 }
 
 impl Additive for DummyPoint {
     fn add(_a: &Self, _b: &Self) -> Self {
         todo!()
     }
-    fn add_assign(_a: &mut Self, _b: &Self) {
-        todo!()
-    }
     fn sub(_a: &Self, _b: &Self) -> Self {
         todo!()
     }
-    fn sub_assign(_a: &mut Self, _b: &Self) {
-        todo!()
-    }
     fn negate(_x: &Self) -> Self {
-        todo!()
-    }
-}
-
-impl<T> Multiplicative<T> for DummyPoint {
-    fn mul(_a: &Self, _b: &T) -> Self {
-        todo!()
-    }
-    fn mul_assign(_a: &mut Self, _b: &T) {
         todo!()
     }
 }
@@ -55,13 +40,7 @@ impl Additive for DummyScalar {
     fn add(_a: &Self, _b: &Self) -> Self {
         todo!()
     }
-    fn add_assign(_a: &mut Self, _b: &Self) {
-        todo!()
-    }
     fn sub(_a: &Self, _b: &Self) -> Self {
-        todo!()
-    }
-    fn sub_assign(_a: &mut Self, _b: &Self) {
         todo!()
     }
     fn negate(_x: &Self) -> Self {
@@ -69,11 +48,8 @@ impl Additive for DummyScalar {
     }
 }
 
-impl Multiplicative for DummyScalar {
-    fn mul(_a: &Self, _b: &Self) -> Self {
-        todo!()
-    }
-    fn mul_assign(_a: &mut Self, _b: &Self) {
+impl<T> Multiplicative<T> for DummyScalar {
+    fn mul(_a: &Self, _b: &T) -> Self {
         todo!()
     }
 }
@@ -173,6 +149,23 @@ impl Default for DummyPoint {
 
 impl Default for DummyScalar {
     fn default() -> Self {
+        todo!()
+    }
+}
+
+impl Encoding<[u8; 32]> for DummyPoint {
+    fn encode(&self) -> [u8; 32] {
+        todo!()
+    }
+    fn decode(encoding: &[u8; 32]) -> Result<Self, Error> {
+        todo!()
+    }
+}
+impl Encoding<[u8; 32]> for DummyScalar {
+    fn encode(&self) -> [u8; 32] {
+        todo!()
+    }
+    fn decode(encoding: &[u8; 32]) -> Result<Self, Error> {
         todo!()
     }
 }

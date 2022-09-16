@@ -8,7 +8,7 @@
 //!   Points always have $(x, y)$ coordinates that must satisfy curve equation
 //!
 //! ## Usage
-//! This module provides various traits that can be used to retrieve coordinates. Refer to curve documenation
+//! This module provides various traits that can be used to retrieve coordinates. Refer to curve documentation
 //! to see what coordinates it exposes.
 //!
 //! ```rust
@@ -45,7 +45,7 @@
 //! [Ed25519]: crate::curves::Ed25519
 //! [curve25519_dalek]: https://github.com/dalek-cryptography/curve25519-dalek
 
-use generic_array::GenericArray;
+use generic_ec_core::ByteArray;
 use subtle::CtOption;
 
 #[cfg(feature = "serde")]
@@ -65,35 +65,32 @@ pub struct Coordinates<E: Curve> {
 
 /// Affine coordinate of a point on elliptic curve
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub struct Coordinate<E: Curve>(CoordinateBytes<E>);
-
-/// Bytes array that can fit a serialized coordinate
-pub type CoordinateBytes<E> = GenericArray<u8, <E as Curve>::CoordinateSize>;
+pub struct Coordinate<E: Curve>(E::CoordinateArray);
 
 impl<E: Curve> Coordinate<E> {
     /// Bytes representation of a coordinate
     #[inline(always)]
     pub fn as_bytes(&self) -> &[u8] {
-        &self.0
+        self.0.as_ref()
     }
 
     /// Parses bytes representation of a coordinate
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, InvalidCoordinate> {
-        let mut coord = Self::default();
-        if coord.as_bytes().len() != bytes.len() {
+        let mut coord = E::CoordinateArray::zeroes();
+        if coord.as_ref().len() != bytes.len() {
             return Err(InvalidCoordinate);
         }
         coord.as_mut().copy_from_slice(bytes);
-        Ok(coord)
+        Ok(Self(coord))
     }
 
     /// Constructs a coordinate from a byte array
-    pub fn new(bytes: CoordinateBytes<E>) -> Self {
+    pub fn new(bytes: E::CoordinateArray) -> Self {
         Self(bytes)
     }
 
     /// Bytes representation of a coordinate
-    pub fn as_array(&self) -> &CoordinateBytes<E> {
+    pub fn as_array(&self) -> &E::CoordinateArray {
         &self.0
     }
 }
@@ -101,54 +98,26 @@ impl<E: Curve> Coordinate<E> {
 impl<E: Curve> AsRef<[u8]> for Coordinate<E> {
     #[inline(always)]
     fn as_ref(&self) -> &[u8] {
-        &self.0
+        self.0.as_ref()
     }
 }
 
 impl<E: Curve> AsMut<[u8]> for Coordinate<E> {
     fn as_mut(&mut self) -> &mut [u8] {
-        &mut self.0
+        self.0.as_mut()
     }
 }
 
 impl<E: Curve> Default for Coordinate<E> {
     fn default() -> Self {
-        Self(Default::default())
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<E: Curve> Serialize for Coordinate<E> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use crate::serde_utils::Bytes;
-        use serde_with::SerializeAs;
-
-        <Bytes as SerializeAs<Coordinate<E>>>::serialize_as(self, serializer)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de, E: Curve> Deserialize<'de> for Coordinate<E> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        use crate::serde_utils::{expectation, Bytes};
-        use serde_with::DeserializeAs;
-
-        <Bytes<expectation::Coordinate> as DeserializeAs<'de, Coordinate<E>>>::deserialize_as(
-            deserializer,
-        )
+        Self(ByteArray::zeroes())
     }
 }
 
 mod sealed {
     pub trait Sealed {}
 
-    impl<E: crate::ec_core::Curve> Sealed for crate::wrappers::Point<E> {}
+    impl<E: crate::ec_core::Curve> Sealed for crate::Point<E> {}
 }
 
 /// Point has affine $x$ coordinate
@@ -156,7 +125,12 @@ pub trait HasAffineX<E: Curve>: sealed::Sealed {
     /// Retrieves affine $x$ coordinate
     ///
     /// Returns `None` if it's `Point::zero()`
-    fn x(&self) -> CtOption<Coordinate<E>>;
+    fn x(&self) -> Option<Coordinate<E>>;
+
+    /// Retrieves affine $x$ coordinate
+    ///
+    /// Similar to [`.x()`](HasAffineX::x), but constant time.
+    fn ct_x(&self) -> CtOption<Coordinate<E>>;
 }
 
 /// Point has affine $y$ coordinate
@@ -164,7 +138,12 @@ pub trait HasAffineY<E: Curve>: sealed::Sealed {
     /// Retrieves affine $y$ coordinate
     ///
     /// Returns `None` if it's `Point::zero()`
-    fn y(&self) -> CtOption<Coordinate<E>>;
+    fn y(&self) -> Option<Coordinate<E>>;
+
+    /// Retrieves affine $x$ coordinate
+    ///
+    /// Similar to [`.y()`](HasAffineY::y), but constant time.
+    fn ct_y(&self) -> CtOption<Coordinate<E>>;
 }
 
 /// Point is uniquely represented by $x$ coordinate and parity of $y$ coordinate
@@ -175,11 +154,20 @@ where
     /// Retrieves affine $x$ coordinate and parity of $y$ coordinate
     ///
     /// Returns `None` if it's `Point::zero()`
-    fn x_and_parity(&self) -> CtOption<(Parity, Coordinate<E>)>;
+    fn x_and_parity(&self) -> Option<(Parity, Coordinate<E>)>;
     /// Constructs point from its $x$ coordinate and parity of $y$ coordinate
     ///
     /// Returns `None` if arguments do not represent a valid `Point<E>`
-    fn from_x_and_parity(x: Coordinate<E>, y_parity: Parity) -> CtOption<Self>;
+    fn from_x_and_parity(x: Coordinate<E>, y_parity: Parity) -> Option<Self>;
+
+    /// Retrieves affine $x$ coordinate and parity of $y$ coordinate
+    ///
+    /// Similar to [`.x_and_parity()`](HasAffineXAndParity::x_and_parity), but constant time.
+    fn ct_x_and_parity(&self) -> CtOption<(Parity, Coordinate<E>)>;
+    /// Constructs point from its $x$ coordinate and parity of $y$ coordinate
+    ///
+    /// Similar to [`.from_x_and_parity()`](HasAffineXAndParity::from_x_and_parity), but constant time.
+    fn ct_from_x_and_parity(x: Coordinate<E>, y_parity: Parity) -> CtOption<Self>;
 }
 
 /// Point is uniquely represented by affine $x, y$ coordinates
@@ -190,11 +178,20 @@ where
     /// Retrieves affine $x, y$ coordinates
     ///
     /// Returns `None` if it's `Point::zero()`
-    fn coords(&self) -> CtOption<Coordinates<E>>;
+    fn coords(&self) -> Option<Coordinates<E>>;
     /// Constructs point from its $x, y$ coordinates
     ///
     /// Returns `None` if coordinates do not represent a valid `Point<E>`
-    fn from_coords(coords: &Coordinates<E>) -> CtOption<Self>;
+    fn from_coords(coords: &Coordinates<E>) -> Option<Self>;
+
+    /// Retrieves affine $x, y$ coordinates (constant time)
+    ///
+    /// Returns `None` if it's `Point::zero()`
+    fn ct_coords(&self) -> CtOption<Coordinates<E>>;
+    /// Constructs point from its $x, y$ coordinates (constant time)
+    ///
+    /// Returns `None` if coordinates do not represent a valid `Point<E>`
+    fn ct_from_coords(coords: &Coordinates<E>) -> CtOption<Self>;
 }
 
 /// Point _always_ has affine $y$ coordinate (for Edwards curves)

@@ -2,4 +2,5 @@
 members = [
   "generic-ec",
   "generic-ec-core",
+  "generic-ec-curves",
 ]
