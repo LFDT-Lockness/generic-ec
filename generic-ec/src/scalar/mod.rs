@@ -18,6 +18,16 @@ impl<E: Curve> Scalar<E> {
         Self::from_raw_unchecked(E::Scalar::one())
     }
 
+    pub fn invert(&self) -> Option<Self> {
+        self.ct_invert().into()
+    }
+
+    pub fn ct_invert(&self) -> CtOption<Self> {
+        let inv = Invertible::invert(self.as_raw());
+        // Correctness: inv is reduced
+        inv.map(|inv| Self::from_raw_unchecked(inv.reduce()))
+    }
+
     /// Constructs a scalar from instance of scalar from backend library
     ///
     /// Returns `None` if scalar is not valid

@@ -26,6 +26,7 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send {
         + Default
         + Encoding<Self::CompressedPointArray>
         + Encoding<Self::UncompressedPointArray>
+        + Decode
         + Sync
         + Send;
     type Scalar: Additive
@@ -46,6 +47,7 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send {
         + ConditionallySelectable
         + Default
         + Encoding<Self::ScalarArray>
+        + Decode
         + Sync
         + Send;
 
@@ -104,7 +106,10 @@ pub struct CurveGenerator;
 
 pub trait Encoding<A>: Sized {
     fn encode(&self) -> A;
-    fn decode(encoding: &A) -> Result<Self, Error>;
+}
+
+pub trait Decode {
+    fn decode(bytes: &[u8]) -> Option<Self>;
 }
 
 pub trait Canonical {

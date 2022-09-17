@@ -16,6 +16,18 @@ impl fmt::Display for InvalidCoordinate {
 impl Error for InvalidCoordinate {}
 
 #[derive(Debug, Clone, Copy)]
+pub struct InvalidPoint;
+
+impl fmt::Display for InvalidPoint {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("invalid point")
+    }
+}
+
+#[cfg(feature = "std")]
+impl Error for InvalidPoint {}
+
+#[derive(Debug, Clone, Copy)]
 pub struct HashToCurveError(());
 
 impl fmt::Display for HashToCurveError {

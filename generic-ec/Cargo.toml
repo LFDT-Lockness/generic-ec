@@ -22,11 +22,13 @@ serde = { version = "1", features = ["derive"], default-features = false, option
 serde_with = { version = "2", features = ["macros"], default-features = false, optional = true }
 hex = { version = "0.4", default-features = false, optional = true }
 
+phantom-type = { version = "0.4", default-features = false }
+
 [dev-dependencies]
 rand_dev = "0.1"
 serde_test = "1"
 
 [features]
 default = ["std", "serde"]
-std = ["hex?/std"]
+std = ["hex?/std", "phantom-type/std"]
 serde = ["dep:serde", "generic-ec-core/serde", "hex", "serde_with"]

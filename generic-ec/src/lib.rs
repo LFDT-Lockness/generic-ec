@@ -5,7 +5,9 @@ use generic_ec_core as ec_core;
 
 mod arithmetic;
 pub mod coords;
+mod encoded;
 pub mod errors;
+mod generator;
 mod non_zero;
 mod point;
 mod scalar;
@@ -14,6 +16,6 @@ mod serde_support;
 mod wrappers;
 
 pub use self::{
-    ec_core::Curve, non_zero::definition::NonZero, point::definition::Point,
-    scalar::definition::Scalar, wrappers::SecretScalar,
+    ec_core::Curve, encoded::EncodedPoint, generator::Generator, non_zero::definition::NonZero,
+    point::definition::Point, scalar::definition::Scalar, wrappers::SecretScalar,
 };

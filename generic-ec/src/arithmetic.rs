@@ -1,9 +1,12 @@
 use core::ops::{Add, Mul, Neg, Sub};
 
-use crate::{Curve, NonZero, Point, Scalar};
+use crate::{Curve, Generator, NonZero, Point, Scalar};
 
 mod laws {
-    use crate::{ec_core::*, NonZero};
+    use crate::{
+        ec_core::{self, *},
+        Generator, NonZero,
+    };
     use crate::{Point, Scalar};
 
     /// If $A$ and $B$ are valid `Point<E>`, then $A + B$ is a valid `Point<E>`
@@ -102,6 +105,28 @@ mod laws {
         mul_of_scalar_at_point_is_valid_point(b, a)
     }
 
+    /// If $n$ is valid `Scalar<E>`, then $n \G$ is valid `Point<E>`
+    ///
+    /// Proof is the same as in [`mul_of_scalar_at_point_is_valid_point`] with $A = \G$
+    #[inline]
+    pub fn mul_of_scalar_at_generator_is_valid_point<E: Curve>(
+        n: &Scalar<E>,
+        _g: &Generator<E>,
+    ) -> Point<E> {
+        let prod = Multiplicative::mul(n.as_raw(), &ec_core::CurveGenerator);
+        // Correctness: refer to doc comment of the function
+        Point::from_raw_unchecked(prod)
+    }
+
+    /// Same as [`mul_of_scalar_at_generator_is_valid_point`] but flipped arguments
+    #[inline]
+    pub fn mul_of_generator_at_scalar_is_valid_point<E: Curve>(
+        g: &Generator<E>,
+        n: &Scalar<E>,
+    ) -> Point<E> {
+        mul_of_scalar_at_generator_is_valid_point(n, g)
+    }
+
     /// If $n$ is valid `NonZero<Scalar<E>>` and $A$ is valid `NonZero<Point<E>>`, then $n A$ is a valid `NonZero<Point<E>>`
     ///
     /// As shown in [`mul_of_scalar_at_point_is_valid_point`], $n A$ is a valid `Point<E>`.
@@ -129,6 +154,28 @@ mod laws {
         n: &NonZero<Scalar<E>>,
     ) -> NonZero<Point<E>> {
         mul_of_nonzero_scalar_at_nonzero_point_is_valid_nonzero_point(n, a)
+    }
+
+    /// If $n$ is valid `NonZero<Scalar<E>>`, then $n \G$ is valid `NonZero<Point<E>>`
+    ///
+    /// Proof is the same as in [`mul_of_nonzero_scalar_at_nonzero_point_is_valid_nonzero_point`]
+    #[inline]
+    pub fn mul_of_nonzero_scalar_at_generator_is_valid_nonzero_point<E: Curve>(
+        n: &Scalar<E>,
+        g: &Generator<E>,
+    ) -> NonZero<Point<E>> {
+        let prod = mul_of_scalar_at_generator_is_valid_point(n, g);
+        // Correctness: refer to doc comment of the function
+        NonZero::new_unchecked(prod)
+    }
+
+    /// Same as [`mul_of_nonzero_scalar_at_generator_is_valid_nonzero_point`] but flipped arguments
+    #[inline]
+    pub fn mul_of_generator_at_nonzero_scalar_is_valid_nonzero_point<E: Curve>(
+        g: &Generator<E>,
+        n: &Scalar<E>,
+    ) -> NonZero<Point<E>> {
+        mul_of_nonzero_scalar_at_generator_is_valid_nonzero_point(n, g)
     }
 
     /// If $A$ is valid `NonZero<Point<E>>`, then $-A$ is valid `NonZero<Point<E>>`
@@ -219,6 +266,16 @@ macro_rules! impl_binary_ops {
     )+};
 }
 
+macro_rules! impl_nonzero_ops {
+    ($($op:ident ($lhs:ty, $op_fn:ident, $rhs:ty = $out:ty) $impl_fn:path),+,) => {
+        impl_binary_ops! {$(
+            $op (NonZero<$lhs>, $op_fn, NonZero<$rhs> = $out) $impl_fn,
+            $op ($lhs, $op_fn, NonZero<$rhs> = $out) $impl_fn,
+            $op (NonZero<$lhs>, $op_fn, $rhs = $out) $impl_fn,
+        )+}
+    };
+}
+
 macro_rules! impl_unary_ops {
     ($($op:ident ($op_fn:ident $ty:ty) $impl_fn:path),*,) => {$(
         impl<E: Curve> $op for $ty {
@@ -248,15 +305,22 @@ impl_binary_ops! {
 
     Mul (Point<E>, mul, Scalar<E> = Point<E>) laws::mul_of_point_at_scalar_is_valid_point,
     Mul (Scalar<E>, mul, Point<E> = Point<E>) laws::mul_of_scalar_at_point_is_valid_point,
-
-    Add (NonZero<Point<E>>, add, NonZero<Point<E>> = Point<E>) laws::sum_of_points_is_valid_point,
-    Sub (NonZero<Point<E>>, sub, NonZero<Point<E>> = Point<E>) laws::sub_of_points_is_valid_point,
-    Add (NonZero<Scalar<E>>, add, NonZero<Scalar<E>> = Scalar<E>) scalar::add,
-    Sub (NonZero<Scalar<E>>, sub, NonZero<Scalar<E>> = Scalar<E>) scalar::sub,
-    Mul (NonZero<Scalar<E>>, mul, NonZero<Scalar<E>> = Scalar<E>) scalar::mul,
+    Mul (Generator<E>, mul, Scalar<E> = Point<E>) laws::mul_of_generator_at_scalar_is_valid_point,
+    Mul (Scalar<E>, mul, Generator<E> = Point<E>) laws::mul_of_scalar_at_generator_is_valid_point,
 
     Mul (NonZero<Point<E>>, mul, NonZero<Scalar<E>> = NonZero<Point<E>>) laws::mul_of_nonzero_point_at_nonzero_scalar_is_valid_nonzero_point,
     Mul (NonZero<Scalar<E>>, mul, NonZero<Point<E>> = NonZero<Point<E>>) laws::mul_of_nonzero_scalar_at_nonzero_point_is_valid_nonzero_point,
+    Mul (Generator<E>, mul, NonZero<Scalar<E>> = NonZero<Point<E>>) laws::mul_of_generator_at_nonzero_scalar_is_valid_nonzero_point,
+    Mul (NonZero<Scalar<E>>, mul, Generator<E> = NonZero<Point<E>>) laws::mul_of_nonzero_scalar_at_generator_is_valid_nonzero_point,
+}
+
+impl_nonzero_ops! {
+    Add (Point<E>, add, Point<E> = Point<E>) laws::sum_of_points_is_valid_point,
+    Sub (Point<E>, sub, Point<E> = Point<E>) laws::sub_of_points_is_valid_point,
+
+    Add (Scalar<E>, add, Scalar<E> = Scalar<E>) scalar::add,
+    Sub (Scalar<E>, sub, Scalar<E> = Scalar<E>) scalar::sub,
+    Mul (Scalar<E>, mul, Scalar<E> = Scalar<E>) scalar::mul,
 }
 
 impl_unary_ops! {

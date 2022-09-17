@@ -48,4 +48,12 @@ impl<E: Curve> NonZero<Scalar<E>> {
         // zero value is not accessible by anyone
         CtOption::new(Self::new_unchecked(scalar), is_non_zero)
     }
+
+    pub fn invert(&self) -> NonZero<Scalar<E>> {
+        let inv = (**self)
+            .invert()
+            .expect("nonzero scalar always has an invert");
+        // Correctness: `inv` is nonzero by definition
+        Self::new_unchecked(inv)
+    }
 }
