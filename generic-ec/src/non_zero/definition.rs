@@ -16,6 +16,12 @@ impl<T> NonZero<T> {
     }
 }
 
+impl<T> AsRef<T> for NonZero<T> {
+    fn as_ref(&self) -> &T {
+        &self.0
+    }
+}
+
 impl<T> Deref for NonZero<T> {
     type Target = T;
     fn deref(&self) -> &Self::Target {

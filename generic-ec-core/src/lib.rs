@@ -108,7 +108,7 @@ pub trait Encoding<A>: Sized {
     fn encode(&self) -> A;
 }
 
-pub trait Decode {
+pub trait Decode: Sized {
     fn decode(bytes: &[u8]) -> Option<Self>;
 }
 

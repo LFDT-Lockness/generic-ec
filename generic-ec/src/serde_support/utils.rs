@@ -65,7 +65,7 @@ pub mod expectation {
 }
 
 fn serialize_bytes<S: Serializer>(serializer: S, bytes: &[u8]) -> Result<S::Ok, S::Error> {
-    #[cfg(feature = "std")]
+    #[cfg(feature = "alloc")]
     if serializer.is_human_readable() {
         let bytes_hex = hex::encode(bytes);
         return serializer.serialize_str(&bytes_hex);

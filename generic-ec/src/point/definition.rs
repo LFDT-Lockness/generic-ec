@@ -1,13 +1,13 @@
 use zeroize::Zeroize;
 
-use crate::ec_core::*;
+use crate::{as_raw::AsRaw, ec_core::*};
 
 /// Torsion-free point on elliptic curve `E`
 ///
 /// Any instance of `Point` is guaranteed to be on curve `E` and free of torsion component (when applicable).
 ///
 /// Point implements all necessary arithmetic operations (like points addition, multiplication at scalar, etc.).
-#[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash, Zeroize)]
+#[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Point<E: Curve>(E::Point);
 
 impl<E: Curve> Point<E> {
@@ -23,8 +23,17 @@ impl<E: Curve> Point<E> {
     }
 }
 
-impl<E: Curve> AsRef<E::Point> for Point<E> {
-    fn as_ref(&self) -> &E::Point {
+impl<E: Curve> AsRaw for Point<E> {
+    type Raw = E::Point;
+
+    #[inline]
+    fn as_raw(&self) -> &E::Point {
         &self.0
+    }
+}
+
+impl<E: Curve> Zeroize for Point<E> {
+    fn zeroize(&mut self) {
+        self.0.zeroize()
     }
 }

@@ -1,5 +1,6 @@
 use subtle::CtOption;
 
+use crate::as_raw::{AsRaw, FromRaw};
 use crate::coords::*;
 use crate::ec_core::coords as coords_core;
 use crate::ec_core::*;

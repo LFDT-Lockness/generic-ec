@@ -1,11 +1,11 @@
 use zeroize::Zeroize;
 
-use crate::ec_core::*;
+use crate::{as_raw::AsRaw, ec_core::*};
 
 /// Scalar modulo curve `E` group order
 ///
 /// Scalar is guaranteed to be non-negative integer modulo curve `E` group order.
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Zeroize)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 pub struct Scalar<E: Curve>(E::Scalar);
 
 impl<E: Curve> Scalar<E> {
@@ -15,13 +15,24 @@ impl<E: Curve> Scalar<E> {
     /// justifying a call and proving that resulting scalar meets requirements:
     ///
     /// 1. Scalar is canonical
+    #[inline]
     pub(crate) fn from_raw_unchecked(scalar: E::Scalar) -> Self {
         Self(scalar)
     }
 }
 
-impl<E: Curve> AsRef<E::Scalar> for Scalar<E> {
-    fn as_ref(&self) -> &E::Scalar {
+impl<E: Curve> AsRaw for Scalar<E> {
+    type Raw = E::Scalar;
+
+    #[inline]
+    fn as_raw(&self) -> &E::Scalar {
         &self.0
+    }
+}
+
+impl<E: Curve> Zeroize for Scalar<E> {
+    #[inline]
+    fn zeroize(&mut self) {
+        self.0.zeroize()
     }
 }

@@ -28,6 +28,18 @@ impl fmt::Display for InvalidPoint {
 impl Error for InvalidPoint {}
 
 #[derive(Debug, Clone, Copy)]
+pub struct InvalidScalar;
+
+impl fmt::Display for InvalidScalar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("invalid scalar")
+    }
+}
+
+#[cfg(feature = "std")]
+impl Error for InvalidScalar {}
+
+#[derive(Debug, Clone, Copy)]
 pub struct HashToCurveError(());
 
 impl fmt::Display for HashToCurveError {
