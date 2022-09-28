@@ -10,12 +10,8 @@ mod with_alloc {
     pub struct SecretScalar<E: Curve>(Arc<Box<Zeroizing<Scalar<E>>>>);
 
     impl<E: Curve> SecretScalar<E> {
-        /// Constructs a new secret scalar
-        ///
-        /// It takes scalar by mutable reference instead of taking by value to avoid leaving
-        /// copies of scalar on stack. Scalar behind the reference will be zeroized after function
-        /// returned.
-        pub(crate) fn new(scalar: &mut Scalar<E>) -> Self {
+        #[doc = include_str!("docs-constructor.md")]
+        pub fn new(scalar: &mut Scalar<E>) -> Self {
             let mut scalar_boxed = Box::<Zeroizing<Scalar<E>>>::default();
             core::mem::swap(&mut **scalar_boxed, scalar);
             scalar.zeroize();
@@ -46,7 +42,8 @@ mod without_alloc {
     pub struct SecretScalar<E: Curve>(Zeroizing<Scalar<E>>);
 
     impl<E: Curve> SecretScalar<E> {
-        pub(crate) fn new(scalar: &mut Scalar) -> Self {
+        #[doc = include_str!("docs-constructor.md")]
+        pub fn new(scalar: &mut Scalar) -> Self {
             let scalar = Self(Zeroizing::new(*scalar));
             scalar.zeroize();
             scalar

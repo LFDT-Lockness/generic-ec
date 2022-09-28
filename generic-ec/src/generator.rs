@@ -3,14 +3,31 @@ use phantom_type::PhantomType;
 use crate::{ec_core::*, NonZero, Point};
 
 /// Generator of curve `E`
+///
+/// Curve generator is a point on curve defined in curve specs. For some curves,
+/// generator multiplication may be optimized, so `Scalar<E> * Generator<E>`
+/// would more efficient than `Scalar<E> * Point<E>`. That's the only purpose
+/// of `Generator<E>` structure: to distinguish generator multiplication and
+/// potentially use more efficient algorithm.
+///
+/// Curve generator `Generator<E>` should be obtained by calling [`Point::generator()`].
+/// You may convert `Generator<E>` to `Point<E>` or `NonZero<Point<E>>` by calling
+/// [`.to_point()`] or [`.to_nonzero_point()`], but then multiplication may be less
+/// efficient.
+///
+/// [`Point::generator()`]: Point::generator
+/// [`.to_point()`]: Generator::to_point
+/// [`.to_nonzero_point()`]: Generator::to_nonzero_point
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Generator<E: Curve>(PhantomType<E>);
 
 impl<E: Curve> Generator<E> {
+    /// Returns a point corresponding to curve generator
     pub fn to_point(&self) -> Point<E> {
         (*self).into()
     }
 
+    /// Returns a non-zero point corresponding to curve generator
     pub fn to_nonzero_point(&self) -> NonZero<Point<E>> {
         (*self).into()
     }

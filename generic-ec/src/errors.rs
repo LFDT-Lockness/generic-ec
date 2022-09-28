@@ -40,13 +40,26 @@ impl fmt::Display for InvalidScalar {
 impl Error for InvalidScalar {}
 
 #[derive(Debug, Clone, Copy)]
-pub struct HashToCurveError(());
+pub struct HashError(pub(crate) HashErrorReason);
 
-impl fmt::Display for HashToCurveError {
+impl fmt::Display for HashError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("hash to curve error")
+        match self.0 {
+            HashErrorReason::HashFailed => {
+                f.write_str("couldn't perform hash to curve/scalar operation")
+            }
+            HashErrorReason::ProducedValueInvalid => {
+                f.write_str("hash to curve/scalar produced invalid point/scalar")
+            }
+        }
     }
 }
 
 #[cfg(feature = "std")]
-impl Error for HashToCurveError {}
+impl Error for HashError {}
+
+#[derive(Debug, Clone, Copy)]
+pub(crate) enum HashErrorReason {
+    HashFailed,
+    ProducedValueInvalid,
+}

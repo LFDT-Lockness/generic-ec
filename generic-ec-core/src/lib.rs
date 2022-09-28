@@ -4,11 +4,12 @@ use core::fmt::Debug;
 use core::hash::Hash;
 
 use generic_array::{ArrayLength, GenericArray};
-use rand_core::{CryptoRng, RngCore};
+use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
 
 pub mod coords;
+pub mod hash_to_curve;
 
 pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send {
     type Point: Additive
@@ -57,11 +58,6 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send {
     type CoordinateArray: ByteArray;
 }
 
-pub trait HashToCurve: Curve {
-    fn hash_to_curve(ctx: &[u8], msgs: &[&[u8]]) -> Result<Self::Point, Error>;
-    fn hash_to_scalar(ctx: &[u8], msgs: &[&[u8]]) -> Result<Self::Scalar, Error>;
-}
-
 pub trait Additive {
     fn add(a: &Self, b: &Self) -> Self;
     fn sub(a: &Self, b: &Self) -> Self;
@@ -91,7 +87,7 @@ pub trait One {
 }
 
 pub trait Samplable {
-    fn random<R: RngCore + CryptoRng>(rng: &mut R) -> Self;
+    fn random<R: RngCore>(rng: &mut R) -> Self;
 }
 
 pub trait OnCurve {

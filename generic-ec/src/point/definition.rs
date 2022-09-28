@@ -4,9 +4,11 @@ use crate::{as_raw::AsRaw, ec_core::*};
 
 /// Torsion-free point on elliptic curve `E`
 ///
-/// Any instance of `Point` is guaranteed to be on curve `E` and free of torsion component (when applicable).
+/// Any instance of `Point` is guaranteed to be on curve `E` and free of torsion component. Note that
+/// identity point (sometimes called _point at infinity_) is a valid point that can be obtained by calling
+/// [`Point::zero()`](Point::zero).
 ///
-/// Point implements all necessary arithmetic operations (like points addition, multiplication at scalar, etc.).
+/// Point implements all necessary arithmetic operations: points addition, multiplication at scalar, etc.
 #[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Point<E: Curve>(E::Point);
 

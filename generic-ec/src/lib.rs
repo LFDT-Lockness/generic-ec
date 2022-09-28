@@ -11,6 +11,7 @@ pub mod coords;
 mod encoded;
 pub mod errors;
 mod generator;
+pub mod hash_to_curve;
 mod non_zero;
 mod point;
 mod scalar;
@@ -19,6 +20,11 @@ mod secret_scalar;
 mod serde_support;
 
 pub use self::{
-    ec_core::Curve, encoded::EncodedPoint, generator::Generator, non_zero::definition::NonZero,
-    point::definition::Point, scalar::definition::Scalar, secret_scalar::definition::SecretScalar,
+    ec_core::Curve,
+    encoded::{EncodedPoint, EncodedScalar},
+    generator::Generator,
+    non_zero::definition::NonZero,
+    point::definition::Point,
+    scalar::definition::Scalar,
+    secret_scalar::definition::SecretScalar,
 };
