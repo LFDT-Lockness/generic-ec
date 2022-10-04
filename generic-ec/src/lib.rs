@@ -1,3 +1,5 @@
+//! Generic purpose elliptic curve cryptography
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(feature = "alloc")]
