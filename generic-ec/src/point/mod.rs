@@ -48,7 +48,7 @@ impl<E: Curve> Point<E> {
         self.ct_is_zero().into()
     }
 
-    /// Indicates whether it's [identity point](Self::zero) (constant time)
+    /// Indicates whether it's [identity point](Self::zero) (in constant time)
     ///
     /// Same as [`.is_zero()`](Self::is_zero) but performs constant-time comparison.
     pub fn ct_is_zero(&self) -> Choice {
