@@ -1,0 +1,17 @@
+[package]
+name = "generic-ec-zkp"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+generic-ec = { path = "../generic-ec" }
+
+subtle = "2.4"
+digest = "0.10"
+rand_core = "0.6"
+
+[dev-dependencies]
+rand = "0.8"
+sha2 = "0.10"

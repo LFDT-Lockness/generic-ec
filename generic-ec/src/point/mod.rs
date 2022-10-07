@@ -1,3 +1,5 @@
+use core::iter::Sum;
+
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 use crate::{
@@ -126,5 +128,17 @@ impl<E: Curve> ConstantTimeEq for Point<E> {
 impl<E: Curve> AsRef<Point<E>> for Point<E> {
     fn as_ref(&self) -> &Point<E> {
         self
+    }
+}
+
+impl<E: Curve> Sum for Point<E> {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Point::zero(), |acc, p| acc + p)
+    }
+}
+
+impl<'a, E: Curve> Sum<&'a Point<E>> for Point<E> {
+    fn sum<I: Iterator<Item = &'a Point<E>>>(iter: I) -> Self {
+        iter.fold(Point::zero(), |acc, p| acc + p)
     }
 }
