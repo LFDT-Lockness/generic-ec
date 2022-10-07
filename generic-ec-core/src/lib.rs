@@ -11,7 +11,9 @@ use zeroize::Zeroize;
 pub mod coords;
 pub mod hash_to_curve;
 
-pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send {
+pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send + 'static {
+    const CURVE_NAME: &'static str;
+
     type Point: Additive
         + From<CurveGenerator>
         + Zero

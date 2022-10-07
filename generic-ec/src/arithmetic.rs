@@ -1,4 +1,4 @@
-use core::ops::{Add, Mul, Neg, Sub};
+use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub};
 
 use crate::{Curve, Generator, NonZero, Point, Scalar, SecretScalar};
 
@@ -298,6 +298,21 @@ macro_rules! impl_unary_ops {
     )*};
 }
 
+macro_rules! impl_op_assign {
+    ($($ty:ty, $trait:ident, $rhs:ty, $fn:ident, $op:tt),+,) => {$(
+        impl<E: Curve> $trait<$rhs> for $ty {
+            fn $fn(&mut self, rhs: $rhs) {
+                *self = *self $op rhs;
+            }
+        }
+        impl<E: Curve> $trait<&$rhs> for $ty {
+            fn $fn(&mut self, rhs: &$rhs) {
+                *self = *self $op rhs;
+            }
+        }
+    )+};
+}
+
 // Point <> Point, Point <> Scalar, Scalar <> Scalar arithmetic ops
 impl_binary_ops! {
     Add (Point<E>, add, Point<E> = Point<E>) laws::sum_of_points_is_valid_point,
@@ -372,6 +387,13 @@ impl_unary_ops! {
     Neg (neg Scalar<E>) scalar::neg,
     Neg (neg NonZero<Point<E>>) laws::neg_nonzero_point_is_nonzero_point,
     Neg (neg NonZero<Scalar<E>>) scalar::neg_nonzero,
+}
+
+impl_op_assign! {
+    Point<E>, AddAssign, Point<E>, add_assign, +,
+    Point<E>, MulAssign, Scalar<E>, mul_assign, *,
+    Scalar<E>, AddAssign, Scalar<E>, add_assign, +,
+    Scalar<E>, MulAssign, Scalar<E>, mul_assign, *,
 }
 
 #[cfg(test)]

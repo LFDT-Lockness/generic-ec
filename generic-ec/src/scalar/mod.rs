@@ -140,3 +140,27 @@ impl<E: Curve> AsRef<Scalar<E>> for Scalar<E> {
         self
     }
 }
+
+impl<E: Curve> iter::Sum for Scalar<E> {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Scalar::zero(), |acc, x| acc + x)
+    }
+}
+
+impl<'a, E: Curve> iter::Sum<&'a Scalar<E>> for Scalar<E> {
+    fn sum<I: Iterator<Item = &'a Self>>(iter: I) -> Self {
+        iter.fold(Scalar::zero(), |acc, x| acc + x)
+    }
+}
+
+impl<E: Curve> iter::Product for Scalar<E> {
+    fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Scalar::one(), |acc, x| acc * x)
+    }
+}
+
+impl<'a, E: Curve> iter::Product<&'a Scalar<E>> for Scalar<E> {
+    fn product<I: Iterator<Item = &'a Self>>(iter: I) -> Self {
+        iter.fold(Scalar::one(), |acc, x| acc * x)
+    }
+}
