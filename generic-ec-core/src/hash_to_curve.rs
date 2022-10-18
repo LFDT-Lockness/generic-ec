@@ -6,6 +6,7 @@ pub trait HashToCurve: Curve {
 }
 
 /// Domain separation tag
+#[derive(Clone, Copy)]
 pub struct Tag<'s>(&'s [u8]);
 
 impl<'s> Tag<'s> {
