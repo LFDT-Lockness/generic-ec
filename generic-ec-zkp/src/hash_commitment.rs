@@ -289,7 +289,7 @@ impl<E: Curve> EncodesToBytes for Point<E> {
 impl<E: Curve> EncodesToBytes for Scalar<E> {
     type Bytes = generic_ec::EncodedScalar<E>;
     fn to_bytes(&self) -> Self::Bytes {
-        self.to_bytes()
+        self.to_be_bytes()
     }
 }
 

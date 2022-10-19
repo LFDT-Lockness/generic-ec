@@ -75,10 +75,10 @@ impl<E: Curve> Point<E> {
     /// ```
     pub fn to_bytes(&self, compressed: bool) -> EncodedPoint<E> {
         if compressed {
-            let bytes = self.as_raw().encode();
+            let bytes = self.as_raw().to_bytes_compressed();
             EncodedPoint::new_compressed(bytes)
         } else {
-            let bytes = self.as_raw().encode();
+            let bytes = self.as_raw().to_bytes_uncompressed();
             EncodedPoint::new_uncompressed(bytes)
         }
     }

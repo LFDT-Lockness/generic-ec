@@ -1,7 +1,7 @@
 use rand_core::{CryptoRng, RngCore};
 use subtle::{Choice, ConstantTimeEq};
 
-use crate::{encoded::EncodedScalar, errors::InvalidScalar, Curve, Scalar};
+use crate::{errors::InvalidScalar, Curve, Scalar};
 
 use self::definition::SecretScalar;
 
@@ -34,11 +34,6 @@ impl<E: Curve> SecretScalar<E> {
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, InvalidScalar> {
         let mut scalar = Scalar::from_bytes(bytes)?;
         Ok(Self::new(&mut scalar))
-    }
-
-    /// Encodes scalar as bytes
-    pub fn to_bytes(&self) -> EncodedScalar<E> {
-        self.as_ref().to_bytes()
     }
 }
 
