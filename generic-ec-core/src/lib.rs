@@ -27,8 +27,8 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send + 'stati
         + Ord
         + ConditionallySelectable
         + Default
-        + Encoding<Self::CompressedPointArray>
-        + Encoding<Self::UncompressedPointArray>
+        + CompressedEncoding<Bytes = Self::CompressedPointArray>
+        + UncompressedEncoding<Bytes = Self::UncompressedPointArray>
         + Decode
         + Sync
         + Send;
@@ -49,7 +49,7 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send + 'stati
         + Ord
         + ConditionallySelectable
         + Default
-        + Encoding<Self::ScalarArray>
+        + IntegerEncoding<Bytes = Self::ScalarArray>
         + Decode
         + Sync
         + Send;
@@ -102,8 +102,38 @@ pub trait SmallFactor {
 
 pub struct CurveGenerator;
 
-pub trait Encoding<A>: Sized {
-    fn encode(&self) -> A;
+pub trait CompressedEncoding
+where
+    Self: Sized,
+{
+    type Bytes: ByteArray;
+
+    fn to_bytes_compressed(&self) -> Self::Bytes;
+}
+
+pub trait UncompressedEncoding
+where
+    Self: Sized,
+{
+    type Bytes: ByteArray;
+
+    fn to_bytes_uncompressed(&self) -> Self::Bytes;
+}
+
+pub trait IntegerEncoding
+where
+    Self: Sized,
+{
+    type Bytes: ByteArray;
+
+    fn to_be_bytes(&self) -> Self::Bytes;
+    fn to_le_bytes(&self) -> Self::Bytes;
+
+    fn from_be_bytes(bytes: &Self::Bytes) -> Self;
+    fn from_le_bytes(bytes: &Self::Bytes) -> Self;
+
+    fn from_be_bytes_exact(bytes: &Self::Bytes) -> Option<Self>;
+    fn from_le_bytes_exact(bytes: &Self::Bytes) -> Option<Self>;
 }
 
 pub trait Decode: Sized {

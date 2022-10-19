@@ -62,15 +62,21 @@ impl<E: Curve> Scalar<E> {
         inv.map(|inv| Self::from_raw_unchecked(inv.reduce()))
     }
 
-    /// Encodes scalar as bytes
+    /// Encodes scalar as bytes in big-endian order
     ///
     /// ```rust
     /// let s = Scalar::random();
-    /// let bytes = s.to_bytes();
+    /// let bytes = s.to_be_bytes();
     /// println!("Scalar hex representation: {}", hex::encode(bytes));
     /// ```
-    pub fn to_bytes(&self) -> EncodedScalar<E> {
-        let bytes = self.as_raw().encode();
+    pub fn to_be_bytes(&self) -> EncodedScalar<E> {
+        let bytes = self.as_raw().to_be_bytes();
+        EncodedScalar::new(bytes)
+    }
+
+    /// Encodes scalar as bytes in little-endian order
+    pub fn to_le_bytes(&self) -> EncodedScalar<E> {
+        let bytes = self.as_raw().to_le_bytes();
         EncodedScalar::new(bytes)
     }
 
