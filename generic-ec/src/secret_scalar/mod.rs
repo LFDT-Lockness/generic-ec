@@ -30,9 +30,15 @@ impl<E: Curve> SecretScalar<E> {
         Self::new(&mut scalar)
     }
 
-    /// Decodes scalar from bytes
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self, InvalidScalar> {
-        let mut scalar = Scalar::from_bytes(bytes)?;
+    /// Decodes scalar from its bytes representation in big-endian order
+    pub fn from_be_bytes(bytes: &[u8]) -> Result<Self, InvalidScalar> {
+        let mut scalar = Scalar::from_be_bytes(bytes)?;
+        Ok(Self::new(&mut scalar))
+    }
+
+    /// Decodes scalar from its bytes representation in little-endian order
+    pub fn from_le_bytes(bytes: &[u8]) -> Result<Self, InvalidScalar> {
+        let mut scalar = Scalar::from_le_bytes(bytes)?;
         Ok(Self::new(&mut scalar))
     }
 }

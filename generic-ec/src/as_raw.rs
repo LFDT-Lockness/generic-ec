@@ -28,15 +28,20 @@ where
 }
 
 /// Constructs a point/scalar from its backend library representation
-pub trait FromRaw: AsRaw {
-    /// Wraps a point/scalar
+pub trait TryFromRaw: AsRaw {
+    /// Wraps raw value
     ///
     /// Returns `None` if value doesn't meet wrapper constraints
-    fn from_raw(raw: Self::Raw) -> Option<Self> {
-        Self::ct_from_raw(raw).into()
+    fn try_from_raw(raw: Self::Raw) -> Option<Self> {
+        Self::ct_try_from_raw(raw).into()
     }
-    /// Wraps a point/scalar (constant time)
+    /// Wraps raw value (constant time)
     ///
     /// Returns `None` if value doesn't meet wrapper constraints
-    fn ct_from_raw(raw: Self::Raw) -> CtOption<Self>;
+    fn ct_try_from_raw(raw: Self::Raw) -> CtOption<Self>;
+}
+
+pub trait FromRaw: AsRaw {
+    /// Infallibly wraps raw value
+    fn from_raw(raw: Self::Raw) -> Self;
 }

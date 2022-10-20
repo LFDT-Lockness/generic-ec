@@ -27,6 +27,6 @@ pub use self::{
     generator::Generator,
     non_zero::definition::NonZero,
     point::definition::Point,
-    scalar::definition::Scalar,
+    scalar::Scalar,
     secret_scalar::definition::SecretScalar,
 };
