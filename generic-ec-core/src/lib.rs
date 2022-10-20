@@ -41,7 +41,6 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send + 'stati
         + One
         + Samplable
         + Zeroize
-        + Canonical
         + Copy
         + Eq
         + ConstantTimeEq
@@ -50,7 +49,6 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send + 'stati
         + ConditionallySelectable
         + Default
         + IntegerEncoding<Bytes = Self::ScalarArray>
-        + Decode
         + Sync
         + Send;
 
@@ -138,11 +136,6 @@ where
 
 pub trait Decode: Sized {
     fn decode(bytes: &[u8]) -> Option<Self>;
-}
-
-pub trait Canonical {
-    fn is_canonical(&self) -> Choice;
-    fn reduce(&self) -> Self;
 }
 
 pub struct Error;

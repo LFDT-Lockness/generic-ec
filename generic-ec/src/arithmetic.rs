@@ -195,37 +195,33 @@ mod laws {
 }
 
 mod scalar {
-    use crate::as_raw::AsRaw;
+    use crate::as_raw::{AsRaw, FromRaw};
     use crate::ec_core::*;
     use crate::NonZero;
     use crate::Scalar;
 
     #[inline]
     pub fn add<E: Curve>(a: impl AsRef<Scalar<E>>, b: impl AsRef<Scalar<E>>) -> Scalar<E> {
-        let sum = Additive::add(a.as_ref().as_raw(), b.as_ref().as_raw()).reduce();
-        // Correctness: `sum` is reduced
-        Scalar::from_raw_unchecked(sum)
+        let sum = Additive::add(a.as_ref().as_raw(), b.as_ref().as_raw());
+        Scalar::from_raw(sum)
     }
 
     #[inline]
     pub fn sub<E: Curve>(a: impl AsRef<Scalar<E>>, b: impl AsRef<Scalar<E>>) -> Scalar<E> {
-        let result = Additive::sub(a.as_ref().as_raw(), b.as_ref().as_raw()).reduce();
-        // Correctness: `result` is reduced
-        Scalar::from_raw_unchecked(result)
+        let result = Additive::sub(a.as_ref().as_raw(), b.as_ref().as_raw());
+        Scalar::from_raw(result)
     }
 
     #[inline]
     pub fn mul<E: Curve>(a: impl AsRef<Scalar<E>>, b: impl AsRef<Scalar<E>>) -> Scalar<E> {
-        let prod = Multiplicative::mul(a.as_ref().as_raw(), b.as_ref().as_raw()).reduce();
-        // Correctness: `prod` is reduced
-        Scalar::from_raw_unchecked(prod)
+        let prod = Multiplicative::mul(a.as_ref().as_raw(), b.as_ref().as_raw());
+        Scalar::from_raw(prod)
     }
 
     #[inline]
     pub fn neg<E: Curve>(a: &Scalar<E>) -> Scalar<E> {
-        let result = Additive::negate(a.as_raw()).reduce();
-        // Correctness: `result` is reduced
-        Scalar::from_raw_unchecked(result)
+        let result = Additive::negate(a.as_raw());
+        Scalar::from_raw(result)
     }
 
     #[inline]

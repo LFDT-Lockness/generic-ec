@@ -1,4 +1,4 @@
-use crate::as_raw::FromRaw;
+use crate::as_raw::{FromRaw, TryFromRaw};
 use crate::ec_core::hash_to_curve::HashToCurve;
 use crate::ec_core::Curve;
 use crate::errors::{HashError, HashErrorReason};
@@ -26,7 +26,7 @@ where
     fn hash_concat(tag: Tag, message: &[&[u8]]) -> Result<Self, HashError> {
         let point =
             E::hash_to_curve(tag, message).or(Err(HashError(HashErrorReason::HashFailed)))?;
-        Point::from_raw(point).ok_or(HashError(HashErrorReason::ProducedValueInvalid))
+        Point::try_from_raw(point).ok_or(HashError(HashErrorReason::ProducedValueInvalid))
     }
 }
 
@@ -38,6 +38,6 @@ where
     fn hash_concat(tag: Tag, message: &[&[u8]]) -> Result<Self, HashError> {
         let scalar =
             E::hash_to_scalar(tag, message).or(Err(HashError(HashErrorReason::HashFailed)))?;
-        Scalar::from_raw(scalar).ok_or(HashError(HashErrorReason::ProducedValueInvalid))
+        Ok(Scalar::from_raw(scalar))
     }
 }

@@ -3,7 +3,7 @@ use core::iter::Sum;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 use crate::{
-    as_raw::{AsRaw, FromRaw},
+    as_raw::{AsRaw, TryFromRaw},
     ec_core::*,
     errors::InvalidPoint,
     EncodedPoint, Generator,
@@ -86,17 +86,13 @@ impl<E: Curve> Point<E> {
     /// Decodes a point from bytes
     pub fn from_bytes(bytes: &[u8]) -> Result<Self, InvalidPoint> {
         E::Point::decode(bytes)
-            .and_then(Self::from_raw)
+            .and_then(Self::try_from_raw)
             .ok_or(InvalidPoint)
     }
 }
 
-impl<E: Curve> FromRaw for Point<E> {
-    fn from_raw(point: E::Point) -> Option<Self> {
-        Self::ct_from_raw(point).into()
-    }
-
-    fn ct_from_raw(point: E::Point) -> CtOption<Self> {
+impl<E: Curve> TryFromRaw for Point<E> {
+    fn ct_try_from_raw(point: E::Point) -> CtOption<Self> {
         let is_on_curve = point.is_on_curve();
         let is_torsion_free = point.is_torsion_free();
         let is_valid = is_on_curve & is_torsion_free;

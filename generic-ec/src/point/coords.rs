@@ -1,6 +1,6 @@
 use subtle::CtOption;
 
-use crate::as_raw::{AsRaw, FromRaw};
+use crate::as_raw::{AsRaw, TryFromRaw};
 use crate::coords::*;
 use crate::ec_core::coords as coords_core;
 use crate::ec_core::*;
@@ -38,7 +38,7 @@ where
     }
 
     fn ct_from_x_and_parity(x: Coordinate<E>, y_parity: Parity) -> CtOption<Self> {
-        E::from_x_and_parity(x.as_array(), y_parity).and_then(Point::ct_from_raw)
+        E::from_x_and_parity(x.as_array(), y_parity).and_then(Point::ct_try_from_raw)
     }
 }
 
@@ -80,7 +80,7 @@ where
     }
 
     fn ct_from_coords(coords: &Coordinates<E>) -> CtOption<Self> {
-        E::from_x_and_y(coords.x.as_array(), coords.y.as_array()).and_then(Point::ct_from_raw)
+        E::from_x_and_y(coords.x.as_array(), coords.y.as_array()).and_then(Point::ct_try_from_raw)
     }
 }
 
@@ -103,6 +103,7 @@ where
     }
 
     fn from_y_and_sign(x_sign: Sign, y: &Coordinate<E>) -> Option<Self> {
-        E::from_y_and_sign(x_sign, &y.as_array()).and_then(|point| Point::from_raw(point).into())
+        E::from_y_and_sign(x_sign, &y.as_array())
+            .and_then(|point| Point::try_from_raw(point).into())
     }
 }

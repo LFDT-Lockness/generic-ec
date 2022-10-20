@@ -2,6 +2,7 @@ use core::iter;
 
 use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
+use zeroize::Zeroize;
 
 use crate::{
     as_raw::{AsRaw, FromRaw},
@@ -10,9 +11,11 @@ use crate::{
     errors::InvalidScalar,
 };
 
-use self::definition::Scalar;
-
-pub mod definition;
+/// Scalar modulo curve `E` group order
+///
+/// Scalar is an integer modulo curve `E` group order.
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+pub struct Scalar<E: Curve>(E::Scalar);
 
 impl<E: Curve> Scalar<E> {
     /// Returns scalar $S = 0$
@@ -23,8 +26,7 @@ impl<E: Curve> Scalar<E> {
     /// assert_eq!(s + Scalar::zero(), s);
     /// ```
     pub fn zero() -> Self {
-        // Correctness: zero is always less than group order
-        Self::from_raw_unchecked(E::Scalar::zero())
+        Self::from_raw(E::Scalar::zero())
     }
 
     /// Returns scalar $S = 1$
@@ -34,8 +36,7 @@ impl<E: Curve> Scalar<E> {
     /// assert_eq!(s * Scalar::one(), s);
     /// ```
     pub fn one() -> Self {
-        // Correctness: one is always less than group order
-        Self::from_raw_unchecked(E::Scalar::one())
+        Self::from_raw(E::Scalar::one())
     }
 
     /// Returns scalar inverse $S^-1$
@@ -58,8 +59,7 @@ impl<E: Curve> Scalar<E> {
     /// scalar
     pub fn ct_invert(&self) -> CtOption<Self> {
         let inv = Invertible::invert(self.as_raw());
-        // Correctness: inv is reduced
-        inv.map(|inv| Self::from_raw_unchecked(inv.reduce()))
+        inv.map(Self::from_raw)
     }
 
     /// Encodes scalar as bytes in big-endian order
@@ -80,54 +80,93 @@ impl<E: Curve> Scalar<E> {
         EncodedScalar::new(bytes)
     }
 
-    /// Decodes scalar from bytes
+    /// Decodes scalar from its representation as bytes in big-endian order
+    ///
+    /// Returns error if encoded integer is larger than group order.
     ///
     /// ```rust
     /// let s = Scalar::random();
-    /// let s_bytes = s.to_bytes();
-    /// let s_decoded = Scalar::from_bytes(&bytes);
+    /// let s_bytes = s.to_be_bytes();
+    /// let s_decoded = Scalar::from_be_bytes(&bytes);
     /// assert_eq!(s, s_decoded);
     /// ```
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self, InvalidScalar> {
-        E::Scalar::decode(bytes)
-            .and_then(Self::from_raw)
-            .ok_or(InvalidScalar)
+    pub fn from_be_bytes(bytes: &[u8]) -> Result<Self, InvalidScalar> {
+        let mut bytes_array = E::ScalarArray::zeroes();
+        let bytes_array_len = bytes_array.as_ref().len();
+        if bytes_array_len < bytes.len() {
+            return Err(InvalidScalar);
+        }
+        bytes_array.as_mut()[bytes_array_len - bytes.len()..].copy_from_slice(bytes);
+
+        Ok(Scalar::from_raw(E::Scalar::from_be_bytes(&bytes_array)))
+    }
+
+    /// Decodes scalar from its representation as bytes in little-endian order
+    ///
+    /// Returns error if encoded integer is larger than group order.
+    ///
+    /// ```rust
+    /// let s = Scalar::random();
+    /// let s_bytes = s.to_le_bytes();
+    /// let s_decoded = Scalar::from_le_bytes(&bytes);
+    /// assert_eq!(s, s_decoded);
+    /// ```
+    pub fn from_le_bytes(bytes: &[u8]) -> Result<Self, InvalidScalar> {
+        let mut bytes_array = E::ScalarArray::zeroes();
+        let bytes_array_len = bytes_array.as_ref().len();
+        if bytes_array_len < bytes.len() {
+            return Err(InvalidScalar);
+        }
+        bytes_array.as_mut()[..bytes.len()].copy_from_slice(bytes);
+
+        Ok(Scalar::from_raw(E::Scalar::from_le_bytes(&bytes_array)))
     }
 
     /// Generates random non-zero scalar
+    ///
+    /// Algorithm is based on rejection sampling: we sample a scalar, if it's zero try again.
+    /// It may be considered constant-time as zero scalar appears with $2^-256$ probability
+    /// which is considered to be negligible.
+    ///
+    /// ## Panics
+    /// Panics if randomness source returned 100 zero scalars in a row. It happens with
+    /// $2^-25600$ probability, which practically means that randomness source is broken.
     pub fn random<R: RngCore>(rng: &mut R) -> Self {
-        match iter::repeat_with(|| E::Scalar::random(rng).reduce())
+        match iter::repeat_with(|| E::Scalar::random(rng))
             .take(100)
             .find(|s| bool::from(!Zero::is_zero(s)))
         {
-            Some(s) => {
-                // Correctness: `s` is reduced
-                Scalar::from_raw_unchecked(s)
-            }
+            Some(s) => Scalar::from_raw(s),
             None => panic!("defected source of randomness"),
         }
     }
 }
 
-impl<E: Curve> FromRaw for Scalar<E> {
-    fn from_raw(scalar: E::Scalar) -> Option<Self> {
-        Self::ct_from_raw(scalar).into()
+impl<E: Curve> AsRaw for Scalar<E> {
+    type Raw = E::Scalar;
+
+    #[inline]
+    fn as_raw(&self) -> &E::Scalar {
+        &self.0
     }
+}
 
-    fn ct_from_raw(scalar: E::Scalar) -> CtOption<Self> {
-        let is_canonical = scalar.is_canonical();
+impl<E: Curve> Zeroize for Scalar<E> {
+    #[inline]
+    fn zeroize(&mut self) {
+        self.0.zeroize()
+    }
+}
 
-        // Correctness: we checked validity of scalar. Although invalid scalar
-        // is still constructed, it's never exposed by CtOption, so no one can
-        // obtain "invalid" instance of scalar.
-        CtOption::new(Scalar::from_raw_unchecked(scalar), is_canonical)
+impl<E: Curve> FromRaw for Scalar<E> {
+    fn from_raw(scalar: E::Scalar) -> Self {
+        Self(scalar)
     }
 }
 
 impl<E: Curve> ConditionallySelectable for Scalar<E> {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
-        // Correctness: both `a` and `b` have to be valid points by construction
-        Scalar::from_raw_unchecked(<E::Scalar as ConditionallySelectable>::conditional_select(
+        Scalar::from_raw(<E::Scalar as ConditionallySelectable>::conditional_select(
             &a.as_raw(),
             &b.as_raw(),
             choice,
@@ -168,5 +207,18 @@ impl<E: Curve> iter::Product for Scalar<E> {
 impl<'a, E: Curve> iter::Product<&'a Scalar<E>> for Scalar<E> {
     fn product<I: Iterator<Item = &'a Self>>(iter: I) -> Self {
         iter.fold(Scalar::one(), |acc, x| acc * x)
+    }
+}
+
+impl<E: Curve> From<u16> for Scalar<E> {
+    fn from(n: u16) -> Scalar<E> {
+        let mut bytes_le = E::ScalarArray::zeroes();
+        let n_le = n.to_le_bytes();
+
+        bytes_le.as_mut()[0..n_le.len()].copy_from_slice(&n_le);
+
+        let scalar = E::Scalar::from_le_bytes(&bytes_le);
+
+        Scalar::from_raw(scalar)
     }
 }
