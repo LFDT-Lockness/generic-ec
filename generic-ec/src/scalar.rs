@@ -210,15 +210,17 @@ impl<'a, E: Curve> iter::Product<&'a Scalar<E>> for Scalar<E> {
     }
 }
 
-impl<E: Curve> From<u16> for Scalar<E> {
-    fn from(n: u16) -> Scalar<E> {
-        let mut bytes_le = E::ScalarArray::zeroes();
-        let n_le = n.to_le_bytes();
+macro_rules! impl_from_primitive_integer {
+    ($($int:ident),+) => {$(
+        impl<E: Curve> From<$int> for Scalar<E> {
+            fn from(i: $int) -> Self {
+                Scalar::from_le_bytes(&i.to_le_bytes())
+                    .expect("scalar should be large enough to fit a primitive integer")
+            }
+        }
+    )+};
+}
 
-        bytes_le.as_mut()[0..n_le.len()].copy_from_slice(&n_le);
-
-        let scalar = E::Scalar::from_le_bytes(&bytes_le);
-
-        Scalar::from_raw(scalar)
-    }
+impl_from_primitive_integer! {
+    u8, u16, u32, u64, u128, usize
 }
