@@ -140,11 +140,7 @@ pub trait Decode: Sized {
 
 pub struct Error;
 
-pub trait ByteArray:
-    AsRef<[u8]> + AsMut<[u8]> + Clone + Send + Sync + Sized + Eq + Ord + Hash + Debug
-{
-    const SIZE: usize;
-
+pub trait ByteArray: AsRef<[u8]> + AsMut<[u8]> + Clone + Send + Sync + 'static {
     /// New byte array of zeroes
     ///
     /// Alternative to [`Default`] that is not implemented for generic `[T; N]`
@@ -153,16 +149,12 @@ pub trait ByteArray:
 }
 
 impl<const N: usize> ByteArray for [u8; N] {
-    const SIZE: usize = N;
-
     fn zeroes() -> Self {
         [0; N]
     }
 }
 
 impl<N: ArrayLength<u8>> ByteArray for GenericArray<u8, N> {
-    const SIZE: usize = N::USIZE;
-
     fn zeroes() -> Self {
         GenericArray::default()
     }

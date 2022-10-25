@@ -1,6 +1,7 @@
+use core::fmt;
+
 use crate::Curve;
 
-#[derive(Clone, PartialEq, Eq, Debug)]
 pub struct EncodedPoint<E: Curve>(EncodedPointInner<E>);
 
 impl<E: Curve> EncodedPoint<E> {
@@ -20,7 +21,32 @@ impl<E: Curve> EncodedPoint<E> {
     }
 }
 
-#[derive(Clone, PartialEq, Eq, Debug)]
+impl<E: Curve> Clone for EncodedPoint<E> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
+    }
+}
+
+impl<E: Curve> PartialEq for EncodedPoint<E> {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_bytes() == other.as_bytes()
+    }
+}
+
+impl<E: Curve> Eq for EncodedPoint<E> {}
+
+impl<E: Curve> fmt::Debug for EncodedPoint<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut tuple = f.debug_tuple("EncodedPoint");
+        #[cfg(feature = "alloc")]
+        {
+            tuple.field(&hex::encode(self.as_bytes()));
+        }
+        tuple.finish()
+    }
+}
+
+#[derive(Clone)]
 enum EncodedPointInner<E: Curve> {
     Compressed(E::CompressedPointArray),
     Uncompressed(E::UncompressedPointArray),
