@@ -45,6 +45,8 @@
 //! [Ed25519]: crate::curves::Ed25519
 //! [curve25519_dalek]: https://github.com/dalek-cryptography/curve25519-dalek
 
+use core::fmt;
+
 use generic_ec_core::ByteArray;
 use subtle::CtOption;
 
@@ -64,7 +66,7 @@ pub struct Coordinates<E: Curve> {
 }
 
 /// Affine coordinate of a point on elliptic curve
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone)]
 pub struct Coordinate<E: Curve>(E::CoordinateArray);
 
 impl<E: Curve> Coordinate<E> {
@@ -111,6 +113,43 @@ impl<E: Curve> AsMut<[u8]> for Coordinate<E> {
 impl<E: Curve> Default for Coordinate<E> {
     fn default() -> Self {
         Self(ByteArray::zeroes())
+    }
+}
+
+impl<E: Curve> fmt::Debug for Coordinate<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut tuple = f.debug_tuple("Coordinate");
+        #[cfg(feature = "alloc")]
+        {
+            tuple.field(&hex::encode(self.as_bytes()));
+        }
+        tuple.finish()
+    }
+}
+
+impl<E: Curve> PartialEq for Coordinate<E> {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_bytes() == other.as_bytes()
+    }
+}
+
+impl<E: Curve> Eq for Coordinate<E> {}
+
+impl<E: Curve> PartialOrd for Coordinate<E> {
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
+        self.as_bytes().partial_cmp(&other.as_bytes())
+    }
+}
+
+impl<E: Curve> Ord for Coordinate<E> {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+        self.as_bytes().cmp(other.as_bytes())
+    }
+}
+
+impl<E: Curve> core::hash::Hash for Coordinate<E> {
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
+        self.as_bytes().hash(state);
     }
 }
 
