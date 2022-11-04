@@ -4,4 +4,5 @@ members = [
   "generic-ec-core",
   "generic-ec-curves",
   "generic-ec-zkp",
+  "tests",
 ]

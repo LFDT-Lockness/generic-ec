@@ -1,4 +1,5 @@
-use core::iter;
+use core::hash::{self, Hash};
+use core::{fmt, iter};
 
 use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
@@ -14,7 +15,7 @@ use crate::{
 /// Scalar modulo curve `E` group order
 ///
 /// Scalar is an integer modulo curve `E` group order.
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[derive(Copy, Clone, PartialEq, Eq, Default)]
 pub struct Scalar<E: Curve>(E::Scalar);
 
 impl<E: Curve> Scalar<E> {
@@ -39,9 +40,9 @@ impl<E: Curve> Scalar<E> {
         Self::from_raw(E::Scalar::one())
     }
 
-    /// Returns scalar inverse $S^-1$
+    /// Returns scalar inverse $S^{-1}$
     ///
-    /// Inverse of scalar $S$ is a scalar $S^-1$ such as $S S^-1 = 1$. Inverse doesn't
+    /// Inverse of scalar $S$ is a scalar $S^{-1}$ such as $S S^{-1} = 1$. Inverse doesn't
     /// exist only for scalar $S = 0$, so function returns `None` if scalar is zero.
     ///
     /// ```rust
@@ -53,7 +54,7 @@ impl<E: Curve> Scalar<E> {
         self.ct_invert().into()
     }
 
-    /// Returns scalar inverse $S^-1$ (constant time)
+    /// Returns scalar inverse $S^{-1}$ (constant time)
     ///
     /// Same as [`Scalar::invert`] but performs constant-time check on whether it's zero
     /// scalar
@@ -90,7 +91,8 @@ impl<E: Curve> Scalar<E> {
     /// let s_decoded = Scalar::from_be_bytes(&bytes);
     /// assert_eq!(s, s_decoded);
     /// ```
-    pub fn from_be_bytes(bytes: &[u8]) -> Result<Self, InvalidScalar> {
+    pub fn from_be_bytes(bytes: impl AsRef<[u8]>) -> Result<Self, InvalidScalar> {
+        let bytes = bytes.as_ref();
         let mut bytes_array = E::ScalarArray::zeroes();
         let bytes_array_len = bytes_array.as_ref().len();
         if bytes_array_len < bytes.len() {
@@ -111,7 +113,8 @@ impl<E: Curve> Scalar<E> {
     /// let s_decoded = Scalar::from_le_bytes(&bytes);
     /// assert_eq!(s, s_decoded);
     /// ```
-    pub fn from_le_bytes(bytes: &[u8]) -> Result<Self, InvalidScalar> {
+    pub fn from_le_bytes(bytes: impl AsRef<[u8]>) -> Result<Self, InvalidScalar> {
+        let bytes = bytes.as_ref();
         let mut bytes_array = E::ScalarArray::zeroes();
         let bytes_array_len = bytes_array.as_ref().len();
         if bytes_array_len < bytes.len() {
@@ -125,12 +128,12 @@ impl<E: Curve> Scalar<E> {
     /// Generates random non-zero scalar
     ///
     /// Algorithm is based on rejection sampling: we sample a scalar, if it's zero try again.
-    /// It may be considered constant-time as zero scalar appears with $2^-256$ probability
+    /// It may be considered constant-time as zero scalar appears with $2^{-256}$ probability
     /// which is considered to be negligible.
     ///
     /// ## Panics
     /// Panics if randomness source returned 100 zero scalars in a row. It happens with
-    /// $2^-25600$ probability, which practically means that randomness source is broken.
+    /// $2^{-25600}$ probability, which practically means that randomness source is broken.
     pub fn random<R: RngCore>(rng: &mut R) -> Self {
         match iter::repeat_with(|| E::Scalar::random(rng))
             .take(100)
@@ -223,4 +226,43 @@ macro_rules! impl_from_primitive_integer {
 
 impl_from_primitive_integer! {
     u8, u16, u32, u64, u128, usize
+}
+
+impl<E: Curve> fmt::Debug for Scalar<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut s = f.debug_struct("Scalar");
+        s.field("curve", &E::CURVE_NAME);
+        #[cfg(feature = "std")]
+        {
+            let scalar_hex = hex::encode(self.to_be_bytes());
+            s.field("value", &scalar_hex);
+        }
+        #[cfg(not(feature = "std"))]
+        {
+            s.field("value", &"...");
+        }
+        s.finish()
+    }
+}
+
+impl<E: Curve> Hash for Scalar<E> {
+    fn hash<H: hash::Hasher>(&self, state: &mut H) {
+        state.write(self.to_be_bytes().as_bytes())
+    }
+}
+
+impl<E: Curve> PartialOrd for Scalar<E> {
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
+        self.to_be_bytes()
+            .as_bytes()
+            .partial_cmp(other.to_be_bytes().as_bytes())
+    }
+}
+
+impl<E: Curve> Ord for Scalar<E> {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+        self.to_be_bytes()
+            .as_bytes()
+            .cmp(other.to_be_bytes().as_bytes())
+    }
 }

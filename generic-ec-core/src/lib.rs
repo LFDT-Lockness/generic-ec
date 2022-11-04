@@ -23,8 +23,6 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send + 'stati
         + Copy
         + Eq
         + ConstantTimeEq
-        + Hash
-        + Ord
         + ConditionallySelectable
         + Default
         + CompressedEncoding<Bytes = Self::CompressedPointArray>
@@ -44,8 +42,6 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send + 'stati
         + Copy
         + Eq
         + ConstantTimeEq
-        + Hash
-        + Ord
         + ConditionallySelectable
         + Default
         + IntegerEncoding<Bytes = Self::ScalarArray>

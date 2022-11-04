@@ -9,7 +9,7 @@ use crate::{as_raw::AsRaw, ec_core::*};
 /// [`Point::zero()`](Point::zero).
 ///
 /// Point implements all necessary arithmetic operations: points addition, multiplication at scalar, etc.
-#[derive(Copy, Clone, Default, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Copy, Clone, Default, PartialEq, Eq)]
 pub struct Point<E: Curve>(E::Point);
 
 impl<E: Curve> Point<E> {
