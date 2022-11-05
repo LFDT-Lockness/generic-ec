@@ -3,7 +3,7 @@ name = "generic-ec"
 version = "0.0.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-description = "Placeholder for upcoming library"
+description = ""
 
 keywords = []
 categories = []
@@ -12,6 +12,7 @@ categories = []
 
 [dependencies]
 generic-ec-core = { path = "../generic-ec-core" }
+generic-ec-curves = { path = "../generic-ec-curves", optional = true }
 
 generic-array = "0.14"
 subtle = { version = "2.4", default-features = false }
@@ -33,3 +34,8 @@ default = ["std", "serde"]
 std = ["alloc"]
 alloc = ["hex?/alloc"]
 serde = ["dep:serde", "generic-ec-core/serde", "hex", "serde_with"]
+
+curves = ["generic-ec-curves"]
+curve-secp256k1 = ["curves", "generic-ec-curves/secp256k1"]
+curve-secp256r1 = ["curves", "generic-ec-curves/secp256r1"]
+all-curves = ["curve-secp256k1", "curve-secp256r1"]

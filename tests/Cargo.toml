@@ -1,0 +1,13 @@
+[package]
+name = "generic-ec-tests"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dev-dependencies]
+generic-ec = { path = "../generic-ec", features = ["all-curves"] }
+
+generic-tests = "0.1"
+rand_dev = "0.1"

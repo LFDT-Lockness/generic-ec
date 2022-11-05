@@ -3,7 +3,6 @@ use core::hash::{self, Hash};
 use core::marker::PhantomData;
 use core::ops::Mul;
 
-use elliptic_curve::group::cofactor::CofactorGroup;
 use elliptic_curve::ops::Reduce;
 use elliptic_curve::sec1::{FromEncodedPoint, ModulusSize, ToEncodedPoint};
 use elliptic_curve::{FieldSize, ProjectiveArithmetic, ScalarArithmetic, ScalarCore};
@@ -24,31 +23,21 @@ pub struct RustCryptoCurve<C> {
 #[cfg(feature = "secp256k1")]
 pub type Secp256k1 = RustCryptoCurve<k256::Secp256k1>;
 #[cfg(feature = "secp256r1")]
-pub type Secp2556r1 = RustCryptoCurve<p256::NistP256>;
+pub type Secp256r1 = RustCryptoCurve<p256::NistP256>;
 
 impl<C> Curve for RustCryptoCurve<C>
 where
     C: CurveName + ScalarArithmetic + ProjectiveArithmetic,
-    C::ProjectivePoint: CofactorGroup
-        + ToEncodedPoint<C>
+    C::ProjectivePoint: ToEncodedPoint<C>
         + FromEncodedPoint<C>
-        + fmt::Debug
         + Copy
         + Eq
-        + Ord
-        + Hash
         + Default
         + ConstantTimeEq
         + ConditionallySelectable
         + Zeroize,
     for<'a> &'a C::ProjectivePoint: Mul<&'a C::Scalar, Output = C::ProjectivePoint>,
-    C::Scalar: Reduce<C::UInt>
-        + Eq
-        + Ord
-        + Hash
-        + ConstantTimeEq
-        + ConditionallySelectable
-        + DefaultIsZeroes,
+    C::Scalar: Reduce<C::UInt> + Eq + ConstantTimeEq + ConditionallySelectable + DefaultIsZeroes,
     for<'a> ScalarCore<C>: From<&'a C::Scalar>,
     FieldSize<C>: ModulusSize,
 {
@@ -113,5 +102,20 @@ where
 impl<C> Default for RustCryptoCurve<C> {
     fn default() -> Self {
         Self { _ph: PhantomData }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use generic_ec_core::Curve;
+
+    use super::{Secp256k1, Secp256r1};
+
+    /// Asserts that `E` implements `Curve`
+    fn _impls_curve<E: Curve>() {}
+
+    fn _curves_impl_trait() {
+        _impls_curve::<Secp256k1>();
+        _impls_curve::<Secp256r1>();
     }
 }

@@ -58,6 +58,7 @@ impl<E: Curve> AsRef<[u8]> for EncodedPoint<E> {
     }
 }
 
+#[derive(Clone)]
 pub struct EncodedScalar<E: Curve>(E::ScalarArray);
 
 impl<E: Curve> EncodedScalar<E> {
@@ -75,3 +76,28 @@ impl<E: Curve> AsRef<[u8]> for EncodedScalar<E> {
         self.as_bytes()
     }
 }
+
+impl<E: Curve> AsMut<[u8]> for EncodedScalar<E> {
+    fn as_mut(&mut self) -> &mut [u8] {
+        self.0.as_mut()
+    }
+}
+
+impl<E: Curve> fmt::Debug for EncodedScalar<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut s = f.debug_tuple("EncodedScalar");
+        #[cfg(feature = "std")]
+        {
+            s.field(&hex::encode(self.as_bytes()));
+        }
+        s.finish()
+    }
+}
+
+impl<E: Curve> PartialEq for EncodedScalar<E> {
+    fn eq(&self, other: &Self) -> bool {
+        self.as_bytes() == other.as_bytes()
+    }
+}
+
+impl<E: Curve> Eq for EncodedScalar<E> {}

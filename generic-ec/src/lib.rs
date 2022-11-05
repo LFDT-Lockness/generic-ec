@@ -30,3 +30,11 @@ pub use self::{
     scalar::Scalar,
     secret_scalar::definition::SecretScalar,
 };
+
+#[cfg(feature = "curves")]
+pub mod curves {
+    #[cfg(feature = "curve-secp256k1")]
+    pub use generic_ec_curves::Secp256k1;
+    #[cfg(feature = "curve-secp256r1")]
+    pub use generic_ec_curves::Secp256r1;
+}

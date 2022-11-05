@@ -1,4 +1,3 @@
-use core::hash::{self, Hash};
 use core::ops::Mul;
 
 use elliptic_curve::ops::Reduce;
@@ -142,36 +141,6 @@ where
 {
     fn ct_eq(&self, other: &Self) -> Choice {
         self.0.ct_eq(&other.0)
-    }
-}
-
-impl<E> Hash for RustCryptoScalar<E>
-where
-    E: ScalarArithmetic,
-    E::Scalar: Hash,
-{
-    fn hash<H: hash::Hasher>(&self, state: &mut H) {
-        self.0.hash(state);
-    }
-}
-
-impl<E> PartialOrd for RustCryptoScalar<E>
-where
-    E: ScalarArithmetic,
-    E::Scalar: PartialOrd,
-{
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        self.0.partial_cmp(&other.0)
-    }
-}
-
-impl<E> Ord for RustCryptoScalar<E>
-where
-    E: ScalarArithmetic,
-    E::Scalar: Ord,
-{
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        self.0.cmp(&other.0)
     }
 }
 

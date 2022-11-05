@@ -1,3 +1,5 @@
+use core::fmt;
+use core::hash::{self, Hash};
 use core::iter::Sum;
 
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
@@ -136,5 +138,45 @@ impl<E: Curve> Sum for Point<E> {
 impl<'a, E: Curve> Sum<&'a Point<E>> for Point<E> {
     fn sum<I: Iterator<Item = &'a Point<E>>>(iter: I) -> Self {
         iter.fold(Point::zero(), |acc, p| acc + p)
+    }
+}
+
+impl<E: Curve> fmt::Debug for Point<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut s = f.debug_struct("Point");
+        s.field("curve", &E::CURVE_NAME);
+
+        #[cfg(feature = "std")]
+        {
+            s.field("value", &hex::encode(self.to_bytes(true)));
+        }
+        #[cfg(not(feature = "std"))]
+        {
+            s.field("value", &"...");
+        }
+
+        s.finish()
+    }
+}
+
+impl<E: Curve> Hash for Point<E> {
+    fn hash<H: hash::Hasher>(&self, state: &mut H) {
+        state.write(self.to_bytes(true).as_bytes())
+    }
+}
+
+impl<E: Curve> PartialOrd for Point<E> {
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
+        self.to_bytes(true)
+            .as_bytes()
+            .partial_cmp(other.to_bytes(true).as_bytes())
+    }
+}
+
+impl<E: Curve> Ord for Point<E> {
+    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
+        self.to_bytes(true)
+            .as_bytes()
+            .cmp(other.to_bytes(true).as_bytes())
     }
 }
