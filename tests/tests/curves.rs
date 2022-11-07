@@ -1,6 +1,8 @@
+#![allow(non_snake_case)]
+
 #[generic_tests::define]
 mod tests {
-    use generic_ec::{curves::*, Curve, Point, Scalar};
+    use generic_ec::{curves::*, Curve, EncodedScalar, Point, Scalar};
     use rand::Rng;
     use rand_dev::DevRng;
 
@@ -129,6 +131,45 @@ mod tests {
 
         assert_ne!(p * Scalar::from(-1), Point::zero());
         assert_eq!(p + p * Scalar::from(-1), Point::zero());
+    }
+
+    #[test]
+    fn scalar_0xFF_not_valid<E: Curve>() {
+        let mut encoded_scalar = EncodedScalar::<E>::default();
+        encoded_scalar.as_mut().fill(0xFF);
+        Scalar::<E>::from_be_bytes(&encoded_scalar).unwrap_err();
+        Scalar::<E>::from_le_bytes(&encoded_scalar).unwrap_err();
+    }
+
+    #[test]
+    fn scalar_0xFF_valid_mod_order<E: Curve>() {
+        let mut encoded_0xFF_scalar = EncodedScalar::<E>::default();
+        encoded_0xFF_scalar.as_mut().fill(0xFF);
+        let decoded_scalar = Scalar::<E>::from_be_bytes_mod_order(&encoded_0xFF_scalar);
+
+        let scalar_0xFF = Scalar::from(0xFF_u8);
+        let scalar_0x100 = scalar_0xFF + Scalar::one();
+        let scalar_should_be = (0..encoded_0xFF_scalar.len())
+            .fold(Scalar::<E>::zero(), |scalar, _| {
+                scalar * scalar_0x100 + scalar_0xFF
+            });
+
+        assert_eq!(decoded_scalar, scalar_should_be);
+    }
+
+    #[test]
+    fn scalar_from_bytes_mod_order<E: Curve>() {
+        let mut rng = DevRng::new();
+
+        let s = Scalar::<E>::random(&mut rng);
+        let s_be = s.to_be_bytes();
+        let s_le = s.to_le_bytes();
+
+        let s1 = Scalar::<E>::from_be_bytes_mod_order(&s_be);
+        let s2 = Scalar::<E>::from_le_bytes_mod_order(&s_le);
+
+        assert_eq!(s, s1);
+        assert_eq!(s, s2);
     }
 
     fn _is_copy<T: Copy>() {}

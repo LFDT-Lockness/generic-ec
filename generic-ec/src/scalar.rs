@@ -127,6 +127,29 @@ impl<E: Curve> Scalar<E> {
         Ok(Scalar::from_raw(scalar))
     }
 
+    /// Interprets provided bytes as integer $i$ in big-endian order, returns scalar $s = i \mod q$
+    pub fn from_be_bytes_mod_order(bytes: impl AsRef<[u8]>) -> Self {
+        let scalar_0x100 = Scalar::from(0x100_u16);
+        bytes
+            .as_ref()
+            .iter()
+            .fold(Scalar::<E>::zero(), |acc, byte| {
+                acc * scalar_0x100 + Scalar::from(*byte)
+            })
+    }
+
+    /// Interprets provided bytes as integer $i$ in little-endian order, returns scalar $s = i \mod q$
+    pub fn from_le_bytes_mod_order(bytes: impl AsRef<[u8]>) -> Self {
+        let scalar_0x100 = Scalar::from(0x100_u16);
+        bytes
+            .as_ref()
+            .iter()
+            .rev()
+            .fold(Scalar::<E>::zero(), |acc, byte| {
+                acc * scalar_0x100 + Scalar::from(*byte)
+            })
+    }
+
     /// Generates random non-zero scalar
     ///
     /// Algorithm is based on rejection sampling: we sample a scalar, if it's zero try again.
