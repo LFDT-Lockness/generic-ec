@@ -1,6 +1,7 @@
 use core::cmp;
 use core::hash::{self, Hash};
 
+use elliptic_curve::group::cofactor::CofactorGroup;
 use elliptic_curve::{
     sec1::{EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
     FieldSize, Group, ProjectiveArithmetic,
@@ -57,10 +58,11 @@ impl<E: ProjectiveArithmetic> OnCurve for RustCryptoPoint<E> {
 impl<E> SmallFactor for RustCryptoPoint<E>
 where
     E: ProjectiveArithmetic,
+    E::ProjectivePoint: CofactorGroup,
 {
     #[inline]
     fn is_torsion_free(&self) -> Choice {
-        Choice::from(1u8)
+        self.0.is_torsion_free()
     }
 }
 

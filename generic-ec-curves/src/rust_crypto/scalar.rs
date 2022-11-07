@@ -8,7 +8,7 @@ use generic_ec_core::*;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::DefaultIsZeroes;
 
-pub struct RustCryptoScalar<E: ScalarArithmetic>(E::Scalar);
+pub struct RustCryptoScalar<E: ScalarArithmetic>(pub E::Scalar);
 
 impl<E: ScalarArithmetic> Additive for RustCryptoScalar<E> {
     fn add(a: &Self, b: &Self) -> Self {
