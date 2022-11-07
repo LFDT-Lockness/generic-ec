@@ -13,6 +13,7 @@ mod sealed {
     pub trait Sealed {}
     impl<E: crate::Curve> Sealed for crate::Point<E> {}
     impl<E: crate::Curve> Sealed for crate::Scalar<E> {}
+    impl<E: crate::Curve> Sealed for crate::EncodedScalar<E> {}
 }
 
 /// Accesses backend library representation of the point/scalar
