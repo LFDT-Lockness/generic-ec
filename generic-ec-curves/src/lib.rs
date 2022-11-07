@@ -1,3 +1,4 @@
+#[cfg(feature = "rust-crypto")]
 pub mod rust_crypto;
 
 #[cfg(feature = "secp256k1")]
