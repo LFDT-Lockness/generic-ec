@@ -1,4 +1,4 @@
-use core::fmt;
+use core::{fmt, ops};
 
 use crate::Curve;
 
@@ -46,6 +46,13 @@ impl<E: Curve> fmt::Debug for EncodedPoint<E> {
     }
 }
 
+impl<E: Curve> ops::Deref for EncodedPoint<E> {
+    type Target = [u8];
+    fn deref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
 #[derive(Clone)]
 enum EncodedPointInner<E: Curve> {
     Compressed(E::CompressedPointArray),
@@ -80,6 +87,13 @@ impl<E: Curve> AsRef<[u8]> for EncodedScalar<E> {
 impl<E: Curve> AsMut<[u8]> for EncodedScalar<E> {
     fn as_mut(&mut self) -> &mut [u8] {
         self.0.as_mut()
+    }
+}
+
+impl<E: Curve> ops::Deref for EncodedScalar<E> {
+    type Target = [u8];
+    fn deref(&self) -> &[u8] {
+        self.as_bytes()
     }
 }
 

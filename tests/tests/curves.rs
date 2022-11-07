@@ -1,6 +1,7 @@
 #[generic_tests::define]
 mod tests {
-    use generic_ec::{curves::*, Curve, Scalar};
+    use generic_ec::{curves::*, Curve, Point, Scalar};
+    use rand::Rng;
     use rand_dev::DevRng;
 
     #[test]
@@ -46,9 +47,94 @@ mod tests {
         assert_eq!(r * one, r);
     }
 
+    #[test]
+    fn scalar_from_u128<E: Curve>() {
+        let mut rng = DevRng::new();
+
+        let r1: u128 = rng.gen_range(0..(u128::MAX / 2));
+        let r2: u128 = rng.gen_range(0..(u128::MAX / 2));
+
+        assert_eq!(
+            Scalar::from(r1) + Scalar::from(r2),
+            Scalar::<E>::from(r1 + r2)
+        )
+    }
+
+    #[test]
+    fn scalar_from_i128<E: Curve>() {
+        let mut rng = DevRng::new();
+
+        let r1: i128 = rng.gen_range(0..i128::MAX);
+        let r2: i128 = rng.gen_range(0..i128::MAX);
+
+        assert_eq!(
+            Scalar::from(r1) + Scalar::from(-r2),
+            Scalar::<E>::from(r1 - r2)
+        )
+    }
+
+    #[test]
+    fn scalar_invert<E: Curve>() {
+        let mut rng = DevRng::new();
+
+        let s = Scalar::<E>::random(&mut rng);
+        let s_inv = s.invert().unwrap();
+
+        assert_eq!(s * s_inv, Scalar::one());
+    }
+
+    #[test]
+    fn point_zero<E: Curve>() {
+        let mut rng = DevRng::new();
+
+        let s = Scalar::<E>::random(&mut rng);
+        assert_eq!(
+            Point::generator() * s + Point::zero(),
+            Point::generator() * s
+        );
+        assert_eq!(s * Point::zero(), Point::zero());
+
+        assert!(Point::<E>::zero().is_zero());
+        assert!(bool::from(Point::<E>::zero().ct_is_zero()))
+    }
+
+    #[test]
+    fn point_bytes<E: Curve>() {
+        let mut rng = DevRng::new();
+
+        let s = Scalar::<E>::random(&mut rng);
+        let p = Point::generator() * s;
+
+        let bytes_compressed = p.to_bytes(true);
+        let bytes_uncompressed = p.to_bytes(false);
+        assert!(bytes_compressed.len() <= bytes_uncompressed.len());
+
+        let p1 = Point::<E>::from_bytes(&bytes_compressed).unwrap();
+        let p2 = Point::<E>::from_bytes(&bytes_uncompressed).unwrap();
+
+        assert_eq!(p, p1);
+        assert_eq!(p, p2);
+    }
+
+    #[test]
+    fn point_at_scalar<E: Curve>() {
+        let mut rng = DevRng::new();
+
+        let s1 = Scalar::<E>::random(&mut rng);
+        let s2 = Scalar::<E>::random(&mut rng);
+
+        let p = Point::generator() * s1;
+        assert_ne!(p, Point::zero());
+        assert_ne!(p * s2, Point::zero());
+
+        assert_ne!(p * Scalar::from(-1), Point::zero());
+        assert_eq!(p + p * Scalar::from(-1), Point::zero());
+    }
+
     fn _is_copy<T: Copy>() {}
-    fn _test_scalar_is_copy<E: Curve>() {
+    fn _test_point_and_scalar_are_copy<E: Curve>() {
         _is_copy::<Scalar<E>>();
+        _is_copy::<Point<E>>();
     }
 
     #[instantiate_tests(<Secp256k1>)]
