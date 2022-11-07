@@ -24,4 +24,8 @@ impl<'s> Tag<'s> {
             Some(Self(tag))
         }
     }
+
+    pub fn as_bytes(&self) -> &'s [u8] {
+        self.0
+    }
 }
