@@ -1,6 +1,6 @@
 use core::{fmt, ops};
 
-use crate::Curve;
+use crate::{as_raw::AsRaw, ec_core::ByteArray, Curve};
 
 pub struct EncodedPoint<E: Curve>(EncodedPointInner<E>);
 
@@ -115,3 +115,17 @@ impl<E: Curve> PartialEq for EncodedScalar<E> {
 }
 
 impl<E: Curve> Eq for EncodedScalar<E> {}
+
+impl<E: Curve> Default for EncodedScalar<E> {
+    fn default() -> Self {
+        let bytes = E::ScalarArray::zeroes();
+        Self(bytes)
+    }
+}
+
+impl<E: Curve> AsRaw for EncodedScalar<E> {
+    type Raw = E::ScalarArray;
+    fn as_raw(&self) -> &Self::Raw {
+        &self.0
+    }
+}

@@ -100,7 +100,8 @@ impl<E: Curve> Scalar<E> {
         }
         bytes_array.as_mut()[bytes_array_len - bytes.len()..].copy_from_slice(bytes);
 
-        Ok(Scalar::from_raw(E::Scalar::from_be_bytes(&bytes_array)))
+        let scalar = E::Scalar::from_be_bytes_exact(&bytes_array).ok_or(InvalidScalar)?;
+        Ok(Scalar::from_raw(scalar))
     }
 
     /// Decodes scalar from its representation as bytes in little-endian order
@@ -122,7 +123,8 @@ impl<E: Curve> Scalar<E> {
         }
         bytes_array.as_mut()[..bytes.len()].copy_from_slice(bytes);
 
-        Ok(Scalar::from_raw(E::Scalar::from_le_bytes(&bytes_array)))
+        let scalar = E::Scalar::from_le_bytes_exact(&bytes_array).ok_or(InvalidScalar)?;
+        Ok(Scalar::from_raw(scalar))
     }
 
     /// Generates random non-zero scalar
