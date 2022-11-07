@@ -11,3 +11,4 @@ generic-ec = { path = "../generic-ec", features = ["all-curves"] }
 
 generic-tests = "0.1"
 rand_dev = "0.1"
+rand = "0.8"
