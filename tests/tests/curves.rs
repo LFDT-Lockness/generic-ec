@@ -184,3 +184,61 @@ mod tests {
     #[instantiate_tests(<Secp256r1>)]
     mod secp256r1 {}
 }
+
+#[generic_tests::define]
+mod coordinates {
+    use generic_ec::coords::{HasAffineX, HasAffineXAndParity, HasAffineXY, HasAffineY};
+    use generic_ec::curves::{Secp256k1, Secp256r1};
+    use generic_ec::{Curve, Point, Scalar};
+
+    use rand_dev::DevRng;
+
+    #[test]
+    fn identity_point_doesnt_have_coords<E: Curve>()
+    where
+        Point<E>: HasAffineXY<E> + HasAffineXAndParity<E>,
+    {
+        let identity = Point::<E>::zero();
+        assert_eq!(identity.x(), None);
+        assert_eq!(identity.x_and_parity(), None);
+        assert_eq!(identity.y(), None);
+        assert_eq!(identity.coords(), None);
+    }
+
+    #[test]
+    fn point_exposes_x_and_parity<E: Curve>()
+    where
+        Point<E>: HasAffineXAndParity<E>,
+    {
+        let mut rng = DevRng::new();
+        let random_point = Point::<E>::generator() * Scalar::random(&mut rng);
+
+        let (x, parity) = random_point.x_and_parity().unwrap();
+        assert_eq!(random_point.x(), Some(x.clone()));
+
+        let reassembled_point = Point::from_x_and_parity(&x, parity).unwrap();
+        assert_eq!(random_point, reassembled_point);
+    }
+
+    #[test]
+    fn point_exposes_x_and_y<E: Curve>()
+    where
+        Point<E>: HasAffineXY<E>,
+    {
+        let mut rng = DevRng::new();
+        let random_point = Point::<E>::generator() * Scalar::random(&mut rng);
+
+        let coords = random_point.coords().unwrap();
+        assert_eq!(random_point.x(), Some(coords.x.clone()));
+        assert_eq!(random_point.y(), Some(coords.y.clone()));
+
+        let reassembled_point = Point::from_coords(&coords).unwrap();
+        assert_eq!(random_point, reassembled_point);
+    }
+
+    #[instantiate_tests(<Secp256k1>)]
+    mod secp256k1 {}
+
+    #[instantiate_tests(<Secp256r1>)]
+    mod secp256r1 {}
+}

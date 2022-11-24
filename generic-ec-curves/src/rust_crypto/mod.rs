@@ -17,6 +17,7 @@ use sha2::Sha256;
 
 pub use self::{curve_name::CurveName, point::RustCryptoPoint, scalar::RustCryptoScalar};
 
+mod affine_coords;
 mod curve_name;
 mod hash_to_curve;
 mod point;
@@ -59,7 +60,7 @@ where
 
     type ScalarArray = <Self::Scalar as IntegerEncoding>::Bytes;
 
-    type CoordinateArray = [u8; 0];
+    type CoordinateArray = elliptic_curve::FieldBytes<C>;
 }
 
 impl<C: CurveName, X> fmt::Debug for RustCryptoCurve<C, X> {
@@ -115,17 +116,25 @@ impl<C, X> Default for RustCryptoCurve<C, X> {
 
 #[cfg(test)]
 mod tests {
-    use generic_ec_core::{hash_to_curve::HashToCurve, Curve};
+    use generic_ec_core::{
+        coords::{HasAffineX, HasAffineXAndParity, HasAffineXY},
+        hash_to_curve::HashToCurve,
+        Curve,
+    };
 
     use super::{Secp256k1, Secp256r1};
 
     /// Asserts that `E` implements `Curve`
     fn _impls_curve<E: Curve>() {}
+    fn _exposes_affine_coords<E: HasAffineX + HasAffineXAndParity + HasAffineXY>() {}
     fn _impls_hash_to_curve<E: HashToCurve>() {}
 
     fn _curves_impl_trait() {
         _impls_curve::<Secp256k1>();
         _impls_curve::<Secp256r1>();
+
+        _exposes_affine_coords::<Secp256k1>();
+        _exposes_affine_coords::<Secp256r1>();
 
         // _impls_hash_to_curve::<Secp256k1>(); // TODO: secp256k1 doesn't support HashToCurve
         _impls_hash_to_curve::<Secp256r1>();
