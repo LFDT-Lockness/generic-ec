@@ -14,7 +14,7 @@
 //! ```rust
 //! use generic_ec::{Point, coords::HasAffineX, curves::Secp256k1};
 //!
-//! let point = Point::<Secp256k1>::generator();
+//! let point = Point::<Secp256k1>::generator().to_point();
 //! let x = point.x();
 //! ```
 //!

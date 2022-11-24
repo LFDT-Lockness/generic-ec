@@ -22,7 +22,10 @@ impl<E: Curve> Scalar<E> {
     /// Returns scalar $S = 0$
     ///
     /// ```rust
-    /// let s = Scalar::random();
+    /// use generic_ec::{Scalar, curves::Secp256k1};
+    /// use rand::rngs::OsRng;
+    ///
+    /// let s = Scalar::<Secp256k1>::random(&mut OsRng);
     /// assert_eq!(s * Scalar::zero(), Scalar::zero());
     /// assert_eq!(s + Scalar::zero(), s);
     /// ```
@@ -33,7 +36,10 @@ impl<E: Curve> Scalar<E> {
     /// Returns scalar $S = 1$
     ///
     /// ```rust
-    /// let s = Scalar::random();
+    /// use generic_ec::{Scalar, curves::Secp256k1};
+    /// use rand::rngs::OsRng;
+    ///
+    /// let s = Scalar::<Secp256k1>::random(&mut OsRng);
     /// assert_eq!(s * Scalar::one(), s);
     /// ```
     pub fn one() -> Self {
@@ -42,13 +48,19 @@ impl<E: Curve> Scalar<E> {
 
     /// Returns scalar inverse $S^{-1}$
     ///
-    /// Inverse of scalar $S$ is a scalar $S^{-1}$ such as $S S^{-1} = 1$. Inverse doesn't
+    /// Inverse of scalar $S$ is a scalar $S^{-1}$ such as $S \cdot S^{-1} = 1$. Inverse doesn't
     /// exist only for scalar $S = 0$, so function returns `None` if scalar is zero.
     ///
     /// ```rust
-    /// let s = Scalar::random();
+    /// # fn func() -> Option<()> {
+    /// use generic_ec::{Scalar, curves::Secp256k1};
+    /// use rand::rngs::OsRng;
+    ///
+    /// let s = Scalar::<Secp256k1>::random(&mut OsRng);
     /// let s_inv = s.invert()?;
     /// assert_eq!(s * s_inv, Scalar::one());
+    /// # Some(()) }
+    /// # func();
     /// ```
     pub fn invert(&self) -> Option<Self> {
         self.ct_invert().into()
@@ -66,7 +78,10 @@ impl<E: Curve> Scalar<E> {
     /// Encodes scalar as bytes in big-endian order
     ///
     /// ```rust
-    /// let s = Scalar::random();
+    /// use generic_ec::{Scalar, curves::Secp256k1};
+    /// use rand::rngs::OsRng;
+    ///
+    /// let s = Scalar::<Secp256k1>::random(&mut OsRng);
     /// let bytes = s.to_be_bytes();
     /// println!("Scalar hex representation: {}", hex::encode(bytes));
     /// ```
@@ -86,10 +101,14 @@ impl<E: Curve> Scalar<E> {
     /// Returns error if encoded integer is larger than group order.
     ///
     /// ```rust
-    /// let s = Scalar::random();
+    /// use generic_ec::{Scalar, curves::Secp256k1};
+    /// use rand::rngs::OsRng;
+    ///
+    /// let s = Scalar::<Secp256k1>::random(&mut OsRng);
     /// let s_bytes = s.to_be_bytes();
-    /// let s_decoded = Scalar::from_be_bytes(&bytes);
+    /// let s_decoded = Scalar::from_be_bytes(&s_bytes)?;
     /// assert_eq!(s, s_decoded);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn from_be_bytes(bytes: impl AsRef<[u8]>) -> Result<Self, InvalidScalar> {
         let bytes = bytes.as_ref();
@@ -107,13 +126,6 @@ impl<E: Curve> Scalar<E> {
     /// Decodes scalar from its representation as bytes in little-endian order
     ///
     /// Returns error if encoded integer is larger than group order.
-    ///
-    /// ```rust
-    /// let s = Scalar::random();
-    /// let s_bytes = s.to_le_bytes();
-    /// let s_decoded = Scalar::from_le_bytes(&bytes);
-    /// assert_eq!(s, s_decoded);
-    /// ```
     pub fn from_le_bytes(bytes: impl AsRef<[u8]>) -> Result<Self, InvalidScalar> {
         let bytes = bytes.as_ref();
         let mut bytes_array = E::ScalarArray::zeroes();
