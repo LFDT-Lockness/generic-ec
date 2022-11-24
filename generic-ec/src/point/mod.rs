@@ -45,8 +45,10 @@ impl<E: Curve> Point<E> {
     /// Indicates whether it's [identity point](Self::zero)
     ///
     /// ```rust
-    /// assert_eq!(Point::zero().is_zero());
-    /// assert_eq!(!Point::generator().to_point().is_zero());
+    /// use generic_ec::{Point, curves::Secp256k1};
+    ///
+    /// assert!(Point::<Secp256k1>::zero().is_zero());
+    /// assert!(!Point::<Secp256k1>::generator().to_point().is_zero());
     /// ```
     pub fn is_zero(&self) -> bool {
         self.ct_is_zero().into()
@@ -70,10 +72,14 @@ impl<E: Curve> Point<E> {
     /// is returned.
     ///
     /// ```rust
-    /// let random_point = Point::generator() * Scalar::random();
-    /// let point_bytes = point.to_bytes(false);
-    /// let point_decoded = Point::from_bytes(&point_bytes);
+    /// use generic_ec::{Point, Scalar, curves::Secp256k1};
+    /// use rand::rngs::OsRng;
+    ///
+    /// let random_point = Point::<Secp256k1>::generator() * Scalar::random(&mut OsRng);
+    /// let point_bytes = random_point.to_bytes(false);
+    /// let point_decoded = Point::from_bytes(&point_bytes)?;
     /// assert_eq!(random_point, point_decoded);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     pub fn to_bytes(&self, compressed: bool) -> EncodedPoint<E> {
         if compressed {

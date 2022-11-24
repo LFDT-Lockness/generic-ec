@@ -26,6 +26,7 @@ hex = { version = "0.4", default-features = false, optional = true }
 phantom-type = { version = "0.4", default-features = false }
 
 [dev-dependencies]
+rand = "0.8"
 rand_dev = "0.1"
 serde_test = "1"
 
