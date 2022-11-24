@@ -13,26 +13,22 @@ on secp256k1 curve.
 
 ## Exposed API
 
-Limiting API is exposed: elliptic point arithmetic (points addition, negation, multiplying at scalar), scalar
-arithmetic (addition, multiplication, inverse modulo prime group order), encode/decode to bytes represenstation,
-hash to curve, and hash to scalar.
+Limited API is exposed: elliptic point arithmetic (points addition, negation, multiplying at scalar), scalar
+arithmetic (addition, multiplication, inverse modulo prime group order), and encode/decode to bytes represenstation.
 
-We intentionally do not expose primitives like retrieveing point coordinates, field elements (integers modulo curve 
-order).
+Hash to curve, hash to scalar primitives, accessing affine coordinates of points are available for some curves through
+`FromHash` and other traits.
 
 ## Security & guarantees
 
 Library mitigates a bunch of attacks (such as small-group attack) by design by enforcing following checks:
-* Scalar `Scalar<E>` must be modulo group order
-
-  I.e. scalar is guaranteed to be in range `[0; group_order)`
+* Scalar `Scalar<E>` must be an integer modulo curve prime order
 * Elliptic point `Point<E>` must be on the curve
 
   I.e. elliptic point is guaranteed to satisfy equation of `E`
-* Non-zero elliptic point `Point<E>` must have order equal to group order
+* `Point<E>` is torsion-free
 
-  Combining to fact that scalar is guaranteed to be modulo group order, it basically means that result of
-  multiplication (non-zero point × non-zero scalar) is always a valid non-zero point.
+  Elliptic points should be free of small-group component. This eliminates any kind of small-group attacks.
 
 Point or scalar not meeting above requirements cannot be constructed (in safe Rust), as these checks are 
 always enforced. E.g. if you're deserializing a sequence of bytes that represents an invalid point, 
@@ -63,31 +59,28 @@ Crate provides support for following elliptic curves out of box:
 
 | Curve      | Feature            | Backend                               |
 |------------|--------------------|---------------------------------------|
-| secp256k1  | `curve-secp256k1`* | [rust-bitcoin/rust-secp256k1]         |
+| secp256k1  | `curve-secp256k1`  | [RustCrypto/k256]                     |
 | secp256r1  | `curve-secp256r1`  | [RustCrypto/p256]                     |
 | Curve25519 | `curve-25519`      | [dalek-cryptography/curve25519-dalek] |
-| Ristretto  | `curve-ristretto`  | [dalek-cryptography/curve25519-dalek] |
-
-\* enabled by default
 
 [RustCrypto/k256]: https://github.com/RustCrypto/elliptic-curves/tree/master/k256
 [RustCrypto/p256]: https://github.com/RustCrypto/elliptic-curves/tree/master/p256
 [dalek-cryptography/curve25519-dalek]: https://github.com/dalek-cryptography/curve25519-dalek
 
 In order to use one of the supported curves, you need to turn on corresponding feature. E.g. if you want
-to use Ristretto curve, add this to Cargo.toml:
+to use secp256k1 curve, add this to Cargo.toml:
 
 ```toml
 [dependency]
-generic-ec = { version = "...", features = ["curve-ristretto"] }
+generic-ec = { version = "...", features = ["curve-secp256k1"] }
 ```
 
 And now you can generate a point on that curve:
 
 ```rust
-use generic_ec::{Point, Scalar, curves::Ristretto};
+use generic_ec::{Point, Scalar, curves::Secp256k1};
 
-let random_point: Point<Ristretto> = Point::generator() * Scalar::random();
+let random_point: Point<Secp256k1> = Point::generator() * Scalar::random();
 ```
 
 ### Adding support for other curves
@@ -99,7 +92,9 @@ using the same handy primitives `Point<YOUR_EC>`, `Scalar<YOUR_EC>`, and etc.
 ## Features
 
 * `curve-{name}` enables specified curve support. See list of [supported curves].
+* `all-curves` enables all supported curves
 * `serde` enables points/scalar (de)serialization support. (enabled by default)
+* `std` enables support of standard library (enabled by default)
 
 ## Examples
 
@@ -158,11 +153,6 @@ let _ = some_generic_computation(point2);
 [examples]: #examples
 [supported curves]: #supported-curves
 [`Curve` trait]: 123
-
-## Similar projects
-
-* [ZenGo-X/curv](https://github.com/ZenGo-X/curv) crate, provides similar tools for general elliptic cryptography, plus big number arithmetic, and a bunch 
-  of implemented zero-knowledge proofs.
 
 ## License 
 
