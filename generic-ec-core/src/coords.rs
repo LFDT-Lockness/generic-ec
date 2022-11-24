@@ -1,26 +1,24 @@
-use subtle::{Choice, CtOption};
-
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
 use crate::Curve;
 
 pub trait HasAffineX: Curve {
-    fn x(point: &Self::Point) -> (Choice, Self::CoordinateArray);
+    fn x(point: &Self::Point) -> Option<Self::CoordinateArray>;
 }
 
 pub trait HasAffineXAndParity: Curve + HasAffineX {
-    fn x_and_parity(point: &Self::Point) -> (Choice, Parity, Self::CoordinateArray);
-    fn from_x_and_parity(x: &Self::CoordinateArray, y_parity: Parity) -> CtOption<Self::Point>;
+    fn x_and_parity(point: &Self::Point) -> Option<(Self::CoordinateArray, Parity)>;
+    fn from_x_and_parity(x: &Self::CoordinateArray, y_parity: Parity) -> Option<Self::Point>;
 }
 
 pub trait HasAffineY: Curve {
-    fn y(point: &Self::Point) -> (Choice, Self::CoordinateArray);
+    fn y(point: &Self::Point) -> Option<Self::CoordinateArray>;
 }
 
 pub trait HasAffineXY: Curve + HasAffineX + HasAffineY {
-    fn x_and_y(point: &Self::Point) -> (Choice, Self::CoordinateArray, Self::CoordinateArray);
-    fn from_x_and_y(x: &Self::CoordinateArray, y: &Self::CoordinateArray) -> CtOption<Self::Point>;
+    fn x_and_y(point: &Self::Point) -> Option<(Self::CoordinateArray, Self::CoordinateArray)>;
+    fn from_x_and_y(x: &Self::CoordinateArray, y: &Self::CoordinateArray) -> Option<Self::Point>;
 }
 
 pub trait AlwaysHasAffineY: Curve {
@@ -42,13 +40,6 @@ pub enum Sign {
 }
 
 impl Sign {
-    /// Checks whether coordinate is negative (constant time)
-    #[inline(always)]
-    pub fn ct_is_negative(&self) -> Choice {
-        let is_non_negative = *self as u8;
-        !Choice::from(is_non_negative)
-    }
-
     /// Checks whether coordinate is negative
     pub fn is_negative(&self) -> bool {
         *self == Self::Negative
@@ -65,18 +56,6 @@ pub enum Parity {
 }
 
 impl Parity {
-    /// Checks whether coordinate is odd (constant time)
-    #[inline(always)]
-    pub fn ct_is_odd(&self) -> Choice {
-        !self.ct_is_even()
-    }
-
-    /// Checks whether coordinate is even (constant time)
-    #[inline(always)]
-    pub fn ct_is_even(&self) -> Choice {
-        Choice::from(*self as u8)
-    }
-
     /// Checks whether coordinate is odd
     pub fn is_odd(&self) -> bool {
         *self == Self::Odd

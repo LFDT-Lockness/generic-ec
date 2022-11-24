@@ -48,7 +48,6 @@
 use core::fmt;
 
 use generic_ec_core::ByteArray;
-use subtle::CtOption;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -165,11 +164,6 @@ pub trait HasAffineX<E: Curve>: sealed::Sealed {
     ///
     /// Returns `None` if it's `Point::zero()`
     fn x(&self) -> Option<Coordinate<E>>;
-
-    /// Retrieves affine $x$ coordinate
-    ///
-    /// Similar to [`.x()`](HasAffineX::x), but constant time.
-    fn ct_x(&self) -> CtOption<Coordinate<E>>;
 }
 
 /// Point has affine $y$ coordinate
@@ -178,11 +172,6 @@ pub trait HasAffineY<E: Curve>: sealed::Sealed {
     ///
     /// Returns `None` if it's `Point::zero()`
     fn y(&self) -> Option<Coordinate<E>>;
-
-    /// Retrieves affine $x$ coordinate
-    ///
-    /// Similar to [`.y()`](HasAffineY::y), but constant time.
-    fn ct_y(&self) -> CtOption<Coordinate<E>>;
 }
 
 /// Point is uniquely represented by $x$ coordinate and parity of $y$ coordinate
@@ -193,20 +182,11 @@ where
     /// Retrieves affine $x$ coordinate and parity of $y$ coordinate
     ///
     /// Returns `None` if it's `Point::zero()`
-    fn x_and_parity(&self) -> Option<(Parity, Coordinate<E>)>;
+    fn x_and_parity(&self) -> Option<(Coordinate<E>, Parity)>;
     /// Constructs point from its $x$ coordinate and parity of $y$ coordinate
     ///
     /// Returns `None` if arguments do not represent a valid `Point<E>`
-    fn from_x_and_parity(x: Coordinate<E>, y_parity: Parity) -> Option<Self>;
-
-    /// Retrieves affine $x$ coordinate and parity of $y$ coordinate
-    ///
-    /// Similar to [`.x_and_parity()`](HasAffineXAndParity::x_and_parity), but constant time.
-    fn ct_x_and_parity(&self) -> CtOption<(Parity, Coordinate<E>)>;
-    /// Constructs point from its $x$ coordinate and parity of $y$ coordinate
-    ///
-    /// Similar to [`.from_x_and_parity()`](HasAffineXAndParity::from_x_and_parity), but constant time.
-    fn ct_from_x_and_parity(x: Coordinate<E>, y_parity: Parity) -> CtOption<Self>;
+    fn from_x_and_parity(x: &Coordinate<E>, y_parity: Parity) -> Option<Self>;
 }
 
 /// Point is uniquely represented by affine $x, y$ coordinates
@@ -222,15 +202,6 @@ where
     ///
     /// Returns `None` if coordinates do not represent a valid `Point<E>`
     fn from_coords(coords: &Coordinates<E>) -> Option<Self>;
-
-    /// Retrieves affine $x, y$ coordinates (constant time)
-    ///
-    /// Returns `None` if it's `Point::zero()`
-    fn ct_coords(&self) -> CtOption<Coordinates<E>>;
-    /// Constructs point from its $x, y$ coordinates (constant time)
-    ///
-    /// Returns `None` if coordinates do not represent a valid `Point<E>`
-    fn ct_from_coords(coords: &Coordinates<E>) -> CtOption<Self>;
 }
 
 /// Point _always_ has affine $y$ coordinate (for Edwards curves)

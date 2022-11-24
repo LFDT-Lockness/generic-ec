@@ -1,5 +1,3 @@
-use subtle::CtOption;
-
 use crate::as_raw::{AsRaw, TryFromRaw};
 use crate::coords::*;
 use crate::ec_core::coords as coords_core;
@@ -12,11 +10,7 @@ where
     E: coords_core::HasAffineX,
 {
     fn x(&self) -> Option<Coordinate<E>> {
-        self.ct_x().into()
-    }
-    fn ct_x(&self) -> CtOption<Coordinate<E>> {
-        let (is_infinity, coord) = E::x(self.as_raw());
-        CtOption::new(Coordinate::new(coord), !is_infinity)
+        E::x(self.as_raw()).map(Coordinate::new)
     }
 }
 
@@ -24,21 +18,12 @@ impl<E: Curve> HasAffineXAndParity<E> for Point<E>
 where
     E: coords_core::HasAffineXAndParity,
 {
-    fn x_and_parity(&self) -> Option<(Parity, Coordinate<E>)> {
-        self.ct_x_and_parity().into()
+    fn x_and_parity(&self) -> Option<(Coordinate<E>, Parity)> {
+        E::x_and_parity(self.as_raw()).map(|(x, p)| (Coordinate::new(x), p))
     }
 
-    fn from_x_and_parity(x: Coordinate<E>, y_parity: Parity) -> Option<Self> {
-        Self::ct_from_x_and_parity(x, y_parity).into()
-    }
-
-    fn ct_x_and_parity(&self) -> CtOption<(Parity, Coordinate<E>)> {
-        let (is_infinity, parity, coord) = E::x_and_parity(self.as_raw());
-        CtOption::new((parity, Coordinate::new(coord)), !is_infinity)
-    }
-
-    fn ct_from_x_and_parity(x: Coordinate<E>, y_parity: Parity) -> CtOption<Self> {
-        E::from_x_and_parity(x.as_array(), y_parity).and_then(Point::ct_try_from_raw)
+    fn from_x_and_parity(x: &Coordinate<E>, y_parity: Parity) -> Option<Self> {
+        E::from_x_and_parity(x.as_array(), y_parity).and_then(Self::try_from_raw)
     }
 }
 
@@ -47,12 +32,7 @@ where
     E: coords_core::HasAffineY,
 {
     fn y(&self) -> Option<Coordinate<E>> {
-        self.ct_y().into()
-    }
-
-    fn ct_y(&self) -> CtOption<Coordinate<E>> {
-        let (is_infinity, coord) = E::y(self.as_raw());
-        CtOption::new(Coordinate::new(coord), !is_infinity)
+        E::y(self.as_raw()).map(Coordinate::new)
     }
 }
 
@@ -61,26 +41,15 @@ where
     E: coords_core::HasAffineXY,
 {
     fn coords(&self) -> Option<Coordinates<E>> {
-        self.ct_coords().into()
+        let (x, y) = E::x_and_y(self.as_raw())?;
+        Some(Coordinates {
+            x: Coordinate::new(x),
+            y: Coordinate::new(y),
+        })
     }
 
     fn from_coords(coords: &Coordinates<E>) -> Option<Self> {
-        Self::ct_from_coords(coords).into()
-    }
-
-    fn ct_coords(&self) -> CtOption<Coordinates<E>> {
-        let (is_infinity, x, y) = E::x_and_y(self.as_raw());
-        CtOption::new(
-            Coordinates {
-                x: Coordinate::new(x),
-                y: Coordinate::new(y),
-            },
-            !is_infinity,
-        )
-    }
-
-    fn ct_from_coords(coords: &Coordinates<E>) -> CtOption<Self> {
-        E::from_x_and_y(coords.x.as_array(), coords.y.as_array()).and_then(Point::ct_try_from_raw)
+        E::from_x_and_y(coords.x.as_array(), coords.y.as_array()).and_then(Self::try_from_raw)
     }
 }
 
