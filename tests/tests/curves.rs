@@ -20,7 +20,7 @@ mod tests {
         assert_eq!(scalar, scalar1);
         assert_eq!(scalar, scalar2);
 
-        let mut be_bytes_rev = scalar_bytes_be.clone();
+        let mut be_bytes_rev = scalar_bytes_be;
         be_bytes_rev.as_mut().reverse();
         assert_eq!(be_bytes_rev, scalar_bytes_le);
     }

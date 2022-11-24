@@ -195,8 +195,8 @@ impl<E: Curve> FromRaw for Scalar<E> {
 impl<E: Curve> ConditionallySelectable for Scalar<E> {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
         Scalar::from_raw(<E::Scalar as ConditionallySelectable>::conditional_select(
-            &a.as_raw(),
-            &b.as_raw(),
+            a.as_raw(),
+            b.as_raw(),
             choice,
         ))
     }
@@ -289,6 +289,7 @@ impl<E: Curve> fmt::Debug for Scalar<E> {
     }
 }
 
+#[allow(clippy::derive_hash_xor_eq)]
 impl<E: Curve> Hash for Scalar<E> {
     fn hash<H: hash::Hasher>(&self, state: &mut H) {
         state.write(self.to_be_bytes().as_bytes())

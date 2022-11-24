@@ -188,7 +188,7 @@ mod laws {
     pub fn neg_nonzero_point_is_nonzero_point<E: Curve>(
         a: &NonZero<Point<E>>,
     ) -> NonZero<Point<E>> {
-        let neg = neg_point_is_valid_point(&a);
+        let neg = neg_point_is_valid_point(a);
         // Correctness: refer to doc comment of the function
         NonZero::new_unchecked(neg)
     }
@@ -226,7 +226,7 @@ mod scalar {
 
     #[inline]
     pub fn neg_nonzero<E: Curve>(a: &NonZero<Scalar<E>>) -> NonZero<Scalar<E>> {
-        let neg = neg(&a);
+        let neg = neg(a);
         // Correctness: since `a` is not zero, `-a` is not zero by definition
         NonZero::new_unchecked(neg)
     }
@@ -393,7 +393,7 @@ impl_op_assign! {
 }
 
 #[cfg(test)]
-#[allow(dead_code)]
+#[allow(dead_code, clippy::redundant_clone)]
 fn ensure_ops_implemented<E: Curve>(
     g: Generator<E>,
     point: Point<E>,

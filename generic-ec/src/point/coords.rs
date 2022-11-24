@@ -15,7 +15,7 @@ where
         self.ct_x().into()
     }
     fn ct_x(&self) -> CtOption<Coordinate<E>> {
-        let (is_infinity, coord) = E::x(&self.as_raw());
+        let (is_infinity, coord) = E::x(self.as_raw());
         CtOption::new(Coordinate::new(coord), !is_infinity)
     }
 }
@@ -33,7 +33,7 @@ where
     }
 
     fn ct_x_and_parity(&self) -> CtOption<(Parity, Coordinate<E>)> {
-        let (is_infinity, parity, coord) = E::x_and_parity(&self.as_raw());
+        let (is_infinity, parity, coord) = E::x_and_parity(self.as_raw());
         CtOption::new((parity, Coordinate::new(coord)), !is_infinity)
     }
 
@@ -51,7 +51,7 @@ where
     }
 
     fn ct_y(&self) -> CtOption<Coordinate<E>> {
-        let (is_infinity, coord) = E::y(&self.as_raw());
+        let (is_infinity, coord) = E::y(self.as_raw());
         CtOption::new(Coordinate::new(coord), !is_infinity)
     }
 }
@@ -69,7 +69,7 @@ where
     }
 
     fn ct_coords(&self) -> CtOption<Coordinates<E>> {
-        let (is_infinity, x, y) = E::x_and_y(&self.as_raw());
+        let (is_infinity, x, y) = E::x_and_y(self.as_raw());
         CtOption::new(
             Coordinates {
                 x: Coordinate::new(x),
@@ -89,7 +89,7 @@ where
     E: coords_core::AlwaysHasAffineY,
 {
     fn y(&self) -> Coordinate<E> {
-        Coordinate::new(E::y(&self.as_raw()))
+        Coordinate::new(E::y(self.as_raw()))
     }
 }
 
@@ -98,12 +98,11 @@ where
     E: coords_core::AlwaysHasAffineYAndSign,
 {
     fn y_and_sign(&self) -> (Sign, Coordinate<E>) {
-        let (sign, coord) = E::y_and_sign(&self.as_raw());
+        let (sign, coord) = E::y_and_sign(self.as_raw());
         (sign, Coordinate::new(coord))
     }
 
     fn from_y_and_sign(x_sign: Sign, y: &Coordinate<E>) -> Option<Self> {
-        E::from_y_and_sign(x_sign, &y.as_array())
-            .and_then(|point| Point::try_from_raw(point).into())
+        E::from_y_and_sign(x_sign, y.as_array()).and_then(Point::try_from_raw)
     }
 }
