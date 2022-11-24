@@ -1,21 +1,21 @@
 #[cfg(feature = "alloc")]
 mod with_alloc {
-    use alloc::boxed::Box;
     use alloc::sync::Arc;
     use zeroize::{Zeroize, Zeroizing};
 
     use crate::{Curve, Scalar};
 
     #[doc = include_str!("docs.md")]
-    pub struct SecretScalar<E: Curve>(Arc<Box<Zeroizing<Scalar<E>>>>);
+    pub struct SecretScalar<E: Curve>(Arc<Zeroizing<Scalar<E>>>);
 
     impl<E: Curve> SecretScalar<E> {
         #[doc = include_str!("docs-constructor.md")]
         pub fn new(scalar: &mut Scalar<E>) -> Self {
-            let mut scalar_boxed = Box::<Zeroizing<Scalar<E>>>::default();
-            core::mem::swap(&mut **scalar_boxed, scalar);
+            let mut scalar_on_heap = Arc::<Zeroizing<Scalar<E>>>::default();
+            let scalar_mut = Arc::make_mut(&mut scalar_on_heap);
+            core::mem::swap(&mut **scalar_mut, scalar);
             scalar.zeroize();
-            Self(Arc::new(scalar_boxed))
+            Self(scalar_on_heap)
         }
     }
 
@@ -36,17 +36,17 @@ mod with_alloc {
 mod without_alloc {
     use zeroize::{Zeroize, Zeroizing};
 
-    use crate::Scalar;
+    use crate::{Curve, Scalar};
 
     #[doc = include_str!("docs.md")]
     pub struct SecretScalar<E: Curve>(Zeroizing<Scalar<E>>);
 
     impl<E: Curve> SecretScalar<E> {
         #[doc = include_str!("docs-constructor.md")]
-        pub fn new(scalar: &mut Scalar) -> Self {
-            let scalar = Self(Zeroizing::new(*scalar));
+        pub fn new(scalar: &mut Scalar<E>) -> Self {
+            let scalar_new = Self(Zeroizing::new(*scalar));
             scalar.zeroize();
-            scalar
+            scalar_new
         }
     }
 

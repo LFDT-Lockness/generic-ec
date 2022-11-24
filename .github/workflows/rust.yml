@@ -1,0 +1,33 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "m" ]
+  pull_request:
+    branches: [ "m" ]
+  schedule:
+    - cron: '0 5 * * *'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+    - name: Build no-std
+      run: cargo build -p generic-ec --no-default-features
+    - name: Build
+      run: cargo build -p generic-ec
+    - name: Run tests
+      run: cargo test
+    - name: Check formatting
+      run: cargo fmt --all -- --check
+    - name: Run clippy
+      run: cargo clippy --all --lib --exclude generic-ec-tests -- --no-deps -D clippy::all -D clippy::unwrap_used -D clippy::expect_used
+    - name: Run clippy no-std
+      run: cargo clippy -p generic-ec --no-default-features -- -D clippy::all
+    - name: Run clippy tests
+      run: cargo clippy --tests -- -D clippy::all

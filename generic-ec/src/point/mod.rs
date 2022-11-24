@@ -110,8 +110,8 @@ impl<E: Curve> ConditionallySelectable for Point<E> {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
         // Correctness: both `a` and `b` have to be valid points by construction
         Point::from_raw_unchecked(<E::Point as ConditionallySelectable>::conditional_select(
-            &a.as_raw(),
-            &b.as_raw(),
+            a.as_raw(),
+            b.as_raw(),
             choice,
         ))
     }
@@ -158,7 +158,7 @@ impl<E: Curve> fmt::Debug for Point<E> {
         s.finish()
     }
 }
-
+#[allow(clippy::derive_hash_xor_eq)]
 impl<E: Curve> Hash for Point<E> {
     fn hash<H: hash::Hasher>(&self, state: &mut H) {
         state.write(self.to_bytes(true).as_bytes())

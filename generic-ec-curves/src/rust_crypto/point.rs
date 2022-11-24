@@ -147,10 +147,9 @@ where
 impl<E> Clone for RustCryptoPoint<E>
 where
     E: ProjectiveArithmetic,
-    E::ProjectivePoint: Clone,
 {
     fn clone(&self) -> Self {
-        Self(self.0.clone())
+        Self(self.0)
     }
 }
 
@@ -178,10 +177,6 @@ where
 {
     fn eq(&self, other: &Self) -> bool {
         self.0 == other.0
-    }
-
-    fn ne(&self, other: &Self) -> bool {
-        self.0 != other.0
     }
 }
 

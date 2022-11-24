@@ -50,6 +50,7 @@ impl<E: Curve> NonZero<Scalar<E>> {
     }
 
     pub fn invert(&self) -> NonZero<Scalar<E>> {
+        #[allow(clippy::expect_used)]
         let inv = (**self)
             .invert()
             .expect("nonzero scalar always has an invert");

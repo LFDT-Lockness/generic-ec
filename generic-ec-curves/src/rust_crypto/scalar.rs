@@ -40,7 +40,7 @@ where
     type Output = super::RustCryptoPoint<E>;
 
     fn mul(a: &Self, b: &super::RustCryptoPoint<E>) -> Self::Output {
-        super::RustCryptoPoint(&b.0 * &a.0)
+        super::RustCryptoPoint(b.0 * a.0)
     }
 }
 
@@ -52,7 +52,7 @@ where
     type Output = super::RustCryptoPoint<E>;
 
     fn mul(a: &Self, _b: &CurveGenerator) -> Self::Output {
-        super::RustCryptoPoint(&E::ProjectivePoint::generator() * &a.0)
+        super::RustCryptoPoint(E::ProjectivePoint::generator() * a.0)
     }
 }
 
@@ -104,7 +104,7 @@ impl<E: ScalarArithmetic> Default for RustCryptoScalar<E> {
 
 impl<E: ScalarArithmetic> Clone for RustCryptoScalar<E> {
     fn clone(&self) -> Self {
-        Self(self.0.clone())
+        Self(self.0)
     }
 }
 

@@ -138,6 +138,7 @@ impl<D: Digest> Builder<D> {
     where
         T: EncodesToBytes,
     {
+        #[allow(clippy::expect_used)]
         let len: u32 = encodables
             .len()
             .try_into()
@@ -168,6 +169,7 @@ impl<D: Digest> Builder<D> {
     /// Panics if `data` length exceeds `u32::MAX`. On most of modern systems, it's not possible
     /// to allocate such large chuck of memory.
     pub fn mix_bytes(self, data: impl AsRef<[u8]>) -> Self {
+        #[allow(clippy::expect_used)]
         let data_len: u32 = data
             .as_ref()
             .len()
@@ -199,6 +201,7 @@ impl<D: Digest> Builder<D> {
     /// Panics if `list` length exceeds `u32::MAX` or if length of any item of the list exceeds
     /// `u32::MAX`.
     pub fn mix_many_bytes(mut self, list: &[&[u8]]) -> Self {
+        #[allow(clippy::expect_used)]
         let list_len: u32 = list.len().try_into().expect("list len exceeds u32::MAX");
         self = self.mix_bytes(list_len.to_be_bytes());
         for item in list {
@@ -235,6 +238,12 @@ impl<D: Digest> Builder<D> {
         } else {
             Err(MismatchedRevealedData)
         }
+    }
+}
+
+impl<D: Digest> Default for Builder<D> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
