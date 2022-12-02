@@ -1,3 +1,5 @@
+use core::iter::{Product, Sum};
+
 use rand_core::{CryptoRng, RngCore};
 use subtle::{Choice, ConstantTimeEq};
 
@@ -46,5 +48,29 @@ impl<E: Curve> SecretScalar<E> {
 impl<E: Curve> ConstantTimeEq for SecretScalar<E> {
     fn ct_eq(&self, other: &Self) -> Choice {
         self.as_ref().ct_eq(other.as_ref())
+    }
+}
+
+impl<E: Curve> Sum<SecretScalar<E>> for Scalar<E> {
+    fn sum<I: Iterator<Item = SecretScalar<E>>>(iter: I) -> Self {
+        iter.fold(Scalar::<E>::zero(), |acc, i| acc + &i)
+    }
+}
+
+impl<'s, E: Curve> Sum<&'s SecretScalar<E>> for Scalar<E> {
+    fn sum<I: Iterator<Item = &'s SecretScalar<E>>>(iter: I) -> Self {
+        iter.fold(Scalar::<E>::zero(), |acc, i| acc + i)
+    }
+}
+
+impl<E: Curve> Product<SecretScalar<E>> for Scalar<E> {
+    fn product<I: Iterator<Item = SecretScalar<E>>>(iter: I) -> Self {
+        iter.fold(Scalar::<E>::one(), |acc, i| acc * &i)
+    }
+}
+
+impl<'s, E: Curve> Product<&'s SecretScalar<E>> for Scalar<E> {
+    fn product<I: Iterator<Item = &'s SecretScalar<E>>>(iter: I) -> Self {
+        iter.fold(Scalar::<E>::one(), |acc, i| acc * i)
     }
 }
