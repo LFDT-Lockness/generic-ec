@@ -57,7 +57,7 @@ where
             Parity::Odd => Tag::CompressedOddY,
         };
         encoding[0] = tag as u8;
-        encoding[1..].copy_from_slice(&x);
+        encoding[1..].copy_from_slice(x);
 
         let encoded_point = EncodedPoint::<C>::from_bytes(&encoding).ok()?;
         Option::from(C::ProjectivePoint::from_encoded_point(&encoded_point)).map(RustCryptoPoint)
