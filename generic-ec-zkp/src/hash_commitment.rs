@@ -101,10 +101,6 @@ impl<D: Digest> Builder<D> {
     /// # fn some_point<E: Curve>() -> Point<E> { unimplemented!() }
     /// # fn some_scalar<E: Curve>() -> Scalar<E> { unimplemented!() }
     /// ```
-    ///
-    /// ## Panics
-    /// Panics if serialized value length exceeds `u32::MAX`. On most of modern systems, it's not
-    /// possible to allocate such large chunk of memory.
     pub fn mix<T>(self, encodable: T) -> Self
     where
         T: EncodesToBytes,
@@ -130,24 +126,8 @@ impl<D: Digest> Builder<D> {
     /// # }
     /// # fn some_points<E: Curve>() -> Vec<Point<E>> { unimplemented!() }
     /// ```
-    ///
-    /// ## Panics
-    /// Panics if number of values exceeds `u32::MAX` or if any of serialized values length exceeds
-    /// `u32::MAX`.
-    pub fn mix_many<T>(mut self, encodables: &[T]) -> Self
-    where
-        T: EncodesToBytes,
-    {
-        #[allow(clippy::expect_used)]
-        let len: u32 = encodables
-            .len()
-            .try_into()
-            .expect("encodables len exceeds u32::MAX");
-        self = self.mix_bytes(len.to_be_bytes());
-        for encodable in encodables {
-            self = self.mix(encodable);
-        }
-        self
+    pub fn mix_many(self, encodables: impl IntoIterator<Item = impl EncodesToBytes>) -> Self {
+        self.mix_many_bytes(encodables.into_iter().map(|i| i.to_bytes()))
     }
 
     /// Mixes bytes into commitment
@@ -164,22 +144,8 @@ impl<D: Digest> Builder<D> {
     ///     .commit(&mut OsRng);
     /// # }
     /// ```
-    ///
-    /// ## Panics
-    /// Panics if `data` length exceeds `u32::MAX`. On most of modern systems, it's not possible
-    /// to allocate such large chuck of memory.
     pub fn mix_bytes(self, data: impl AsRef<[u8]>) -> Self {
-        #[allow(clippy::expect_used)]
-        let data_len: u32 = data
-            .as_ref()
-            .len()
-            .try_into()
-            .expect("data len exceeds u32::MAX");
-        Self(
-            self.0
-                .chain_update(data_len.to_be_bytes())
-                .chain_update(data),
-        )
+        Self(self.0.chain_update(D::digest(data)))
     }
 
     /// Mixes list of byte strings into commitment
@@ -192,22 +158,16 @@ impl<D: Digest> Builder<D> {
     /// # use generic_ec::Curve;
     /// # fn doc_fn<E: Curve>() {
     /// let (commit, decommit) = HashCommit::<Sha256>::builder()
-    ///     .mix_many_bytes(&[b"some message", b"another message"])
+    ///     .mix_many_bytes(&[b"some message".as_slice(), b"another message"])
     ///     .commit(&mut OsRng);
     /// # }
     /// ```
-    ///
-    /// ## Panics
-    /// Panics if `list` length exceeds `u32::MAX` or if length of any item of the list exceeds
-    /// `u32::MAX`.
-    pub fn mix_many_bytes(mut self, list: &[&[u8]]) -> Self {
-        #[allow(clippy::expect_used)]
-        let list_len: u32 = list.len().try_into().expect("list len exceeds u32::MAX");
-        self = self.mix_bytes(list_len.to_be_bytes());
-        for item in list {
-            self = self.mix_bytes(item)
-        }
-        self
+    pub fn mix_many_bytes(self, list: impl IntoIterator<Item = impl AsRef<[u8]>>) -> Self {
+        let hash = list
+            .into_iter()
+            .fold(D::new(), |d, i| d.chain_update(D::digest(i)))
+            .finalize();
+        Self(self.0.chain_update(hash))
     }
 
     /// Performs commitment
