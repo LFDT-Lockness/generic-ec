@@ -54,7 +54,7 @@ use serde::{Deserialize, Serialize};
 
 #[doc(inline)]
 pub use crate::ec_core::coords::{Parity, Sign};
-use crate::{ec_core::Curve, errors::InvalidCoordinate};
+use crate::{ec_core::Curve, errors::InvalidCoordinate, Scalar};
 
 /// Affine $x, y$ coordinates of a point on elliptic curve
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -69,20 +69,25 @@ pub struct Coordinates<E: Curve> {
 pub struct Coordinate<E: Curve>(E::CoordinateArray);
 
 impl<E: Curve> Coordinate<E> {
-    /// Bytes representation of a coordinate
+    /// (Big-endian) bytes representation of a coordinate
     #[inline(always)]
-    pub fn as_bytes(&self) -> &[u8] {
+    pub fn as_be_bytes(&self) -> &[u8] {
         self.0.as_ref()
     }
 
-    /// Parses bytes representation of a coordinate
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self, InvalidCoordinate> {
+    /// Parses (big-endian) bytes representation of a coordinate
+    pub fn from_be_bytes(bytes: &[u8]) -> Result<Self, InvalidCoordinate> {
         let mut coord = E::CoordinateArray::zeroes();
         if coord.as_ref().len() != bytes.len() {
             return Err(InvalidCoordinate);
         }
         coord.as_mut().copy_from_slice(bytes);
         Ok(Self(coord))
+    }
+
+    /// Converts coordinate into scalar (coordinate is reduced modulo curve order)
+    pub fn to_scalar(&self) -> Scalar<E> {
+        Scalar::from_be_bytes_mod_order(&self.as_be_bytes())
     }
 
     /// Constructs a coordinate from a byte array
@@ -120,7 +125,7 @@ impl<E: Curve> fmt::Debug for Coordinate<E> {
         let mut tuple = f.debug_tuple("Coordinate");
         #[cfg(feature = "alloc")]
         {
-            tuple.field(&hex::encode(self.as_bytes()));
+            tuple.field(&hex::encode(self.as_be_bytes()));
         }
         tuple.finish()
     }
@@ -128,7 +133,7 @@ impl<E: Curve> fmt::Debug for Coordinate<E> {
 
 impl<E: Curve> PartialEq for Coordinate<E> {
     fn eq(&self, other: &Self) -> bool {
-        self.as_bytes() == other.as_bytes()
+        self.as_be_bytes() == other.as_be_bytes()
     }
 }
 
@@ -136,19 +141,19 @@ impl<E: Curve> Eq for Coordinate<E> {}
 
 impl<E: Curve> PartialOrd for Coordinate<E> {
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
-        self.as_bytes().partial_cmp(other.as_bytes())
+        self.as_be_bytes().partial_cmp(other.as_be_bytes())
     }
 }
 
 impl<E: Curve> Ord for Coordinate<E> {
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
-        self.as_bytes().cmp(other.as_bytes())
+        self.as_be_bytes().cmp(other.as_be_bytes())
     }
 }
 
 impl<E: Curve> core::hash::Hash for Coordinate<E> {
     fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
-        self.as_bytes().hash(state);
+        self.as_be_bytes().hash(state);
     }
 }
 
