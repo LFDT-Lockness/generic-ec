@@ -156,6 +156,7 @@ mod sealed {
     pub trait Sealed {}
 
     impl<E: crate::ec_core::Curve> Sealed for crate::Point<E> {}
+    impl<E: crate::ec_core::Curve> Sealed for crate::NonZero<crate::Point<E>> {}
 }
 
 /// Point has affine $x$ coordinate
@@ -204,7 +205,12 @@ where
     fn from_coords(coords: &Coordinates<E>) -> Option<Self>;
 }
 
-/// Point _always_ has affine $y$ coordinate (for Edwards curves)
+/// Point _always_ has affine $x$ coordinate (for Edwards curves and non-zero points)
+pub trait AlwaysHasAffineX<E: Curve>: sealed::Sealed {
+    fn x(&self) -> Coordinate<E>;
+}
+
+/// Point _always_ has affine $y$ coordinate (for Edwards curves and non-zero points)
 pub trait AlwaysHasAffineY<E: Curve>: sealed::Sealed {
     /// Retrieves affine $y$ coordinate
     fn y(&self) -> Coordinate<E>;
@@ -221,4 +227,9 @@ where
     ///
     /// Returns `None` if input arguments do not represent a valid `Point<E>`
     fn from_y_and_sign(x_sign: Sign, y: &Coordinate<E>) -> Option<Self>;
+}
+
+/// Point is uniquely represented by affine $x$ and $y$ coordinates (for Edward curves and non-zero points)
+pub trait AlwaysHasAffineXY<E: Curve>: AlwaysHasAffineX<E> + AlwaysHasAffineY<E> + Sized {
+    fn from_coords(coords: &Coordinates<E>) -> Option<Self>;
 }

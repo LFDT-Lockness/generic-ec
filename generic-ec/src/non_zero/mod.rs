@@ -4,6 +4,7 @@ use crate::{Curve, Point, Scalar};
 
 use self::definition::NonZero;
 
+pub mod coords;
 pub mod definition;
 
 impl<E: Curve> NonZero<Point<E>> {
