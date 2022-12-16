@@ -28,6 +28,7 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send + 'stati
         + CompressedEncoding<Bytes = Self::CompressedPointArray>
         + UncompressedEncoding<Bytes = Self::UncompressedPointArray>
         + Decode
+        + Unpin
         + Sync
         + Send;
     type Scalar: Additive
@@ -45,6 +46,7 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send + 'stati
         + ConditionallySelectable
         + Default
         + IntegerEncoding<Bytes = Self::ScalarArray>
+        + Unpin
         + Sync
         + Send;
 

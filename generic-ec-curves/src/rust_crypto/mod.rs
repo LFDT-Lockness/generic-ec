@@ -43,9 +43,11 @@ where
         + Default
         + ConstantTimeEq
         + ConditionallySelectable
-        + Zeroize,
+        + Zeroize
+        + Unpin,
     for<'a> &'a C::ProjectivePoint: Mul<&'a C::Scalar, Output = C::ProjectivePoint>,
-    C::Scalar: Reduce<C::UInt> + Eq + ConstantTimeEq + ConditionallySelectable + DefaultIsZeroes,
+    C::Scalar:
+        Reduce<C::UInt> + Eq + ConstantTimeEq + ConditionallySelectable + DefaultIsZeroes + Unpin,
     for<'a> ScalarCore<C>: From<&'a C::Scalar>,
     FieldSize<C>: ModulusSize,
     X: 'static,
