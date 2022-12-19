@@ -19,7 +19,7 @@ mod point;
 mod scalar;
 mod secret_scalar;
 #[cfg(feature = "serde")]
-mod serde_support;
+pub mod serde;
 
 pub use self::{
     ec_core::Curve,
