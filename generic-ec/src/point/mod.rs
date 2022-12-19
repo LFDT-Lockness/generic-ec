@@ -92,8 +92,8 @@ impl<E: Curve> Point<E> {
     }
 
     /// Decodes a point from bytes
-    pub fn from_bytes(bytes: &[u8]) -> Result<Self, InvalidPoint> {
-        E::Point::decode(bytes)
+    pub fn from_bytes(bytes: impl AsRef<[u8]>) -> Result<Self, InvalidPoint> {
+        E::Point::decode(bytes.as_ref())
             .and_then(Self::try_from_raw)
             .ok_or(InvalidPoint)
     }

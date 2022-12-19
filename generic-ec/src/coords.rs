@@ -49,16 +49,12 @@ use core::fmt;
 
 use generic_ec_core::ByteArray;
 
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
-
 #[doc(inline)]
 pub use crate::ec_core::coords::{Parity, Sign};
 use crate::{ec_core::Curve, errors::InvalidCoordinate, Scalar};
 
 /// Affine $x, y$ coordinates of a point on elliptic curve
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(bound = ""))]
 pub struct Coordinates<E: Curve> {
     pub x: Coordinate<E>,
     pub y: Coordinate<E>,
