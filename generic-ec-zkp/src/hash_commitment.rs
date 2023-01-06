@@ -66,6 +66,9 @@ use digest::{generic_array::GenericArray, Digest, Output};
 use rand_core::RngCore;
 use subtle::ConstantTimeEq;
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 use generic_ec::{Curve, Point, Scalar};
 
 /// Builder for commitment/verification
@@ -209,6 +212,7 @@ impl<D: Digest> Default for Builder<D> {
 
 /// Committed value
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(bound = ""))]
 pub struct HashCommit<D: Digest>(pub Output<D>);
 
 impl<D: Digest> HashCommit<D> {
@@ -219,6 +223,7 @@ impl<D: Digest> HashCommit<D> {
 
 /// Random nonce that was used to "blind" commitment
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize), serde(bound = ""))]
 pub struct DecommitNonce<D: Digest> {
     pub nonce: GenericArray<u8, D::OutputSize>,
 }
