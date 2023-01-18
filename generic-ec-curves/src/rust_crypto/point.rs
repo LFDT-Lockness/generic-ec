@@ -4,7 +4,7 @@ use core::hash::{self, Hash};
 use elliptic_curve::group::cofactor::CofactorGroup;
 use elliptic_curve::{
     sec1::{EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
-    FieldSize, Group, ProjectiveArithmetic,
+    AffineArithmetic, FieldSize, Group, ProjectiveArithmetic,
 };
 use generic_ec_core::*;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq};
@@ -100,13 +100,13 @@ where
 
 impl<E> CompressedEncoding for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic,
-    E::ProjectivePoint: ToEncodedPoint<E>,
+    E: ProjectiveArithmetic + AffineArithmetic,
+    E::AffinePoint: ToEncodedPoint<E> + From<E::ProjectivePoint>,
     FieldSize<E>: ModulusSize,
 {
     type Bytes = elliptic_curve::sec1::CompressedPoint<E>;
     fn to_bytes_compressed(&self) -> Self::Bytes {
-        let point_encoded = self.0.to_encoded_point(true);
+        let point_encoded = E::AffinePoint::from(self.0).to_encoded_point(true);
 
         let mut bytes = Self::Bytes::default();
         bytes.copy_from_slice(point_encoded.as_bytes());
@@ -117,13 +117,13 @@ where
 
 impl<E> UncompressedEncoding for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic,
-    E::ProjectivePoint: ToEncodedPoint<E>,
+    E: ProjectiveArithmetic + AffineArithmetic,
+    E::AffinePoint: ToEncodedPoint<E> + From<E::ProjectivePoint>,
     FieldSize<E>: ModulusSize,
 {
     type Bytes = elliptic_curve::sec1::UncompressedPoint<E>;
     fn to_bytes_uncompressed(&self) -> Self::Bytes {
-        let point_encoded = self.0.to_encoded_point(false);
+        let point_encoded = E::AffinePoint::from(self.0).to_encoded_point(false);
 
         let mut bytes = Self::Bytes::default();
         bytes.copy_from_slice(point_encoded.as_bytes());
@@ -134,13 +134,14 @@ where
 
 impl<E> Decode for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic,
-    E::ProjectivePoint: FromEncodedPoint<E>,
+    E: ProjectiveArithmetic + AffineArithmetic,
+    E::AffinePoint: FromEncodedPoint<E> + Into<E::ProjectivePoint>,
     FieldSize<E>: ModulusSize,
 {
     fn decode(bytes: &[u8]) -> Option<Self> {
         let encoded_point = EncodedPoint::<E>::from_bytes(bytes).ok()?;
-        Option::from(E::ProjectivePoint::from_encoded_point(&encoded_point)).map(Self)
+        Option::from(E::AffinePoint::from_encoded_point(&encoded_point))
+            .map(|point: E::AffinePoint| Self(point.into()))
     }
 }
 

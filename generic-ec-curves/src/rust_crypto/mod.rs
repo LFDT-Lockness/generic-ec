@@ -7,7 +7,9 @@ use elliptic_curve::group::cofactor::CofactorGroup;
 use elliptic_curve::hash2curve::ExpandMsgXmd;
 use elliptic_curve::ops::Reduce;
 use elliptic_curve::sec1::{FromEncodedPoint, ModulusSize, ToEncodedPoint};
-use elliptic_curve::{FieldSize, ProjectiveArithmetic, ScalarArithmetic, ScalarCore};
+use elliptic_curve::{
+    AffineArithmetic, FieldSize, ProjectiveArithmetic, ScalarArithmetic, ScalarCore,
+};
 use generic_ec_core::{CompressedEncoding, Curve, IntegerEncoding, UncompressedEncoding};
 use subtle::{ConditionallySelectable, ConstantTimeEq};
 use zeroize::{DefaultIsZeroes, Zeroize};
@@ -28,15 +30,14 @@ pub struct RustCryptoCurve<C, X> {
 }
 
 #[cfg(feature = "secp256k1")]
-pub type Secp256k1 = RustCryptoCurve<k256::Secp256k1, ()>;
+pub type Secp256k1 = RustCryptoCurve<k256::Secp256k1, ExpandMsgXmd<Sha256>>;
 #[cfg(feature = "secp256r1")]
 pub type Secp256r1 = RustCryptoCurve<p256::NistP256, ExpandMsgXmd<Sha256>>;
 
 impl<C, X> Curve for RustCryptoCurve<C, X>
 where
-    C: CurveName + ScalarArithmetic + ProjectiveArithmetic,
-    C::ProjectivePoint: ToEncodedPoint<C>
-        + FromEncodedPoint<C>
+    C: CurveName + ScalarArithmetic + ProjectiveArithmetic + AffineArithmetic,
+    C::ProjectivePoint: From<C::AffinePoint>
         + CofactorGroup
         + Copy
         + Eq
@@ -45,6 +46,7 @@ where
         + ConditionallySelectable
         + Zeroize
         + Unpin,
+    C::AffinePoint: From<C::ProjectivePoint> + ToEncodedPoint<C> + FromEncodedPoint<C>,
     for<'a> &'a C::ProjectivePoint: Mul<&'a C::Scalar, Output = C::ProjectivePoint>,
     C::Scalar:
         Reduce<C::UInt> + Eq + ConstantTimeEq + ConditionallySelectable + DefaultIsZeroes + Unpin,
@@ -138,7 +140,7 @@ mod tests {
         _exposes_affine_coords::<Secp256k1>();
         _exposes_affine_coords::<Secp256r1>();
 
-        // _impls_hash_to_curve::<Secp256k1>(); // TODO: secp256k1 doesn't support HashToCurve
+        _impls_hash_to_curve::<Secp256k1>();
         _impls_hash_to_curve::<Secp256r1>();
     }
 }
