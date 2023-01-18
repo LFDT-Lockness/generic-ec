@@ -2,23 +2,26 @@ use elliptic_curve::generic_array::GenericArray;
 use elliptic_curve::sec1::{
     CompressedPointSize, Coordinates, EncodedPoint, FromEncodedPoint, Tag, ToEncodedPoint,
 };
-use elliptic_curve::{FieldSize, ProjectiveArithmetic};
+use elliptic_curve::{AffineArithmetic, FieldSize, ProjectiveArithmetic};
 use generic_ec_core::coords::{HasAffineX, HasAffineXAndParity, HasAffineXY, HasAffineY, Parity};
 
 use super::{RustCryptoCurve, RustCryptoPoint};
 
 impl<C, X> HasAffineX for RustCryptoCurve<C, X>
 where
-    C: ProjectiveArithmetic,
+    C: ProjectiveArithmetic + AffineArithmetic,
     FieldSize<C>: elliptic_curve::sec1::ModulusSize,
-    C::ProjectivePoint: ToEncodedPoint<C>,
+    C::AffinePoint: ToEncodedPoint<C> + From<C::ProjectivePoint>,
     RustCryptoCurve<C, X>: generic_ec_core::Curve<
         Point = RustCryptoPoint<C>,
         CoordinateArray = elliptic_curve::FieldBytes<C>,
     >,
 {
     fn x(point: &Self::Point) -> Option<Self::CoordinateArray> {
-        match point.0.to_encoded_point(false).coordinates() {
+        match C::AffinePoint::from(point.0)
+            .to_encoded_point(false)
+            .coordinates()
+        {
             Coordinates::Identity => None,
             Coordinates::Uncompressed { x, .. } => Some(x.clone()),
             Coordinates::Compact { .. } | Coordinates::Compressed { .. } => {
@@ -30,16 +33,22 @@ where
 
 impl<C, X> HasAffineXAndParity for RustCryptoCurve<C, X>
 where
-    C: ProjectiveArithmetic,
+    C: ProjectiveArithmetic + AffineArithmetic,
     FieldSize<C>: elliptic_curve::sec1::ModulusSize,
-    C::ProjectivePoint: ToEncodedPoint<C> + FromEncodedPoint<C>,
+    C::AffinePoint: ToEncodedPoint<C>
+        + FromEncodedPoint<C>
+        + From<C::ProjectivePoint>
+        + Into<C::ProjectivePoint>,
     RustCryptoCurve<C, X>: generic_ec_core::Curve<
         Point = RustCryptoPoint<C>,
         CoordinateArray = elliptic_curve::FieldBytes<C>,
     >,
 {
     fn x_and_parity(point: &Self::Point) -> Option<(Self::CoordinateArray, Parity)> {
-        match point.0.to_encoded_point(true).coordinates() {
+        match C::AffinePoint::from(point.0)
+            .to_encoded_point(true)
+            .coordinates()
+        {
             Coordinates::Identity => None,
             Coordinates::Compressed { x, y_is_odd } => {
                 Some((x.clone(), if y_is_odd { Parity::Odd } else { Parity::Even }))
@@ -60,22 +69,26 @@ where
         encoding[1..].copy_from_slice(x);
 
         let encoded_point = EncodedPoint::<C>::from_bytes(&encoding).ok()?;
-        Option::from(C::ProjectivePoint::from_encoded_point(&encoded_point)).map(RustCryptoPoint)
+        Option::from(C::AffinePoint::from_encoded_point(&encoded_point))
+            .map(|point: C::AffinePoint| RustCryptoPoint(point.into()))
     }
 }
 
 impl<C, X> HasAffineY for RustCryptoCurve<C, X>
 where
-    C: ProjectiveArithmetic,
+    C: ProjectiveArithmetic + AffineArithmetic,
     FieldSize<C>: elliptic_curve::sec1::ModulusSize,
-    C::ProjectivePoint: ToEncodedPoint<C>,
+    C::AffinePoint: ToEncodedPoint<C> + From<C::ProjectivePoint>,
     RustCryptoCurve<C, X>: generic_ec_core::Curve<
         Point = RustCryptoPoint<C>,
         CoordinateArray = elliptic_curve::FieldBytes<C>,
     >,
 {
     fn y(point: &Self::Point) -> Option<Self::CoordinateArray> {
-        match point.0.to_encoded_point(false).coordinates() {
+        match C::AffinePoint::from(point.0)
+            .to_encoded_point(false)
+            .coordinates()
+        {
             Coordinates::Identity => None,
             Coordinates::Uncompressed { y, .. } => Some(y.clone()),
             Coordinates::Compact { .. } | Coordinates::Compressed { .. } => {
@@ -87,16 +100,22 @@ where
 
 impl<C, X> HasAffineXY for RustCryptoCurve<C, X>
 where
-    C: ProjectiveArithmetic,
+    C: ProjectiveArithmetic + AffineArithmetic,
     FieldSize<C>: elliptic_curve::sec1::ModulusSize,
-    C::ProjectivePoint: ToEncodedPoint<C> + FromEncodedPoint<C>,
+    C::AffinePoint: ToEncodedPoint<C>
+        + FromEncodedPoint<C>
+        + From<C::ProjectivePoint>
+        + Into<C::ProjectivePoint>,
     RustCryptoCurve<C, X>: generic_ec_core::Curve<
         Point = RustCryptoPoint<C>,
         CoordinateArray = elliptic_curve::FieldBytes<C>,
     >,
 {
     fn x_and_y(point: &Self::Point) -> Option<(Self::CoordinateArray, Self::CoordinateArray)> {
-        match point.0.to_encoded_point(false).coordinates() {
+        match C::AffinePoint::from(point.0)
+            .to_encoded_point(false)
+            .coordinates()
+        {
             Coordinates::Identity => None,
             Coordinates::Uncompressed { x, y } => Some((x.clone(), y.clone())),
             Coordinates::Compact { .. } | Coordinates::Compressed { .. } => {
@@ -107,6 +126,7 @@ where
 
     fn from_x_and_y(x: &Self::CoordinateArray, y: &Self::CoordinateArray) -> Option<Self::Point> {
         let encoded_point = EncodedPoint::<C>::from_affine_coordinates(x, y, false);
-        Option::from(C::ProjectivePoint::from_encoded_point(&encoded_point)).map(RustCryptoPoint)
+        Option::from(C::AffinePoint::from_encoded_point(&encoded_point))
+            .map(|point: C::AffinePoint| RustCryptoPoint(point.into()))
     }
 }
