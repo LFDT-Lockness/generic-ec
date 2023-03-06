@@ -180,6 +180,11 @@ impl<E: Curve> Scalar<E> {
             None => panic!("defected source of randomness"),
         }
     }
+
+    /// Returns size of bytes buffer that can fit serialized scalar
+    pub fn serialized_len() -> usize {
+        E::ScalarArray::zeroes().as_ref().len()
+    }
 }
 
 impl<E: Curve> AsRaw for Scalar<E> {
