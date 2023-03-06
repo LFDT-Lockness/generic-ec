@@ -7,7 +7,7 @@ use zeroize::Zeroize;
 
 use crate::{
     as_raw::{AsRaw, FromRaw},
-    ec_core::*,
+    core::*,
     encoded::EncodedScalar,
     errors::InvalidScalar,
 };

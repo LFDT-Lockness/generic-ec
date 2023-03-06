@@ -1,6 +1,6 @@
 use phantom_type::PhantomType;
 
-use crate::{ec_core::*, NonZero, Point};
+use crate::{core::*, NonZero, Point};
 
 /// Generator of curve `E`
 ///

@@ -1,11 +1,11 @@
 use crate::as_raw::{FromRaw, TryFromRaw};
-use crate::ec_core::hash_to_curve::HashToCurve;
-use crate::ec_core::Curve;
+use crate::core::hash_to_curve::HashToCurve;
+use crate::core::Curve;
 use crate::errors::{HashError, HashErrorReason};
 use crate::{Point, Scalar};
 
 #[doc(inline)]
-pub use crate::ec_core::hash_to_curve::Tag;
+pub use crate::core::hash_to_curve::Tag;
 
 pub trait FromHash
 where

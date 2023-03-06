@@ -76,11 +76,11 @@
 
 use core::{convert::TryInto, fmt};
 
-use generic_ec_core::Curve;
 use phantom_type::PhantomType;
 use serde::{de::Visitor, Deserialize, Serialize};
 use serde_with::{DeserializeAs, SerializeAs};
 
+use crate::core::Curve;
 use crate::{Point, Scalar, SecretScalar};
 
 impl<E: Curve> Serialize for Point<E> {
@@ -285,10 +285,10 @@ impl<'de, E: Curve> Deserialize<'de> for CurveName<E> {
 mod models {
     use core::convert::TryFrom;
 
-    use generic_ec_core::{CompressedEncoding, IntegerEncoding, UncompressedEncoding};
     use serde::{Deserialize, Serialize};
     use serde_with::serde_as;
 
+    use crate::core::{CompressedEncoding, IntegerEncoding, UncompressedEncoding};
     use crate::{as_raw::AsRaw, Curve, Point, Scalar};
 
     use super::{
@@ -384,9 +384,10 @@ mod models {
 mod utils {
     use core::fmt;
 
-    use generic_ec_core::ByteArray;
     use serde::de::{self, Visitor};
     use serde_with::{DeserializeAs, SerializeAs};
+
+    use crate::core::ByteArray;
 
     pub struct Bytes;
 

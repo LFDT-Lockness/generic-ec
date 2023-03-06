@@ -47,11 +47,13 @@
 
 use core::fmt;
 
-use generic_ec_core::ByteArray;
-
 #[doc(inline)]
-pub use crate::ec_core::coords::{Parity, Sign};
-use crate::{ec_core::Curve, errors::InvalidCoordinate, Scalar};
+pub use crate::core::coords::{Parity, Sign};
+use crate::{
+    core::{ByteArray, Curve},
+    errors::InvalidCoordinate,
+    Scalar,
+};
 
 /// Affine $x, y$ coordinates of a point on elliptic curve
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -156,8 +158,8 @@ impl<E: Curve> core::hash::Hash for Coordinate<E> {
 mod sealed {
     pub trait Sealed {}
 
-    impl<E: crate::ec_core::Curve> Sealed for crate::Point<E> {}
-    impl<E: crate::ec_core::Curve> Sealed for crate::NonZero<crate::Point<E>> {}
+    impl<E: crate::core::Curve> Sealed for crate::Point<E> {}
+    impl<E: crate::core::Curve> Sealed for crate::NonZero<crate::Point<E>> {}
 }
 
 /// Point has affine $x$ coordinate
