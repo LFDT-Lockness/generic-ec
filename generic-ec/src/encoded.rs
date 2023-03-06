@@ -1,6 +1,6 @@
 use core::{fmt, ops};
 
-use crate::{as_raw::AsRaw, ec_core::ByteArray, Curve};
+use crate::{as_raw::AsRaw, core::ByteArray, Curve};
 
 pub struct EncodedPoint<E: Curve>(EncodedPointInner<E>);
 

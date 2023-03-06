@@ -1,6 +1,6 @@
 use zeroize::Zeroize;
 
-use crate::{as_raw::AsRaw, ec_core::*};
+use crate::{as_raw::AsRaw, core::*};
 
 /// Torsion-free point on elliptic curve `E`
 ///

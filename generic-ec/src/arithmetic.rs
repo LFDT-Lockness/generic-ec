@@ -5,7 +5,7 @@ use crate::{Curve, Generator, NonZero, Point, Scalar, SecretScalar};
 mod laws {
     use crate::{
         as_raw::AsRaw,
-        ec_core::{self, *},
+        core::{self, *},
         Generator, NonZero,
     };
     use crate::{Point, Scalar};
@@ -114,7 +114,7 @@ mod laws {
         n: impl AsRef<Scalar<E>>,
         _g: &Generator<E>,
     ) -> Point<E> {
-        let prod = Multiplicative::mul(n.as_ref().as_raw(), &ec_core::CurveGenerator);
+        let prod = Multiplicative::mul(n.as_ref().as_raw(), &core::CurveGenerator);
         // Correctness: refer to doc comment of the function
         Point::from_raw_unchecked(prod)
     }
@@ -196,7 +196,7 @@ mod laws {
 
 mod scalar {
     use crate::as_raw::{AsRaw, FromRaw};
-    use crate::ec_core::*;
+    use crate::core::*;
     use crate::NonZero;
     use crate::Scalar;
 

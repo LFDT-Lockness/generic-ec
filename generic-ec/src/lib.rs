@@ -5,7 +5,7 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
-use generic_ec_core as ec_core;
+pub use generic_ec_core as core;
 
 mod arithmetic;
 mod as_raw;
@@ -22,7 +22,7 @@ mod secret_scalar;
 pub mod serde;
 
 pub use self::{
-    ec_core::Curve,
+    core::Curve,
     encoded::{EncodedPoint, EncodedScalar},
     generator::Generator,
     non_zero::definition::NonZero,

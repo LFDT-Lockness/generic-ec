@@ -6,7 +6,7 @@ use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
 use crate::{
     as_raw::{AsRaw, TryFromRaw},
-    ec_core::*,
+    core::*,
     errors::InvalidPoint,
     EncodedPoint, Generator,
 };
