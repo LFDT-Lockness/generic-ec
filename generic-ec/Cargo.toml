@@ -41,3 +41,7 @@ curves = ["generic-ec-curves"]
 curve-secp256k1 = ["curves", "generic-ec-curves/secp256k1"]
 curve-secp256r1 = ["curves", "generic-ec-curves/secp256r1"]
 all-curves = ["curve-secp256k1", "curve-secp256r1"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

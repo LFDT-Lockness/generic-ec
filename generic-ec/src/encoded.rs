@@ -2,6 +2,7 @@ use core::{fmt, ops};
 
 use crate::{as_raw::AsRaw, core::ByteArray, Curve};
 
+/// Bytes representation of an elliptic point
 pub struct EncodedPoint<E: Curve>(EncodedPointInner<E>);
 
 impl<E: Curve> EncodedPoint<E> {
@@ -13,6 +14,7 @@ impl<E: Curve> EncodedPoint<E> {
         Self(EncodedPointInner::Uncompressed(bytes))
     }
 
+    /// Returns bytes representation of the point
     pub fn as_bytes(&self) -> &[u8] {
         match &self.0 {
             EncodedPointInner::Compressed(bytes) => bytes.as_ref(),
@@ -65,6 +67,7 @@ impl<E: Curve> AsRef<[u8]> for EncodedPoint<E> {
     }
 }
 
+/// Bytes representation of a scalar (either in big-endian or in little-endian)
 #[derive(Clone)]
 pub struct EncodedScalar<E: Curve>(E::ScalarArray);
 
@@ -73,6 +76,7 @@ impl<E: Curve> EncodedScalar<E> {
         Self(bytes)
     }
 
+    /// Returns bytes representation of a scalar
     pub fn as_bytes(&self) -> &[u8] {
         self.0.as_ref()
     }
