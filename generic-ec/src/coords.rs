@@ -3,7 +3,7 @@
 //! Elliptic points are defined differently for different types of curves:
 //! * Curves in non-complete form (Weierstrass or Montgomery curves): \
 //!   Points have $(x, y)$ coordinates that must satisfy curve equation unless it's **point at infinity**
-//!   that has no coordinates (see [points at infinity](crate::TODO))
+//!   that has no coordinates (see [points at infinity](crate#points-at-infinity))
 //! * Curves in complete form (Edwards curves): \
 //!   Points always have $(x, y)$ coordinates that must satisfy curve equation
 //!
@@ -38,12 +38,7 @@
 //!
 //! ## Curves support
 //! Some curve implementations intentionally chosen not to expose coordinates, so they, for instance, can
-//! expose $y$ coordinate but hide $x$. [Ed25519] is such curve (backed by [curve25519_dalek]) that doesn't
-//! allow you to access $x$ coordinate, though you can access $y$ coordinate and sign of $x$ coordinate
-//! through [`AlwaysHasAffineYAndSign`] which uniquely represents a point.
-//!
-//! [Ed25519]: crate::curves::Ed25519
-//! [curve25519_dalek]: https://github.com/dalek-cryptography/curve25519-dalek
+//! expose $y$ coordinate but hide $x$.
 
 use core::fmt;
 
@@ -58,7 +53,9 @@ use crate::{
 /// Affine $x, y$ coordinates of a point on elliptic curve
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Coordinates<E: Curve> {
+    /// Affine $x$ coordinate of a point
     pub x: Coordinate<E>,
+    /// Affine $y$ coordinate of a point
     pub y: Coordinate<E>,
 }
 
@@ -210,6 +207,7 @@ where
 
 /// Point _always_ has affine $x$ coordinate (for Edwards curves and non-zero points)
 pub trait AlwaysHasAffineX<E: Curve>: sealed::Sealed {
+    /// Retrieves affine $x$ coordinate of a point
     fn x(&self) -> Coordinate<E>;
 }
 
@@ -234,5 +232,8 @@ where
 
 /// Point is uniquely represented by affine $x$ and $y$ coordinates (for Edward curves and non-zero points)
 pub trait AlwaysHasAffineXY<E: Curve>: AlwaysHasAffineX<E> + AlwaysHasAffineY<E> + Sized {
+    /// Constructs a point from affine coordinates
+    ///
+    /// Returns error is coordinates don't correspond to a valid point
     fn from_coords(coords: &Coordinates<E>) -> Option<Self>;
 }

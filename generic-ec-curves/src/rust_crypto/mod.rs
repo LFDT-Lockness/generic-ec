@@ -29,8 +29,14 @@ pub struct RustCryptoCurve<C, X> {
     _ph: PhantomData<fn() -> (C, X)>,
 }
 
+/// secp256k1 curve
+///
+/// Based on [k256] crate
 #[cfg(feature = "secp256k1")]
 pub type Secp256k1 = RustCryptoCurve<k256::Secp256k1, ExpandMsgXmd<Sha256>>;
+/// secp256r1 curve
+///
+/// Based on [p256] crate
 #[cfg(feature = "secp256r1")]
 pub type Secp256r1 = RustCryptoCurve<p256::NistP256, ExpandMsgXmd<Sha256>>;
 

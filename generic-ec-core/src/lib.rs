@@ -11,6 +11,10 @@ use zeroize::Zeroize;
 pub mod coords;
 pub mod hash_to_curve;
 
+/// Elliptic curve
+///
+/// This trait contains all the low-level curve implementation logic: scalar, point arithmetics,
+/// encoding and etc.
 pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send + 'static {
     const CURVE_NAME: &'static str;
 

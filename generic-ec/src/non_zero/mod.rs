@@ -50,6 +50,10 @@ impl<E: Curve> NonZero<Scalar<E>> {
         CtOption::new(Self::new_unchecked(scalar), is_non_zero)
     }
 
+    /// Returns scalar inverse $S^{-1}$
+    ///
+    /// Similar to [Scalar::invert], but this function is always defined as inverse is defined for all
+    /// non-zero scalars
     pub fn invert(&self) -> NonZero<Scalar<E>> {
         #[allow(clippy::expect_used)]
         let inv = (**self)

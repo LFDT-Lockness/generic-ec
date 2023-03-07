@@ -1,3 +1,4 @@
+use core::fmt;
 use core::iter::{Product, Sum};
 
 use rand_core::{CryptoRng, RngCore};
@@ -72,5 +73,11 @@ impl<E: Curve> Product<SecretScalar<E>> for Scalar<E> {
 impl<'s, E: Curve> Product<&'s SecretScalar<E>> for Scalar<E> {
     fn product<I: Iterator<Item = &'s SecretScalar<E>>>(iter: I) -> Self {
         iter.fold(Scalar::<E>::one(), |acc, i| acc * i)
+    }
+}
+
+impl<E: Curve> fmt::Debug for SecretScalar<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("SecretScalar")
     }
 }
