@@ -427,7 +427,7 @@ mod utils {
                 where
                     E: serde::de::Error,
                 {
-                    hex::decode_to_slice(&v, self.0.as_mut()).map_err(E::custom)?;
+                    hex::decode_to_slice(v, self.0.as_mut()).map_err(E::custom)?;
                     Ok(self.0)
                 }
                 fn visit_bytes<E>(mut self, v: &[u8]) -> Result<Self::Value, E>
@@ -449,13 +449,9 @@ mod utils {
                     A: serde::de::SeqAccess<'de>,
                 {
                     let expected_len = self.0.as_mut().len();
-                    let mut bytes = self.0.as_mut().iter_mut().enumerate();
+                    let bytes = self.0.as_mut().iter_mut().enumerate();
 
-                    loop {
-                        let (i, byte_i) = match bytes.next() {
-                            Some(b) => b,
-                            None => break,
-                        };
+                    for (i, byte_i) in bytes {
                         let byte_parsed = seq.next_element()?.ok_or_else(|| {
                             <A::Error as de::Error>::invalid_length(
                                 i,
