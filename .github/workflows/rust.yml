@@ -17,6 +17,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
+      with:
+        cache-on-failure: "true"
     - name: Build no-std
       run: cargo build -p generic-ec --no-default-features
     - name: Build
