@@ -2,9 +2,9 @@ name: Rust
 
 on:
   push:
-    branches: [ "m" ]
+    branches: [ "*" ]
   pull_request:
-    branches: [ "m" ]
+    branches: [ "*" ]
   schedule:
     - cron: '0 5 * * *'
 
