@@ -82,7 +82,7 @@ impl<E: Curve> Coordinate<E> {
 
     /// Converts coordinate into scalar (coordinate is reduced modulo curve order)
     pub fn to_scalar(&self) -> Scalar<E> {
-        Scalar::from_be_bytes_mod_order(&self.as_be_bytes())
+        Scalar::from_be_bytes_mod_order(self.as_be_bytes())
     }
 
     /// Constructs a coordinate from a byte array
