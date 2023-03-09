@@ -1,4 +1,3 @@
-#![cfg_attr(not(test), forbid(unused_crate_dependencies))]
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used))]
 
 #[cfg(feature = "rust-crypto")]
