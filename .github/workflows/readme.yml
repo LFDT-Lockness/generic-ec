@@ -1,0 +1,17 @@
+name: Check README
+
+on:
+  pull_request:
+    branches: [ "*" ]
+
+jobs:
+  check_readme:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install cargo-hakari
+      uses: baptiste0928/cargo-install@v1
+      with:
+        crate: cargo-rdme
+    - name: Check that readme matches lib.rs
+      run: cargo rdme -w generic-ec -r README.md --check
