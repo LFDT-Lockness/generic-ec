@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-generic-ec = { path = "../generic-ec" }
+generic-ec = { path = "../generic-ec", default-features = false }
 
 subtle = "2.4"
 digest = "0.10"
@@ -22,4 +22,4 @@ rand = "0.8"
 sha2 = "0.10"
 
 [features]
-serde = ["dep:serde", "generic-array/serde"]
+serde = ["dep:serde", "generic-ec/serde", "generic-array/serde"]
