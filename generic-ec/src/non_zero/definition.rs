@@ -3,7 +3,7 @@ use core::ops::Deref;
 use zeroize::Zeroize;
 
 /// Non zero [Point](crate::Point) or [Scalar](crate::Scalar)
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Zeroize)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Zeroize, Debug)]
 pub struct NonZero<T>(T);
 
 impl<T> NonZero<T> {
