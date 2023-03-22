@@ -192,6 +192,19 @@ mod laws {
         // Correctness: refer to doc comment of the function
         NonZero::new_unchecked(neg)
     }
+
+    /// If $A$ and $B$ are non-zero scalars mod prime integer $q$, then $A \cdot B \ne 0 \pmod{q}$
+    ///
+    /// Product of two non-zero integers mod $q$ can be zero if, and only if, $A \cdot B$ divides $q$.
+    /// It's not possible as $q$ is prime and $A,B < q$.
+    pub fn non_zero_scalar_at_non_zero_scalar_is_non_zero_scalar<E: Curve>(
+        a: &NonZero<Scalar<E>>,
+        b: &NonZero<Scalar<E>>,
+    ) -> NonZero<Scalar<E>> {
+        let prod = super::scalar::mul(a, b);
+        // Correctness: refer to doc commnet of the function
+        NonZero::new_unchecked(prod)
+    }
 }
 
 mod scalar {
@@ -366,7 +379,13 @@ impl_nonzero_ops! {
 
     Add (Scalar<E>, add, Scalar<E> = Scalar<E>) scalar::add,
     Sub (Scalar<E>, sub, Scalar<E> = Scalar<E>) scalar::sub,
-    Mul (Scalar<E>, mul, Scalar<E> = Scalar<E>) scalar::mul,
+}
+
+// NonZero<Scalar> * NonZero<Scalar>, Scalar * NonZero<Scalar>, NonZero<Scalar> * Scalar
+impl_binary_ops! {
+    Mul (NonZero<Scalar<E>>, mul, NonZero<Scalar<E>> = NonZero<Scalar<E>>) laws::non_zero_scalar_at_non_zero_scalar_is_non_zero_scalar,
+    Mul (Scalar<E>, mul, NonZero<Scalar<E>> = Scalar<E>) scalar::mul,
+    Mul (NonZero<Scalar<E>>, mul, Scalar<E> = Scalar<E>) scalar::mul,
 }
 
 // Point <> NonZero<Scalar>, NonZero<Point> <> Scalar
@@ -456,7 +475,7 @@ fn ensure_ops_implemented<E: Curve>(
 
         scalar * scalar => Scalar<E>,
         scalar * non_zero_scalar => Scalar<E>,
-        non_zero_scalar * non_zero_scalar => Scalar<E>,
+        non_zero_scalar * non_zero_scalar => NonZero<Scalar<E>>,
 
         scalar * secret_scalar.clone() => Scalar<E>,
         non_zero_scalar * secret_scalar.clone() => Scalar<E>,

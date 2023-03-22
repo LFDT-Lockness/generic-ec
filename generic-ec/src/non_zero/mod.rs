@@ -1,3 +1,5 @@
+use core::iter::{Product, Sum};
+
 use subtle::{ConstantTimeEq, CtOption};
 
 use crate::{Curve, Point, Scalar};
@@ -30,6 +32,12 @@ impl<E: Curve> NonZero<Point<E>> {
 }
 
 impl<E: Curve> NonZero<Scalar<E>> {
+    /// Constructs $S = 1$
+    pub fn one() -> Self {
+        // Correctness: constructed scalar = 1, so it's non-zero
+        Self::new_unchecked(Scalar::one())
+    }
+
     /// Constructs non-zero scalar
     ///
     /// Returns `None` if scalar is zero
@@ -61,5 +69,29 @@ impl<E: Curve> NonZero<Scalar<E>> {
             .expect("nonzero scalar always has an invert");
         // Correctness: `inv` is nonzero by definition
         Self::new_unchecked(inv)
+    }
+}
+
+impl<E: Curve> Sum<NonZero<Scalar<E>>> for Scalar<E> {
+    fn sum<I: Iterator<Item = NonZero<Scalar<E>>>>(iter: I) -> Self {
+        iter.fold(Scalar::zero(), |acc, x| acc + x)
+    }
+}
+
+impl<'s, E: Curve> Sum<&'s NonZero<Scalar<E>>> for Scalar<E> {
+    fn sum<I: Iterator<Item = &'s NonZero<Scalar<E>>>>(iter: I) -> Self {
+        iter.fold(Scalar::zero(), |acc, x| acc + x)
+    }
+}
+
+impl<E: Curve> Product<NonZero<Scalar<E>>> for NonZero<Scalar<E>> {
+    fn product<I: Iterator<Item = NonZero<Scalar<E>>>>(iter: I) -> Self {
+        iter.fold(Self::one(), |acc, x| acc * x)
+    }
+}
+
+impl<'s, E: Curve> Product<&'s NonZero<Scalar<E>>> for NonZero<Scalar<E>> {
+    fn product<I: Iterator<Item = &'s NonZero<Scalar<E>>>>(iter: I) -> Self {
+        iter.fold(Self::one(), |acc, x| acc * x)
     }
 }
