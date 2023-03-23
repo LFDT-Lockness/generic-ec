@@ -69,3 +69,23 @@ pub(crate) enum HashErrorReason {
     HashFailed,
     ProducedValueInvalid,
 }
+
+/// Appeared zero point is not expected/accepted
+#[derive(Debug, Clone, Copy)]
+pub struct ZeroPoint;
+
+impl fmt::Display for ZeroPoint {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("zero point")
+    }
+}
+
+/// Appeared zero scalar is not expected/accepted
+#[derive(Debug, Clone, Copy)]
+pub struct ZeroScalar;
+
+impl fmt::Display for ZeroScalar {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("zero scalar")
+    }
+}
