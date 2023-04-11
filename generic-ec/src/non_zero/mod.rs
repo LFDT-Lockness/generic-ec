@@ -1,8 +1,11 @@
-use core::iter::{Product, Sum};
+use core::iter::{self, Product, Sum};
 
+use rand_core::RngCore;
 use subtle::{ConstantTimeEq, CtOption};
 
 use crate::{
+    as_raw::FromRaw,
+    core::Samplable,
     errors::{ZeroPoint, ZeroScalar},
     Curve, Point, Scalar,
 };
@@ -35,6 +38,26 @@ impl<E: Curve> NonZero<Point<E>> {
 }
 
 impl<E: Curve> NonZero<Scalar<E>> {
+    /// Generates random non-zero scalar
+    ///
+    /// Algorithm is based on rejection sampling: we sample a scalar, if it's zero try again.
+    /// It may be considered constant-time as zero scalar appears with $2^{-256}$ probability
+    /// which is considered to be negligible.
+    ///
+    /// ## Panics
+    /// Panics if randomness source returned 100 zero scalars in a row. It happens with
+    /// $2^{-25600}$ probability, which practically means that randomness source is broken.
+    pub fn random<R: RngCore>(rng: &mut R) -> Self {
+        match iter::repeat_with(|| E::Scalar::random(rng))
+            .take(100)
+            .flat_map(|s| NonZero::from_scalar(Scalar::from_raw(s)))
+            .next()
+        {
+            Some(s) => s,
+            None => panic!("defected source of randomness"),
+        }
+    }
+
     /// Constructs $S = 1$
     pub fn one() -> Self {
         // Correctness: constructed scalar = 1, so it's non-zero

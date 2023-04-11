@@ -5,6 +5,7 @@ use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
 
+use crate::NonZero;
 use crate::{
     as_raw::{AsRaw, FromRaw},
     core::*,
@@ -172,13 +173,7 @@ impl<E: Curve> Scalar<E> {
     /// Panics if randomness source returned 100 zero scalars in a row. It happens with
     /// $2^{-25600}$ probability, which practically means that randomness source is broken.
     pub fn random<R: RngCore>(rng: &mut R) -> Self {
-        match iter::repeat_with(|| E::Scalar::random(rng))
-            .take(100)
-            .find(|s| bool::from(!Zero::is_zero(s)))
-        {
-            Some(s) => Scalar::from_raw(s),
-            None => panic!("defected source of randomness"),
-        }
+        NonZero::<Scalar<E>>::random(rng).into()
     }
 
     /// Returns size of bytes buffer that can fit serialized scalar
