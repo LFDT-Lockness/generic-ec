@@ -187,6 +187,12 @@ mod point;
 mod scalar;
 mod secret_scalar;
 
+/// Common traits for points and scalars
+pub mod traits {
+    #[doc(inline)]
+    pub use crate::core::{One, Samplable, Zero};
+}
+
 #[cfg(feature = "serde")]
 #[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 pub mod serde;

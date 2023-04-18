@@ -150,6 +150,22 @@ impl<'s, E: Curve> Product<&'s NonZero<Scalar<E>>> for NonZero<Scalar<E>> {
     }
 }
 
+impl<E: Curve> crate::traits::Samplable for NonZero<Scalar<E>> {
+    fn random<R: RngCore>(rng: &mut R) -> Self {
+        Self::random(rng)
+    }
+}
+
+impl<E: Curve> crate::traits::One for NonZero<Scalar<E>> {
+    fn one() -> Self {
+        Self::one()
+    }
+
+    fn is_one(x: &Self) -> subtle::Choice {
+        x.ct_eq(&Self::one())
+    }
+}
+
 #[cfg(all(test, feature = "serde"))]
 mod non_zero_is_serializable {
     use crate::{Curve, NonZero, Point, Scalar};
