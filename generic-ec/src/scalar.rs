@@ -226,6 +226,32 @@ impl<E: Curve> AsRef<Scalar<E>> for Scalar<E> {
     }
 }
 
+impl<E: Curve> crate::traits::Zero for Scalar<E> {
+    fn zero() -> Self {
+        Scalar::zero()
+    }
+
+    fn is_zero(x: &Self) -> Choice {
+        x.ct_eq(&Self::zero())
+    }
+}
+
+impl<E: Curve> crate::traits::One for Scalar<E> {
+    fn one() -> Self {
+        Self::one()
+    }
+
+    fn is_one(x: &Self) -> Choice {
+        x.ct_eq(&Self::one())
+    }
+}
+
+impl<E: Curve> crate::traits::Samplable for Scalar<E> {
+    fn random<R: RngCore>(rng: &mut R) -> Self {
+        Self::random(rng)
+    }
+}
+
 impl<E: Curve> iter::Sum for Scalar<E> {
     fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
         iter.fold(Scalar::zero(), |acc, x| acc + x)

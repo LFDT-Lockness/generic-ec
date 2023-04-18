@@ -186,3 +186,13 @@ impl<E: Curve> Ord for Point<E> {
             .cmp(other.to_bytes(true).as_bytes())
     }
 }
+
+impl<E: Curve> crate::traits::Zero for Point<E> {
+    fn zero() -> Self {
+        Point::zero()
+    }
+
+    fn is_zero(x: &Self) -> Choice {
+        x.ct_eq(&Self::zero())
+    }
+}
