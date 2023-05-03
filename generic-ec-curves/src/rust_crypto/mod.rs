@@ -14,7 +14,7 @@ use generic_ec_core::{CompressedEncoding, Curve, IntegerEncoding, UncompressedEn
 use subtle::{ConditionallySelectable, ConstantTimeEq};
 use zeroize::{DefaultIsZeroes, Zeroize};
 
-#[cfg(feature = "secp256r1")]
+#[cfg(any(feature = "secp256k1", feature = "secp256r1"))]
 use sha2::Sha256;
 
 pub use self::{curve_name::CurveName, point::RustCryptoPoint, scalar::RustCryptoScalar};
