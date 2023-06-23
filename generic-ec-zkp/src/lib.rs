@@ -5,4 +5,5 @@
 use generic_array as _;
 
 pub mod hash_commitment;
+pub mod polynomial;
 pub mod schnorr_pok;
