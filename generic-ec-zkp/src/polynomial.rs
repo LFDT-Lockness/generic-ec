@@ -78,6 +78,16 @@ impl<C> Polynomial<C> {
             len => len - 1,
         }
     }
+
+    /// Returns polynomial coefficients
+    pub fn coefs(&self) -> &[C] {
+        &self.coefs
+    }
+
+    /// Destructs polynomial, returns its coefficients
+    pub fn into_coefs(self) -> Vec<C> {
+        self.coefs
+    }
 }
 
 impl<C: Samplable> Polynomial<C> {
