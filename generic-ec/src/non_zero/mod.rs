@@ -156,6 +156,14 @@ impl<E: Curve> crate::traits::Samplable for NonZero<Scalar<E>> {
     }
 }
 
+impl<T> crate::traits::IsZero for NonZero<T> {
+    /// Returns `false` as `NonZero<T>` cannot be zero
+    #[inline(always)]
+    fn is_zero(&self) -> bool {
+        false
+    }
+}
+
 impl<E: Curve> crate::traits::One for NonZero<Scalar<E>> {
     fn one() -> Self {
         Self::one()

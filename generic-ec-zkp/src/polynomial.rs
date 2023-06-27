@@ -3,7 +3,7 @@
 use core::{iter, ops};
 
 use generic_ec::{
-    traits::{Samplable, Zero},
+    traits::{IsZero, Samplable, Zero},
     Curve, NonZero, Scalar,
 };
 use rand_core::RngCore;
@@ -20,7 +20,7 @@ pub struct Polynomial<C> {
     coefs: Vec<C>,
 }
 
-impl<C: Zero> Polynomial<C> {
+impl<C: IsZero> Polynomial<C> {
     /// Constructs a polynomial from its coefficients
     ///
     /// `coefs[i]` is coefficient of `x^i` term. Resulting polynomial will be
@@ -50,41 +50,11 @@ impl<C: Zero> Polynomial<C> {
         let zeroes_count = coefs
             .iter()
             .rev()
-            .take_while(|coef_i| Zero::is_zero(*coef_i).into())
+            .take_while(|coef_i| coef_i.is_zero())
             .count();
         let coefs_len = coefs.len();
         coefs.truncate(coefs_len - zeroes_count);
 
-        Self { coefs }
-    }
-}
-
-impl<C> Polynomial<NonZero<C>> {
-    /// Constructs a polynomial from its non-zero coefficients
-    ///
-    /// Similar to [`Polynomial::from_coefs`], but it doesn't require coefficients to
-    /// implement [`Zero`] trait, instead it requires coefficients to be non-zero.
-    ///
-    /// ## Example
-    /// ```rust
-    /// # use rand_core::OsRng;
-    /// use generic_ec::{Scalar, NonZero, curves::Secp256k1};
-    /// use generic_ec_zkp::polynomial::Polynomial;
-    ///
-    /// let coefs: [NonZero<Scalar<Secp256k1>>; 3] = [
-    ///     NonZero::random(&mut OsRng),
-    ///     NonZero::random(&mut OsRng),
-    ///     NonZero::random(&mut OsRng),    
-    /// ];
-    /// let polynomial = Polynomial::from_nonzero_coefs(coefs.to_vec());
-    ///
-    /// let x = Scalar::random(&mut OsRng);
-    /// assert_eq!(
-    ///     coefs[0] + x * coefs[1] + x * x * coefs[2],
-    ///     polynomial.value(&x),
-    /// );
-    /// ```
-    pub fn from_nonzero_coefs(coefs: Vec<NonZero<C>>) -> Self {
         Self { coefs }
     }
 }
@@ -275,6 +245,33 @@ where
             sum += &polynomial
         }
         sum
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<C> serde::Serialize for Polynomial<C>
+where
+    C: serde::Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.coefs.serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, C: IsZero> serde::Deserialize<'de> for Polynomial<C>
+where
+    C: serde::Deserialize<'de>,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let coefs = Vec::<C>::deserialize(deserializer)?;
+        Ok(Self::from_coefs(coefs))
     }
 }
 

@@ -187,6 +187,12 @@ impl<E: Curve> Ord for Point<E> {
     }
 }
 
+impl<E: Curve> crate::traits::IsZero for Point<E> {
+    fn is_zero(&self) -> bool {
+        *self == Point::zero()
+    }
+}
+
 impl<E: Curve> crate::traits::Zero for Point<E> {
     fn zero() -> Self {
         Point::zero()
