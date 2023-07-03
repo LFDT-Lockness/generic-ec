@@ -49,18 +49,7 @@
 //!    ```
 //!
 //! ## Algorithm
-//! Underlying algorithm is based on hash function $\H$. To commit data, we sample a large random nonce,
-//! and hash it along with data. When we hash bytestrings, we prepend its length to it, in that way we
-//! ensure that there's only one set of inputs that can be decommitted.
-//!
-//! Roughly, algorithm is:
-//!
-//! 1. $commit(i_1, \dots, i_n) =$ \
-//!    1. $\mathit{nonce} \gets \\{0,1\\}^k$
-//!    2. $\text{return}\ \H(\dots \\| \text{u32\\_to\\_be}(\mathit{len}(i_j)) \\| i_j \\| \dots \\| \mathit{nonce}), \mathit{nonce}$
-//!
-//! 2. $decommit(commit, nonce, i_1, \dots, i_n) =$
-//!    1. $\text{return}\ \H(\dots \\| \text{u32\\_to\\_be}(\mathit{len}(i_j)) \\| i_j \\| \dots \\| nonce) \\? commit$
+//! Underlying algorithm of hashing input data is based on merkle trees.
 
 use digest::{generic_array::GenericArray, Digest, Output};
 use rand_core::RngCore;
@@ -77,7 +66,8 @@ pub struct Builder<D: Digest>(D);
 impl<D: Digest> Builder<D> {
     /// Creates an instance of [`Builder`]
     pub fn new() -> Self {
-        Self(D::new())
+        // Initialize hash with context separation string
+        Self(D::new_with_prefix(b"GENERIC_EC_HASH_COMMITMENT"))
     }
 
     /// Mixes value serialized to bytes into commitment
@@ -148,7 +138,7 @@ impl<D: Digest> Builder<D> {
     /// # }
     /// ```
     pub fn mix_bytes(self, data: impl AsRef<[u8]>) -> Self {
-        Self(self.0.chain_update(D::digest(data)))
+        Self(self.0.chain_update(digest_leaf::<D>(data)))
     }
 
     /// Mixes list of byte strings into commitment
@@ -168,7 +158,9 @@ impl<D: Digest> Builder<D> {
     pub fn mix_many_bytes(self, list: impl IntoIterator<Item = impl AsRef<[u8]>>) -> Self {
         let hash = list
             .into_iter()
-            .fold(D::new(), |d, i| d.chain_update(D::digest(i)))
+            .fold(digest_subtree::<D>(), |d, i| {
+                d.chain_update(digest_leaf::<D>(i))
+            })
             .finalize();
         Self(self.0.chain_update(hash))
     }
@@ -234,6 +226,14 @@ impl<D: Digest> Default for DecommitNonce<D> {
             nonce: Default::default(),
         }
     }
+}
+
+fn digest_leaf<D: Digest>(bytes: impl AsRef<[u8]>) -> digest::Output<D> {
+    D::new_with_prefix([0]).chain_update(bytes).finalize()
+}
+
+fn digest_subtree<D: Digest>() -> D {
+    D::new_with_prefix([1])
 }
 
 /// Infallibly encodable to bytes
