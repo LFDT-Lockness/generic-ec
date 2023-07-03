@@ -22,7 +22,7 @@ jobs:
     - name: Build no-std
       run: cargo build -p generic-ec --no-default-features
     - name: Build
-      run: cargo build -p generic-ec
+      run: cargo build -p generic-ec --all-features
     - name: Run tests
       run: cargo test
     - name: Check formatting

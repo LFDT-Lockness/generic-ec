@@ -191,6 +191,12 @@ mod secret_scalar;
 pub mod traits {
     #[doc(inline)]
     pub use crate::core::{One, Samplable, Zero};
+
+    /// Trait that allows you to check whether value is zero
+    pub trait IsZero {
+        /// Checks whether `self` is zero
+        fn is_zero(&self) -> bool;
+    }
 }
 
 #[cfg(feature = "serde")]

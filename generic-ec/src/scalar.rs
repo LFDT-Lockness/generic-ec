@@ -226,6 +226,12 @@ impl<E: Curve> AsRef<Scalar<E>> for Scalar<E> {
     }
 }
 
+impl<E: Curve> crate::traits::IsZero for Scalar<E> {
+    fn is_zero(&self) -> bool {
+        *self == Scalar::zero()
+    }
+}
+
 impl<E: Curve> crate::traits::Zero for Scalar<E> {
     fn zero() -> Self {
         Scalar::zero()

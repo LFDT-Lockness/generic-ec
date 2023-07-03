@@ -19,7 +19,12 @@ generic-array = "0.14"
 
 [dev-dependencies]
 rand = "0.8"
+rand_dev = "0.1"
 sha2 = "0.10"
+
+generic-tests = "0.1"
+
+generic-ec = { path = "../generic-ec", default-features = false, features = ["all-curves"] }
 
 [features]
 serde = ["dep:serde", "generic-ec/serde", "generic-array/serde"]
