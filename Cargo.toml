@@ -4,5 +4,6 @@ members = [
   "generic-ec-core",
   "generic-ec-curves",
   "generic-ec-zkp",
+  "wasm/wasm-example",
   "tests",
 ]

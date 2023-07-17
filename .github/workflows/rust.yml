@@ -33,3 +33,21 @@ jobs:
       run: cargo clippy -p generic-ec --no-default-features -- -D clippy::all
     - name: Run clippy tests
       run: cargo clippy --tests -- -D clippy::all
+  build-wasm:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+      with:
+        cache-on-failure: "true"
+    - name: Install wasm32-unknown-unknown toolchain
+      run: rustup target add wasm32-unknown-unknown
+    - name: Build on wasm32-unknown-unknown
+      run:
+        cargo check -p generic-ec --target wasm32-unknown-unknown --features wasm,all-curves
+    - name: Install wasm-pack
+      uses: baptiste0928/cargo-install@v1
+      with:
+        crate: wasm-pack
+    - name: wasm-pack an example project
+      run: (cd wasm/wasm-example; wasm-pack build)
