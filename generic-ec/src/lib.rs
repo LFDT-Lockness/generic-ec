@@ -4,6 +4,8 @@
 //! in Rust. Aim is to **stay simple**, **generic**, and **secure**. It's handy for developers who implement MPC,
 //! zero-knowledge protocols, or any other elliptic crypto algorithms.
 //!
+//! `generic-ec` is `no_std` and web assembly friendly.
+//!
 //! ## Overview
 //!
 //! Crate provides three primitives: a point on elliptic curve [`Point<E>`](Point), an integer modulus group order
@@ -97,6 +99,7 @@
 //! * `all-curves` enables all supported curves
 //! * `serde` enables points/scalar (de)serialization support. (enabled by default)
 //! * `std` enables support of standard library (enabled by default)
+//! * `wasm` eanbles support for `wasm32-unknown-unknown` target
 //!
 //! ## Examples
 //!
