@@ -8,3 +8,6 @@ docs-open:
 
 docs-private:
 	RUSTDOCFLAGS="--html-in-header katex-header.html --cfg docsrs" cargo +nightly doc --no-deps --all-features --document-private-items
+
+readme:
+	cargo rdme -w generic-ec -r README.md

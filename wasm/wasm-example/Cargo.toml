@@ -1,0 +1,16 @@
+[package]
+name = "wasm-example"
+version = "0.1.0"
+edition = "2018"
+publish = false
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+generic-ec = { path = "../../generic-ec", features = ["all-curves", "wasm"] }
+rand_core = "0.6"
+wasm-bindgen = "0.2.84"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.34"
