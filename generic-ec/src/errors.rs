@@ -80,6 +80,9 @@ impl fmt::Display for ZeroPoint {
     }
 }
 
+#[cfg(feature = "std")]
+impl Error for ZeroPoint {}
+
 /// Appeared zero scalar is not expected/accepted
 #[derive(Debug, Clone, Copy)]
 pub struct ZeroScalar;
@@ -89,3 +92,6 @@ impl fmt::Display for ZeroScalar {
         f.write_str("zero scalar")
     }
 }
+
+#[cfg(feature = "std")]
+impl Error for ZeroScalar {}
