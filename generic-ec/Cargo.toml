@@ -35,7 +35,7 @@ serde_test = "1"
 [features]
 default = ["std", "serde"]
 std = ["alloc"]
-alloc = ["hex?/alloc"]
+alloc = ["hex/alloc"]
 serde = ["dep:serde", "generic-ec-core/serde", "hex", "serde_with"]
 
 curves = ["generic-ec-curves"]
