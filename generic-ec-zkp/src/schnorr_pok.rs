@@ -155,4 +155,14 @@ pub fn prove<E: Curve>(
 }
 
 /// Invalid proof error
+#[derive(Debug, Clone, Copy)]
 pub struct InvalidProof;
+
+impl core::fmt::Display for InvalidProof {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str("invalid Schnorr PoK proof")
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for InvalidProof {}

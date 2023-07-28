@@ -275,4 +275,14 @@ impl EncodesToBytes for u16 {
 }
 
 /// Error indicating that revealed data doesn't match commitment
+#[derive(Debug, Clone, Copy)]
 pub struct MismatchedRevealedData;
+
+impl core::fmt::Display for MismatchedRevealedData {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str("revealed data doesn't match commitment")
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::error::Error for MismatchedRevealedData {}

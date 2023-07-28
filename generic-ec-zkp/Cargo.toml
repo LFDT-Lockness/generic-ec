@@ -27,4 +27,7 @@ generic-tests = "0.1"
 generic-ec = { path = "../generic-ec", default-features = false, features = ["all-curves"] }
 
 [features]
+default = ["std"]
+std = ["alloc"]
+alloc = []
 serde = ["dep:serde", "generic-ec/serde", "generic-array/serde"]

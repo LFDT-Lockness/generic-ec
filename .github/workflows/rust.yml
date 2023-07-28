@@ -19,7 +19,9 @@ jobs:
         cache-on-failure: "true"
     - name: Build no-std
       run: cargo build -p generic-ec --no-default-features
-    - name: Build
+    - name: Build with `alloc` only
+      run: cargo build -p generic-ec --no-default-features --features alloc
+    - name: Build all-features
       run: cargo build -p generic-ec --all-features
     - name: Run tests
       run: cargo test

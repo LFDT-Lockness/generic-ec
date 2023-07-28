@@ -1,289 +1,301 @@
 //! Provides [polynomial](Polynomial) primitive, typically used in secret sharing and threshold DKG
 
-use core::{iter, ops};
+#[cfg(feature = "alloc")]
+#[doc(inline)]
+pub use requires_alloc::*;
 
-use generic_ec::{
-    traits::{IsZero, Samplable, Zero},
-    Curve, NonZero, Scalar,
-};
-use rand_core::RngCore;
+#[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(feature = "alloc")))]
+mod requires_alloc {
+    use alloc::{vec, vec::Vec};
+    use core::{iter, ops};
 
-/// Polynomial $f(x) = \sum_i a_i x^i$ defined as a list of coefficients $[a_0, \dots, a_{\text{degree}}]$
-///
-/// Polynomial is generic over type of coefficients `C`, it can be `Scalar<E>`, `NonZero<Scalar<E>>`, `SecretScalar<E>`, `Point<E>`,
-/// or any other type that implements necessary traits.
-#[derive(Debug, Clone)]
-pub struct Polynomial<C> {
-    /// `coefs[i]` is coefficient of `x^i` term
-    ///
-    /// Last element of `coefs` must be non-zero
-    coefs: Vec<C>,
-}
+    use generic_ec::traits::{IsZero, Samplable, Zero};
+    use rand_core::RngCore;
 
-impl<C: IsZero> Polynomial<C> {
-    /// Constructs a polynomial from its coefficients
+    /// Polynomial $f(x) = \sum_i a_i x^i$ defined as a list of coefficients $[a_0, \dots, a_{\text{degree}}]$
     ///
-    /// `coefs[i]` is coefficient of `x^i` term. Resulting polynomial will be
-    /// $f(x) = \sum_i \\text{coefs}_i \cdot x^i$
-    ///
-    /// ## Example
-    /// ```rust
-    /// # use rand_core::OsRng;
-    /// use generic_ec::{Scalar, curves::Secp256k1};
-    /// use generic_ec_zkp::polynomial::Polynomial;
-    ///
-    /// let coefs: [Scalar<Secp256k1>; 3] = [
-    ///     Scalar::random(&mut OsRng),
-    ///     Scalar::random(&mut OsRng),
-    ///     Scalar::random(&mut OsRng),    
-    /// ];
-    /// let polynomial = Polynomial::from_coefs(coefs.to_vec());
-    ///
-    /// let x = Scalar::random(&mut OsRng);
-    /// assert_eq!(
-    ///     coefs[0] + x * coefs[1] + x * x * coefs[2],
-    ///     polynomial.value(&x),
-    /// );
-    /// ```
-    pub fn from_coefs(mut coefs: Vec<C>) -> Self {
-        // Truncate trailing zeroes
-        let zeroes_count = coefs
-            .iter()
-            .rev()
-            .take_while(|coef_i| coef_i.is_zero())
-            .count();
-        let coefs_len = coefs.len();
-        coefs.truncate(coefs_len - zeroes_count);
-
-        Self { coefs }
+    /// Polynomial is generic over type of coefficients `C`, it can be `Scalar<E>`, `NonZero<Scalar<E>>`, `SecretScalar<E>`, `Point<E>`,
+    /// or any other type that implements necessary traits.
+    #[derive(Debug, Clone)]
+    pub struct Polynomial<C> {
+        /// `coefs[i]` is coefficient of `x^i` term
+        ///
+        /// Last element of `coefs` must be non-zero
+        coefs: Vec<C>,
     }
-}
 
-impl<C> Polynomial<C> {
-    /// Returns polynomial degree
-    ///
-    /// Polynomial degree is index of most significant non-zero coefficient. Polynomial $f(x) = 0$
-    /// considered to have degree $deg(f) = 0$.
-    ///
-    /// $$
-    /// \begin{dcases}
-    /// deg(f(x) = \sum_i a_i \cdot x^i) &= n \\text{, where } a_n \ne 0 \land n \to max \\\\
-    /// deg(f(x) = 0) &= 0
-    /// \end{dcases}
-    /// $$
-    pub fn degree(&self) -> usize {
-        #[allow(clippy::expect_used)]
-        match self.coefs.len() {
-            0 => 0,
-            len => len - 1,
+    impl<C: IsZero> Polynomial<C> {
+        /// Constructs a polynomial from its coefficients
+        ///
+        /// `coefs[i]` is coefficient of `x^i` term. Resulting polynomial will be
+        /// $f(x) = \sum_i \\text{coefs}_i \cdot x^i$
+        ///
+        /// ## Example
+        /// ```rust
+        /// # use rand_core::OsRng;
+        /// use generic_ec::{Scalar, curves::Secp256k1};
+        /// use generic_ec_zkp::polynomial::Polynomial;
+        ///
+        /// let coefs: [Scalar<Secp256k1>; 3] = [
+        ///     Scalar::random(&mut OsRng),
+        ///     Scalar::random(&mut OsRng),
+        ///     Scalar::random(&mut OsRng),    
+        /// ];
+        /// let polynomial = Polynomial::from_coefs(coefs.to_vec());
+        ///
+        /// let x = Scalar::random(&mut OsRng);
+        /// assert_eq!(
+        ///     coefs[0] + x * coefs[1] + x * x * coefs[2],
+        ///     polynomial.value(&x),
+        /// );
+        /// ```
+        pub fn from_coefs(mut coefs: Vec<C>) -> Self {
+            // Truncate trailing zeroes
+            let zeroes_count = coefs
+                .iter()
+                .rev()
+                .take_while(|coef_i| coef_i.is_zero())
+                .count();
+            let coefs_len = coefs.len();
+            coefs.truncate(coefs_len - zeroes_count);
+
+            Self { coefs }
         }
     }
 
-    /// Returns polynomial coefficients
-    pub fn coefs(&self) -> &[C] {
-        &self.coefs
-    }
+    impl<C> Polynomial<C> {
+        /// Returns polynomial degree
+        ///
+        /// Polynomial degree is index of most significant non-zero coefficient. Polynomial $f(x) = 0$
+        /// considered to have degree $deg(f) = 0$.
+        ///
+        /// $$
+        /// \begin{dcases}
+        /// deg(f(x) = \sum_i a_i \cdot x^i) &= n \\text{, where } a_n \ne 0 \land n \to max \\\\
+        /// deg(f(x) = 0) &= 0
+        /// \end{dcases}
+        /// $$
+        pub fn degree(&self) -> usize {
+            #[allow(clippy::expect_used)]
+            match self.coefs.len() {
+                0 => 0,
+                len => len - 1,
+            }
+        }
 
-    /// Destructs polynomial, returns its coefficients
-    pub fn into_coefs(self) -> Vec<C> {
-        self.coefs
-    }
-}
+        /// Returns polynomial coefficients
+        pub fn coefs(&self) -> &[C] {
+            &self.coefs
+        }
 
-impl<C: Samplable> Polynomial<C> {
-    /// Samples a random polynomial with specified degree
-    pub fn sample(rng: &mut impl RngCore, degree: usize) -> Self {
-        Self {
-            coefs: iter::repeat_with(|| C::random(rng))
-                .take(degree + 1)
-                .collect(),
+        /// Destructs polynomial, returns its coefficients
+        pub fn into_coefs(self) -> Vec<C> {
+            self.coefs
         }
     }
 
-    /// Samples a random polynomial with specified degree and constant term
-    ///
-    /// Constant term determines value of polynomial at point zero: $f(0) = \\text{const\\_term}$
-    ///
-    /// ## Example
-    /// ```rust
-    /// use generic_ec::{Scalar, curves::Secp256k1};
-    /// use generic_ec_zkp::polynomial::Polynomial;
-    /// # use rand_core::OsRng;
-    ///
-    /// let const_term = Scalar::<Secp256k1>::from(1234);
-    /// let polynomial = Polynomial::sample_with_const_term(&mut OsRng, 3, const_term);
-    /// assert_eq!(const_term, polynomial.value(&Scalar::zero()));
-    /// ```
-    pub fn sample_with_const_term(rng: &mut impl RngCore, degree: usize, const_term: C) -> Self {
-        Self {
-            coefs: iter::once(const_term)
-                .chain(iter::repeat_with(|| C::random(rng)).take(degree))
-                .collect(),
+    impl<C: Samplable> Polynomial<C> {
+        /// Samples a random polynomial with specified degree
+        pub fn sample(rng: &mut impl RngCore, degree: usize) -> Self {
+            Self {
+                coefs: iter::repeat_with(|| C::random(rng))
+                    .take(degree + 1)
+                    .collect(),
+            }
+        }
+
+        /// Samples a random polynomial with specified degree and constant term
+        ///
+        /// Constant term determines value of polynomial at point zero: $f(0) = \\text{const\\_term}$
+        ///
+        /// ## Example
+        /// ```rust
+        /// use generic_ec::{Scalar, curves::Secp256k1};
+        /// use generic_ec_zkp::polynomial::Polynomial;
+        /// # use rand_core::OsRng;
+        ///
+        /// let const_term = Scalar::<Secp256k1>::from(1234);
+        /// let polynomial = Polynomial::sample_with_const_term(&mut OsRng, 3, const_term);
+        /// assert_eq!(const_term, polynomial.value(&Scalar::zero()));
+        /// ```
+        pub fn sample_with_const_term(
+            rng: &mut impl RngCore,
+            degree: usize,
+            const_term: C,
+        ) -> Self {
+            Self {
+                coefs: iter::once(const_term)
+                    .chain(iter::repeat_with(|| C::random(rng)).take(degree))
+                    .collect(),
+            }
         }
     }
-}
 
-impl<C> Polynomial<C> {
-    /// Evaluates polynomial value at given point: $f(\\text{point})$
+    impl<C> Polynomial<C> {
+        /// Evaluates polynomial value at given point: $f(\\text{point})$
+        ///
+        /// Polynomial coefficients, point, and output can all be differently typed.
+        ///
+        /// ## Example: polynomial with coefficients typed as non-zero scalars vs elliptic points
+        /// Let $f(x) = a_1 \cdot x + a_0$ and $F(x) = G \cdot f(x)$. Coefficients
+        /// of $f(x)$ are typed as `NonZero<Scalar<E>>`, and $F(x)$ has coefficients typed as `NonZero<Point<E>>`.
+        ///
+        /// When we evaluate $f(x)$, we have coefficients `C` of type `NonZero<Scalar<E>>`, and both point `P`
+        /// and output `O` of type `Scalar<E>`.
+        ///
+        /// On other hand, when $F(x)$ is evaluated, coefficients `C` have type `NonZero<Point<E>>`, point `P` has
+        /// type `Scalar<E>`, and output `O` is of type `Point<E>`.
+        ///
+        /// ```rust
+        /// use generic_ec::{Point, Scalar, NonZero, curves::Secp256k1};
+        /// use generic_ec_zkp::polynomial::Polynomial;
+        /// # use rand_core::OsRng;
+        ///
+        /// let f: Polynomial<NonZero<Scalar<Secp256k1>>> = Polynomial::sample(&mut OsRng, 1);
+        /// let F: Polynomial<NonZero<Point<_>>> = &f * &Point::generator();
+        ///
+        /// let x = Scalar::random(&mut OsRng);
+        /// assert_eq!(
+        ///     f.value::<_, Scalar<_>>(&x) * Point::generator(),    
+        ///     F.value::<_, Point<_>>(&x)
+        /// );
+        /// ```
+        pub fn value<P, O>(&self, point: &P) -> O
+        where
+            O: Zero,
+            for<'a> O: ops::Mul<&'a P, Output = O> + ops::Add<&'a C, Output = O>,
+        {
+            self.coefs
+                .iter()
+                .rev()
+                .fold(O::zero(), |acc, coef_i| acc * point + coef_i)
+        }
+    }
+
+    /// Multiplies polyinomial $F(x)$ at $k$ returning resulting polyinomial
+    /// $F'(x) = k \cdot F(x)$ without allocations
     ///
-    /// Polynomial coefficients, point, and output can all be differently typed.
-    ///
-    /// ## Example: polynomial with coefficients typed as non-zero scalars vs elliptic points
-    /// Let $f(x) = a_1 \cdot x + a_0$ and $F(x) = G \cdot f(x)$. Coefficients
-    /// of $f(x)$ are typed as `NonZero<Scalar<E>>`, and $F(x)$ has coefficients typed as `NonZero<Point<E>>`.
-    ///
-    /// When we evaluate $f(x)$, we have coefficients `C` of type `NonZero<Scalar<E>>`, and both point `P`
-    /// and output `O` of type `Scalar<E>`.
-    ///
-    /// On other hand, when $F(x)$ is evaluated, coefficients `C` have type `NonZero<Point<E>>`, point `P` has
-    /// type `Scalar<E>`, and output `O` is of type `Point<E>`.
-    ///
-    /// ```rust
-    /// use generic_ec::{Point, Scalar, NonZero, curves::Secp256k1};
-    /// use generic_ec_zkp::polynomial::Polynomial;
-    /// # use rand_core::OsRng;
-    ///
-    /// let f: Polynomial<NonZero<Scalar<Secp256k1>>> = Polynomial::sample(&mut OsRng, 1);
-    /// let F: Polynomial<NonZero<Point<_>>> = &f * &Point::generator();
-    ///
-    /// let x = Scalar::random(&mut OsRng);
-    /// assert_eq!(
-    ///     f.value::<_, Scalar<_>>(&x) * Point::generator(),    
-    ///     F.value::<_, Point<_>>(&x)
-    /// );
-    /// ```
-    pub fn value<P, O>(&self, point: &P) -> O
+    /// $k$ needs to be of type `C`.
+    impl<C> ops::Mul<&C> for Polynomial<C>
     where
-        O: Zero,
-        for<'a> O: ops::Mul<&'a P, Output = O> + ops::Add<&'a C, Output = O>,
+        for<'a> &'a C: ops::Mul<&'a C, Output = C>,
     {
-        self.coefs
-            .iter()
-            .rev()
-            .fold(O::zero(), |acc, coef_i| acc * point + coef_i)
-    }
-}
+        type Output = Polynomial<C>;
 
-/// Multiplies polyinomial $F(x)$ at $k$ returning resulting polyinomial
-/// $F'(x) = k \cdot F(x)$ without allocations
-///
-/// $k$ needs to be of type `C`.
-impl<C> ops::Mul<&C> for Polynomial<C>
-where
-    for<'a> &'a C: ops::Mul<&'a C, Output = C>,
-{
-    type Output = Polynomial<C>;
-
-    fn mul(mut self, rhs: &C) -> Self::Output {
-        self.coefs
-            .iter_mut()
-            .for_each(|coef_i| *coef_i = &*coef_i * rhs);
-        self
-    }
-}
-
-/// Multiplies polynomial $F(x)$ at $k$ returning resulting polynomial
-/// $F'(x) = k \cdot F(x)$, resulting polynomial is allocated at heap
-///
-/// $k$ can be any type as long as it can be multiplied at `C`
-impl<B, C, O> ops::Mul<&B> for &Polynomial<C>
-where
-    for<'a> &'a C: ops::Mul<&'a B, Output = O>,
-{
-    type Output = Polynomial<O>;
-
-    fn mul(self, rhs: &B) -> Self::Output {
-        Polynomial {
-            coefs: self.coefs.iter().map(|coef_i| coef_i * rhs).collect(),
+        fn mul(mut self, rhs: &C) -> Self::Output {
+            self.coefs
+                .iter_mut()
+                .for_each(|coef_i| *coef_i = &*coef_i * rhs);
+            self
         }
     }
-}
 
-impl<C> ops::AddAssign<&Polynomial<C>> for Polynomial<C>
-where
-    C: Clone + for<'a> ops::AddAssign<&'a C>,
-{
-    fn add_assign(&mut self, rhs: &Polynomial<C>) {
-        self.coefs
-            .iter_mut()
-            .zip(&rhs.coefs)
-            .for_each(|(f1_coef_i, f2_coef_i)| *f1_coef_i += f2_coef_i);
-        if self.coefs.len() < rhs.coefs.len() {
-            let self_len = self.coefs.len();
-            self.coefs.extend_from_slice(&rhs.coefs[self_len..])
+    /// Multiplies polynomial $F(x)$ at $k$ returning resulting polynomial
+    /// $F'(x) = k \cdot F(x)$, resulting polynomial is allocated at heap
+    ///
+    /// $k$ can be any type as long as it can be multiplied at `C`
+    impl<B, C, O> ops::Mul<&B> for &Polynomial<C>
+    where
+        for<'a> &'a C: ops::Mul<&'a B, Output = O>,
+    {
+        type Output = Polynomial<O>;
+
+        fn mul(self, rhs: &B) -> Self::Output {
+            Polynomial {
+                coefs: self.coefs.iter().map(|coef_i| coef_i * rhs).collect(),
+            }
         }
     }
-}
 
-impl<C> ops::Add<&Polynomial<C>> for Polynomial<C>
-where
-    C: Clone + for<'a> ops::AddAssign<&'a C>,
-{
-    type Output = Polynomial<C>;
-
-    fn add(mut self, rhs: &Polynomial<C>) -> Self::Output {
-        self += rhs;
-        self
+    impl<C> ops::AddAssign<&Polynomial<C>> for Polynomial<C>
+    where
+        C: Clone + for<'a> ops::AddAssign<&'a C>,
+    {
+        fn add_assign(&mut self, rhs: &Polynomial<C>) {
+            self.coefs
+                .iter_mut()
+                .zip(&rhs.coefs)
+                .for_each(|(f1_coef_i, f2_coef_i)| *f1_coef_i += f2_coef_i);
+            if self.coefs.len() < rhs.coefs.len() {
+                let self_len = self.coefs.len();
+                self.coefs.extend_from_slice(&rhs.coefs[self_len..])
+            }
+        }
     }
-}
 
-impl<'a, C> iter::Sum<&'a Polynomial<C>> for Polynomial<C>
-where
-    C: Clone + 'a,
-    C: for<'c> ops::AddAssign<&'c C>,
-{
-    fn sum<I: Iterator<Item = &'a Polynomial<C>>>(mut iter: I) -> Self {
-        let Some(mut sum) = iter.next().cloned() else {
+    impl<C> ops::Add<&Polynomial<C>> for Polynomial<C>
+    where
+        C: Clone + for<'a> ops::AddAssign<&'a C>,
+    {
+        type Output = Polynomial<C>;
+
+        fn add(mut self, rhs: &Polynomial<C>) -> Self::Output {
+            self += rhs;
+            self
+        }
+    }
+
+    impl<'a, C> iter::Sum<&'a Polynomial<C>> for Polynomial<C>
+    where
+        C: Clone + 'a,
+        C: for<'c> ops::AddAssign<&'c C>,
+    {
+        fn sum<I: Iterator<Item = &'a Polynomial<C>>>(mut iter: I) -> Self {
+            let Some(mut sum) = iter.next().cloned() else {
             return Self{ coefs: vec![] };
         };
-        for polynomial in iter {
-            sum += polynomial;
+            for polynomial in iter {
+                sum += polynomial;
+            }
+            sum
         }
-        sum
     }
-}
 
-impl<C> iter::Sum<Polynomial<C>> for Polynomial<C>
-where
-    C: for<'a> ops::AddAssign<&'a C> + Clone,
-{
-    fn sum<I: Iterator<Item = Polynomial<C>>>(mut iter: I) -> Self {
-        let Some(mut sum) = iter.next() else {
+    impl<C> iter::Sum<Polynomial<C>> for Polynomial<C>
+    where
+        C: for<'a> ops::AddAssign<&'a C> + Clone,
+    {
+        fn sum<I: Iterator<Item = Polynomial<C>>>(mut iter: I) -> Self {
+            let Some(mut sum) = iter.next() else {
             return Self{ coefs: vec![] };
         };
-        for polynomial in iter {
-            sum += &polynomial
+            for polynomial in iter {
+                sum += &polynomial
+            }
+            sum
         }
-        sum
+    }
+
+    #[cfg(feature = "serde")]
+    impl<C> serde::Serialize for Polynomial<C>
+    where
+        C: serde::Serialize,
+    {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            self.coefs.serialize(serializer)
+        }
+    }
+
+    #[cfg(feature = "serde")]
+    impl<'de, C: IsZero> serde::Deserialize<'de> for Polynomial<C>
+    where
+        C: serde::Deserialize<'de>,
+    {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            let coefs = Vec::<C>::deserialize(deserializer)?;
+            Ok(Self::from_coefs(coefs))
+        }
     }
 }
 
-#[cfg(feature = "serde")]
-impl<C> serde::Serialize for Polynomial<C>
-where
-    C: serde::Serialize,
-{
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        self.coefs.serialize(serializer)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de, C: IsZero> serde::Deserialize<'de> for Polynomial<C>
-where
-    C: serde::Deserialize<'de>,
-{
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let coefs = Vec::<C>::deserialize(deserializer)?;
-        Ok(Self::from_coefs(coefs))
-    }
-}
+use generic_ec::{Curve, NonZero, Scalar};
 
 /// Calculates lagrange coefficient $\lambda_j$ to interpolate a polynomial at point $x$
 ///
@@ -355,10 +367,11 @@ pub fn lagrange_coefficient<E: Curve>(
     NonZero::from_scalar(nom * denom_inv)
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "alloc"))]
 #[generic_tests::define]
 #[allow(non_snake_case)]
 mod tests {
+    use alloc::vec::Vec;
     use core::iter;
 
     use generic_ec::{Curve, NonZero, Point, Scalar, SecretScalar};
