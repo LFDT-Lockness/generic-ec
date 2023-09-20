@@ -183,12 +183,15 @@ mod tests {
 
     #[instantiate_tests(<Secp256r1>)]
     mod secp256r1 {}
+
+    #[instantiate_tests(<Stark>)]
+    mod stark {}
 }
 
 #[generic_tests::define]
 mod coordinates {
     use generic_ec::coords::{HasAffineX, HasAffineXAndParity, HasAffineXY, HasAffineY};
-    use generic_ec::curves::{Secp256k1, Secp256r1};
+    use generic_ec::curves::{Secp256k1, Secp256r1, Stark};
     use generic_ec::{Curve, Point, Scalar};
 
     use rand_dev::DevRng;
@@ -241,4 +244,7 @@ mod coordinates {
 
     #[instantiate_tests(<Secp256r1>)]
     mod secp256r1 {}
+
+    #[instantiate_tests(<Stark>)]
+    mod stark {}
 }

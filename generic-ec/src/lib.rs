@@ -229,4 +229,7 @@ pub mod curves {
     #[cfg(feature = "curve-secp256r1")]
     #[cfg_attr(docsrs, doc(cfg(feature = "curve-secp256r1")))]
     pub use generic_ec_curves::Secp256r1;
+    #[cfg(feature = "curve-stark")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "curve-stark")))]
+    pub use generic_ec_curves::Stark;
 }

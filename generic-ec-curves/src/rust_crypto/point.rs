@@ -4,15 +4,15 @@ use core::hash::{self, Hash};
 use elliptic_curve::group::cofactor::CofactorGroup;
 use elliptic_curve::{
     sec1::{EncodedPoint, FromEncodedPoint, ModulusSize, ToEncodedPoint},
-    AffineArithmetic, FieldSize, Group, ProjectiveArithmetic,
+    CurveArithmetic, FieldBytesSize, Group,
 };
 use generic_ec_core::*;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq};
 use zeroize::Zeroize;
 
-pub struct RustCryptoPoint<E: ProjectiveArithmetic>(pub E::ProjectivePoint);
+pub struct RustCryptoPoint<E: CurveArithmetic>(pub E::ProjectivePoint);
 
-impl<E: ProjectiveArithmetic> Additive for RustCryptoPoint<E> {
+impl<E: CurveArithmetic> Additive for RustCryptoPoint<E> {
     #[inline]
     fn add(a: &Self, b: &Self) -> Self {
         RustCryptoPoint(a.0 + b.0)
@@ -29,14 +29,14 @@ impl<E: ProjectiveArithmetic> Additive for RustCryptoPoint<E> {
     }
 }
 
-impl<E: ProjectiveArithmetic> From<CurveGenerator> for RustCryptoPoint<E> {
+impl<E: CurveArithmetic> From<CurveGenerator> for RustCryptoPoint<E> {
     #[inline]
     fn from(_: CurveGenerator) -> Self {
         RustCryptoPoint(E::ProjectivePoint::generator())
     }
 }
 
-impl<E: ProjectiveArithmetic> Zero for RustCryptoPoint<E> {
+impl<E: CurveArithmetic> Zero for RustCryptoPoint<E> {
     #[inline]
     fn zero() -> Self {
         RustCryptoPoint(E::ProjectivePoint::identity())
@@ -48,7 +48,7 @@ impl<E: ProjectiveArithmetic> Zero for RustCryptoPoint<E> {
     }
 }
 
-impl<E: ProjectiveArithmetic> OnCurve for RustCryptoPoint<E> {
+impl<E: CurveArithmetic> OnCurve for RustCryptoPoint<E> {
     #[inline]
     fn is_on_curve(&self) -> Choice {
         Choice::from(1)
@@ -57,7 +57,7 @@ impl<E: ProjectiveArithmetic> OnCurve for RustCryptoPoint<E> {
 
 impl<E> SmallFactor for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic,
+    E: CurveArithmetic,
     E::ProjectivePoint: CofactorGroup,
 {
     #[inline]
@@ -68,7 +68,7 @@ where
 
 impl<E> ConstantTimeEq for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic,
+    E: CurveArithmetic,
     E::ProjectivePoint: ConstantTimeEq,
 {
     #[inline]
@@ -79,7 +79,7 @@ where
 
 impl<E> ConditionallySelectable for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic,
+    E: CurveArithmetic,
     E::ProjectivePoint: ConditionallySelectable,
 {
     #[inline]
@@ -100,9 +100,9 @@ where
 
 impl<E> CompressedEncoding for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic + AffineArithmetic,
+    E: CurveArithmetic,
     E::AffinePoint: ToEncodedPoint<E> + From<E::ProjectivePoint>,
-    FieldSize<E>: ModulusSize,
+    FieldBytesSize<E>: ModulusSize,
 {
     type Bytes = elliptic_curve::sec1::CompressedPoint<E>;
     fn to_bytes_compressed(&self) -> Self::Bytes {
@@ -117,9 +117,9 @@ where
 
 impl<E> UncompressedEncoding for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic + AffineArithmetic,
+    E: CurveArithmetic,
     E::AffinePoint: ToEncodedPoint<E> + From<E::ProjectivePoint>,
-    FieldSize<E>: ModulusSize,
+    FieldBytesSize<E>: ModulusSize,
 {
     type Bytes = elliptic_curve::sec1::UncompressedPoint<E>;
     fn to_bytes_uncompressed(&self) -> Self::Bytes {
@@ -134,9 +134,9 @@ where
 
 impl<E> Decode for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic + AffineArithmetic,
+    E: CurveArithmetic,
     E::AffinePoint: FromEncodedPoint<E> + Into<E::ProjectivePoint>,
-    FieldSize<E>: ModulusSize,
+    FieldBytesSize<E>: ModulusSize,
 {
     fn decode(bytes: &[u8]) -> Option<Self> {
         let encoded_point = EncodedPoint::<E>::from_bytes(bytes).ok()?;
@@ -147,7 +147,7 @@ where
 
 impl<E> Clone for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic,
+    E: CurveArithmetic,
 {
     fn clone(&self) -> Self {
         Self(self.0)
@@ -156,14 +156,14 @@ where
 
 impl<E> Copy for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic,
+    E: CurveArithmetic,
     E::ProjectivePoint: Copy,
 {
 }
 
 impl<E> Zeroize for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic,
+    E: CurveArithmetic,
     E::ProjectivePoint: Zeroize,
 {
     fn zeroize(&mut self) {
@@ -173,7 +173,7 @@ where
 
 impl<E> PartialEq for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic,
+    E: CurveArithmetic,
     E::ProjectivePoint: PartialEq,
 {
     fn eq(&self, other: &Self) -> bool {
@@ -183,14 +183,14 @@ where
 
 impl<E> Eq for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic,
+    E: CurveArithmetic,
     E::ProjectivePoint: Eq,
 {
 }
 
 impl<E> Hash for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic,
+    E: CurveArithmetic,
     E::ProjectivePoint: Hash,
 {
     fn hash<H: hash::Hasher>(&self, state: &mut H) {
@@ -200,7 +200,7 @@ where
 
 impl<E> PartialOrd for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic,
+    E: CurveArithmetic,
     E::ProjectivePoint: PartialOrd,
 {
     fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
@@ -210,7 +210,7 @@ where
 
 impl<E> Ord for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic,
+    E: CurveArithmetic,
     E::ProjectivePoint: Ord,
 {
     fn cmp(&self, other: &Self) -> cmp::Ordering {
@@ -220,7 +220,7 @@ where
 
 impl<E> Default for RustCryptoPoint<E>
 where
-    E: ProjectiveArithmetic,
+    E: CurveArithmetic,
     E::ProjectivePoint: Default,
 {
     fn default() -> Self {

@@ -164,7 +164,7 @@ impl<E: Curve> fmt::Debug for Point<E> {
         s.finish()
     }
 }
-#[allow(clippy::derive_hash_xor_eq)]
+#[allow(clippy::derived_hash_with_manual_eq)]
 impl<E: Curve> Hash for Point<E> {
     fn hash<H: hash::Hasher>(&self, state: &mut H) {
         state.write(self.to_bytes(true).as_bytes())

@@ -2,15 +2,15 @@ use elliptic_curve::generic_array::GenericArray;
 use elliptic_curve::sec1::{
     CompressedPointSize, Coordinates, EncodedPoint, FromEncodedPoint, Tag, ToEncodedPoint,
 };
-use elliptic_curve::{AffineArithmetic, FieldSize, ProjectiveArithmetic};
+use elliptic_curve::{CurveArithmetic, FieldBytesSize};
 use generic_ec_core::coords::{HasAffineX, HasAffineXAndParity, HasAffineXY, HasAffineY, Parity};
 
 use super::{RustCryptoCurve, RustCryptoPoint};
 
 impl<C, X> HasAffineX for RustCryptoCurve<C, X>
 where
-    C: ProjectiveArithmetic + AffineArithmetic,
-    FieldSize<C>: elliptic_curve::sec1::ModulusSize,
+    C: CurveArithmetic,
+    FieldBytesSize<C>: elliptic_curve::sec1::ModulusSize,
     C::AffinePoint: ToEncodedPoint<C> + From<C::ProjectivePoint>,
     RustCryptoCurve<C, X>: generic_ec_core::Curve<
         Point = RustCryptoPoint<C>,
@@ -33,8 +33,8 @@ where
 
 impl<C, X> HasAffineXAndParity for RustCryptoCurve<C, X>
 where
-    C: ProjectiveArithmetic + AffineArithmetic,
-    FieldSize<C>: elliptic_curve::sec1::ModulusSize,
+    C: CurveArithmetic,
+    FieldBytesSize<C>: elliptic_curve::sec1::ModulusSize,
     C::AffinePoint: ToEncodedPoint<C>
         + FromEncodedPoint<C>
         + From<C::ProjectivePoint>
@@ -76,8 +76,8 @@ where
 
 impl<C, X> HasAffineY for RustCryptoCurve<C, X>
 where
-    C: ProjectiveArithmetic + AffineArithmetic,
-    FieldSize<C>: elliptic_curve::sec1::ModulusSize,
+    C: CurveArithmetic,
+    FieldBytesSize<C>: elliptic_curve::sec1::ModulusSize,
     C::AffinePoint: ToEncodedPoint<C> + From<C::ProjectivePoint>,
     RustCryptoCurve<C, X>: generic_ec_core::Curve<
         Point = RustCryptoPoint<C>,
@@ -100,8 +100,8 @@ where
 
 impl<C, X> HasAffineXY for RustCryptoCurve<C, X>
 where
-    C: ProjectiveArithmetic + AffineArithmetic,
-    FieldSize<C>: elliptic_curve::sec1::ModulusSize,
+    C: CurveArithmetic,
+    FieldBytesSize<C>: elliptic_curve::sec1::ModulusSize,
     C::AffinePoint: ToEncodedPoint<C>
         + FromEncodedPoint<C>
         + From<C::ProjectivePoint>

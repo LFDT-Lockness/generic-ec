@@ -7,14 +7,12 @@ use elliptic_curve::group::cofactor::CofactorGroup;
 use elliptic_curve::hash2curve::ExpandMsgXmd;
 use elliptic_curve::ops::Reduce;
 use elliptic_curve::sec1::{FromEncodedPoint, ModulusSize, ToEncodedPoint};
-use elliptic_curve::{
-    AffineArithmetic, FieldSize, ProjectiveArithmetic, ScalarArithmetic, ScalarCore,
-};
+use elliptic_curve::{CurveArithmetic, FieldBytesSize, ScalarPrimitive};
 use generic_ec_core::{CompressedEncoding, Curve, IntegerEncoding, UncompressedEncoding};
 use subtle::{ConditionallySelectable, ConstantTimeEq};
 use zeroize::{DefaultIsZeroes, Zeroize};
 
-#[cfg(any(feature = "secp256k1", feature = "secp256r1"))]
+#[cfg(any(feature = "secp256k1", feature = "secp256r1", feature = "stark"))]
 use sha2::Sha256;
 
 pub use self::{curve_name::CurveName, point::RustCryptoPoint, scalar::RustCryptoScalar};
@@ -40,9 +38,12 @@ pub type Secp256k1 = RustCryptoCurve<k256::Secp256k1, ExpandMsgXmd<Sha256>>;
 #[cfg(feature = "secp256r1")]
 pub type Secp256r1 = RustCryptoCurve<p256::NistP256, ExpandMsgXmd<Sha256>>;
 
+#[cfg(feature = "stark")]
+pub type Stark = RustCryptoCurve<stark_curve::StarkCurve, ExpandMsgXmd<Sha256>>;
+
 impl<C, X> Curve for RustCryptoCurve<C, X>
 where
-    C: CurveName + ScalarArithmetic + ProjectiveArithmetic + AffineArithmetic,
+    C: CurveName + CurveArithmetic,
     C::ProjectivePoint: From<C::AffinePoint>
         + CofactorGroup
         + Copy
@@ -55,9 +56,9 @@ where
     C::AffinePoint: From<C::ProjectivePoint> + ToEncodedPoint<C> + FromEncodedPoint<C>,
     for<'a> &'a C::ProjectivePoint: Mul<&'a C::Scalar, Output = C::ProjectivePoint>,
     C::Scalar:
-        Reduce<C::UInt> + Eq + ConstantTimeEq + ConditionallySelectable + DefaultIsZeroes + Unpin,
-    for<'a> ScalarCore<C>: From<&'a C::Scalar>,
-    FieldSize<C>: ModulusSize,
+        Reduce<C::Uint> + Eq + ConstantTimeEq + ConditionallySelectable + DefaultIsZeroes + Unpin,
+    for<'a> ScalarPrimitive<C>: From<&'a C::Scalar>,
+    FieldBytesSize<C>: ModulusSize,
     X: 'static,
 {
     const CURVE_NAME: &'static str = C::CURVE_NAME;
