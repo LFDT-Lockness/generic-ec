@@ -3,17 +3,19 @@ name: Rust
 on:
   pull_request:
     branches: [ "*" ]
-  schedule:
-    - cron: '0 5 * * *'
 
 env:
   CARGO_TERM_COLOR: always
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.STARK_CURVE_KEY }}
     - uses: Swatinem/rust-cache@v2
       with:
         cache-on-failure: "true"
@@ -37,6 +39,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.STARK_CURVE_KEY }}
     - uses: Swatinem/rust-cache@v2
       with:
         cache-on-failure: "true"

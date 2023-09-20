@@ -1,16 +1,18 @@
 use core::ops::Mul;
 
+use crypto_bigint::prelude::ArrayEncoding;
+use crypto_bigint::ByteArray;
 use elliptic_curve::ops::Reduce;
-use elliptic_curve::{
-    Field, FieldBytes, Group, PrimeField, ProjectiveArithmetic, ScalarArithmetic, ScalarCore,
+use elliptic_curve::{Curve, CurveArithmetic, Field, Group, PrimeField, ScalarPrimitive};
+use generic_ec_core::{
+    Additive, CurveGenerator, IntegerEncoding, Invertible, Multiplicative, One, Samplable, Zero,
 };
-use generic_ec_core::*;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::DefaultIsZeroes;
 
-pub struct RustCryptoScalar<E: ScalarArithmetic>(pub E::Scalar);
+pub struct RustCryptoScalar<E: CurveArithmetic>(pub E::Scalar);
 
-impl<E: ScalarArithmetic> Additive for RustCryptoScalar<E> {
+impl<E: CurveArithmetic> Additive for RustCryptoScalar<E> {
     fn add(a: &Self, b: &Self) -> Self {
         Self(a.0 + b.0)
     }
@@ -24,7 +26,7 @@ impl<E: ScalarArithmetic> Additive for RustCryptoScalar<E> {
     }
 }
 
-impl<E: ScalarArithmetic> Multiplicative<RustCryptoScalar<E>> for RustCryptoScalar<E> {
+impl<E: CurveArithmetic> Multiplicative<RustCryptoScalar<E>> for RustCryptoScalar<E> {
     type Output = RustCryptoScalar<E>;
 
     fn mul(a: &Self, b: &RustCryptoScalar<E>) -> Self::Output {
@@ -34,7 +36,7 @@ impl<E: ScalarArithmetic> Multiplicative<RustCryptoScalar<E>> for RustCryptoScal
 
 impl<E> Multiplicative<super::RustCryptoPoint<E>> for RustCryptoScalar<E>
 where
-    E: ProjectiveArithmetic + ScalarArithmetic,
+    E: CurveArithmetic,
     for<'a> &'a E::ProjectivePoint: Mul<&'a E::Scalar, Output = E::ProjectivePoint>,
 {
     type Output = super::RustCryptoPoint<E>;
@@ -46,7 +48,7 @@ where
 
 impl<E> Multiplicative<CurveGenerator> for RustCryptoScalar<E>
 where
-    E: ProjectiveArithmetic + ScalarArithmetic,
+    E: CurveArithmetic,
     for<'a> &'a E::ProjectivePoint: Mul<&'a E::Scalar, Output = E::ProjectivePoint>,
 {
     type Output = super::RustCryptoPoint<E>;
@@ -56,15 +58,15 @@ where
     }
 }
 
-impl<E: ScalarArithmetic> Invertible for RustCryptoScalar<E> {
+impl<E: CurveArithmetic> Invertible for RustCryptoScalar<E> {
     fn invert(x: &Self) -> CtOption<Self> {
         x.0.invert().map(Self)
     }
 }
 
-impl<E: ScalarArithmetic> Zero for RustCryptoScalar<E> {
+impl<E: CurveArithmetic> Zero for RustCryptoScalar<E> {
     fn zero() -> Self {
-        Self(E::Scalar::zero())
+        Self(E::Scalar::ZERO)
     }
 
     fn is_zero(x: &Self) -> subtle::Choice {
@@ -72,17 +74,17 @@ impl<E: ScalarArithmetic> Zero for RustCryptoScalar<E> {
     }
 }
 
-impl<E: ScalarArithmetic> One for RustCryptoScalar<E> {
+impl<E: CurveArithmetic> One for RustCryptoScalar<E> {
     fn one() -> Self {
-        Self(E::Scalar::one())
+        Self(E::Scalar::ONE)
     }
 
     fn is_one(x: &Self) -> Choice {
-        x.0.ct_eq(&E::Scalar::one())
+        x.0.ct_eq(&E::Scalar::ONE)
     }
 }
 
-impl<E: ScalarArithmetic> Samplable for RustCryptoScalar<E> {
+impl<E: CurveArithmetic> Samplable for RustCryptoScalar<E> {
     fn random<R: rand_core::RngCore>(rng: &mut R) -> Self {
         let mut bytes: <E::Scalar as PrimeField>::Repr = Default::default();
 
@@ -96,30 +98,30 @@ impl<E: ScalarArithmetic> Samplable for RustCryptoScalar<E> {
     }
 }
 
-impl<E: ScalarArithmetic> Default for RustCryptoScalar<E> {
+impl<E: CurveArithmetic> Default for RustCryptoScalar<E> {
     fn default() -> Self {
         Self(Default::default())
     }
 }
 
-impl<E: ScalarArithmetic> Clone for RustCryptoScalar<E> {
+impl<E: CurveArithmetic> Clone for RustCryptoScalar<E> {
     fn clone(&self) -> Self {
-        Self(self.0)
+        *self
     }
 }
 
-impl<E: ScalarArithmetic> Copy for RustCryptoScalar<E> {}
+impl<E: CurveArithmetic> Copy for RustCryptoScalar<E> {}
 
 impl<E> DefaultIsZeroes for RustCryptoScalar<E>
 where
-    E: ScalarArithmetic,
+    E: CurveArithmetic,
     E::Scalar: DefaultIsZeroes,
 {
 }
 
 impl<E> PartialEq for RustCryptoScalar<E>
 where
-    E: ScalarArithmetic,
+    E: CurveArithmetic,
     E::Scalar: PartialEq,
 {
     fn eq(&self, other: &Self) -> bool {
@@ -129,14 +131,14 @@ where
 
 impl<E> Eq for RustCryptoScalar<E>
 where
-    E: ScalarArithmetic,
+    E: CurveArithmetic,
     E::Scalar: Eq,
 {
 }
 
 impl<E> ConstantTimeEq for RustCryptoScalar<E>
 where
-    E: ScalarArithmetic,
+    E: CurveArithmetic,
     E::Scalar: ConstantTimeEq,
 {
     fn ct_eq(&self, other: &Self) -> Choice {
@@ -146,7 +148,7 @@ where
 
 impl<E> ConditionallySelectable for RustCryptoScalar<E>
 where
-    E: ScalarArithmetic,
+    E: CurveArithmetic,
     E::Scalar: ConditionallySelectable,
 {
     fn conditional_select(a: &Self, b: &Self, choice: Choice) -> Self {
@@ -154,40 +156,44 @@ where
     }
 }
 
-impl<E: ScalarArithmetic> IntegerEncoding for RustCryptoScalar<E>
+impl<E: CurveArithmetic + Curve> IntegerEncoding for RustCryptoScalar<E>
 where
-    for<'s> ScalarCore<E>: From<&'s E::Scalar>,
-    E::Scalar: Reduce<E::UInt>,
+    for<'s> ScalarPrimitive<E>: From<&'s E::Scalar>,
+    E::Scalar: Reduce<E::Uint>,
 {
-    type Bytes = FieldBytes<E>;
+    type Bytes = ByteArray<E::Uint>;
 
     fn to_be_bytes(&self) -> Self::Bytes {
-        let scalar_core = ScalarCore::<E>::from(&self.0);
-        scalar_core.to_be_bytes()
+        let scalar_core = ScalarPrimitive::<E>::from(&self.0);
+        let uint = scalar_core.as_uint();
+        uint.to_be_byte_array()
     }
 
     fn to_le_bytes(&self) -> Self::Bytes {
-        let scalar_core = ScalarCore::<E>::from(&self.0);
-        scalar_core.to_le_bytes()
+        let scalar_core = ScalarPrimitive::<E>::from(&self.0);
+        let uint = scalar_core.as_uint();
+        uint.to_le_byte_array()
     }
 
     fn from_be_bytes(bytes: &Self::Bytes) -> Self {
-        Self(E::Scalar::from_be_bytes_reduced(bytes.clone()))
+        let uint = E::Uint::from_be_byte_array(bytes.clone());
+        Self(Reduce::reduce(uint))
     }
 
     fn from_le_bytes(bytes: &Self::Bytes) -> Self {
-        Self(E::Scalar::from_le_bytes_reduced(bytes.clone()))
+        let uint = E::Uint::from_le_byte_array(bytes.clone());
+        Self(Reduce::reduce(uint))
     }
 
     fn from_be_bytes_exact(bytes: &Self::Bytes) -> Option<Self> {
-        let scalar_core: Option<ScalarCore<E>> =
-            ScalarCore::<E>::from_be_bytes(bytes.clone()).into();
+        let uint = E::Uint::from_be_byte_array(bytes.clone());
+        let scalar_core: Option<ScalarPrimitive<E>> = ScalarPrimitive::<E>::new(uint).into();
         Some(Self(E::Scalar::from(scalar_core?)))
     }
 
     fn from_le_bytes_exact(bytes: &Self::Bytes) -> Option<Self> {
-        let scalar_core: Option<ScalarCore<E>> =
-            ScalarCore::<E>::from_le_bytes(bytes.clone()).into();
+        let uint = E::Uint::from_le_byte_array(bytes.clone());
+        let scalar_core: Option<ScalarPrimitive<E>> = ScalarPrimitive::<E>::new(uint).into();
         Some(Self(E::Scalar::from(scalar_core?)))
     }
 }

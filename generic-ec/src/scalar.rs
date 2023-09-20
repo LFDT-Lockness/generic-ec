@@ -333,7 +333,7 @@ impl<E: Curve> fmt::Debug for Scalar<E> {
     }
 }
 
-#[allow(clippy::derive_hash_xor_eq)]
+#[allow(clippy::derived_hash_with_manual_eq)]
 impl<E: Curve> Hash for Scalar<E> {
     fn hash<H: hash::Hasher>(&self, state: &mut H) {
         state.write(self.to_be_bytes().as_bytes())

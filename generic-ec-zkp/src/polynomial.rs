@@ -243,8 +243,8 @@ mod requires_alloc {
     {
         fn sum<I: Iterator<Item = &'a Polynomial<C>>>(mut iter: I) -> Self {
             let Some(mut sum) = iter.next().cloned() else {
-            return Self{ coefs: vec![] };
-        };
+                return Self { coefs: vec![] };
+            };
             for polynomial in iter {
                 sum += polynomial;
             }
@@ -258,8 +258,8 @@ mod requires_alloc {
     {
         fn sum<I: Iterator<Item = Polynomial<C>>>(mut iter: I) -> Self {
             let Some(mut sum) = iter.next() else {
-            return Self{ coefs: vec![] };
-        };
+                return Self { coefs: vec![] };
+            };
             for polynomial in iter {
                 sum += &polynomial
             }
@@ -485,4 +485,6 @@ mod tests {
     mod secp256k1 {}
     #[instantiate_tests(<generic_ec::curves::Secp256r1>)]
     mod secp256r1 {}
+    #[instantiate_tests(<generic_ec::curves::Stark>)]
+    mod stark {}
 }
