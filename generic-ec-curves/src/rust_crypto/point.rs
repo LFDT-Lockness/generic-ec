@@ -150,7 +150,7 @@ where
     E: CurveArithmetic,
 {
     fn clone(&self) -> Self {
-        Self(self.0)
+        *self
     }
 }
 

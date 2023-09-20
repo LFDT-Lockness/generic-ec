@@ -84,7 +84,7 @@ impl<C: CurveName, X> fmt::Debug for RustCryptoCurve<C, X> {
 
 impl<C, X> Clone for RustCryptoCurve<C, X> {
     fn clone(&self) -> Self {
-        Self { _ph: PhantomData }
+        *self
     }
 }
 

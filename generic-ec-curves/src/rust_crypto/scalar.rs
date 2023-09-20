@@ -106,7 +106,7 @@ impl<E: CurveArithmetic> Default for RustCryptoScalar<E> {
 
 impl<E: CurveArithmetic> Clone for RustCryptoScalar<E> {
     fn clone(&self) -> Self {
-        Self(self.0)
+        *self
     }
 }
 
