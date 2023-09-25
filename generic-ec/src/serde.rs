@@ -412,13 +412,13 @@ mod utils {
                         },
                     ));
                 }
-                let mut buf = &mut buf[..2 * source.as_ref().len()];
-                hex::encode_to_slice(source, &mut buf)
+                let buf = &mut buf[..2 * source.as_ref().len()];
+                hex::encode_to_slice(source, buf)
                     .map_err(<S::Error as serde::ser::Error>::custom)?;
-                let buf_str = core::str::from_utf8(&buf).map_err(|e| {
+                let buf_str = core::str::from_utf8(buf).map_err(|e| {
                     <S::Error as serde::ser::Error>::custom(super::error_msg::MalformedHex(e))
                 })?;
-                return serializer.serialize_str(&buf_str);
+                serializer.serialize_str(buf_str)
             } else {
                 serializer.serialize_bytes(source.as_ref())
             }
