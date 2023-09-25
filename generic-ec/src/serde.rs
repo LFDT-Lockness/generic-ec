@@ -399,13 +399,29 @@ mod utils {
         where
             S: serde::Serializer,
         {
-            #[cfg(feature = "alloc")]
             if serializer.is_human_readable() {
-                let bytes_hex = hex::encode(source);
-                return serializer.serialize_str(&bytes_hex);
-            }
+                // We only support serialization of byte arrays up to 128 bytes. It can be generalized when
+                // Rust has better support of const generics
+                let mut buf = [0u8; 256];
 
-            serializer.serialize_bytes(source.as_ref())
+                if source.as_ref().len() * 2 > buf.len() {
+                    return Err(<S::Error as serde::ser::Error>::custom(
+                        super::error_msg::ByteArrayTooLarge {
+                            len: source.as_ref().len(),
+                            supported_len: buf.len() / 2,
+                        },
+                    ));
+                }
+                let mut buf = &mut buf[..2 * source.as_ref().len()];
+                hex::encode_to_slice(source, &mut buf)
+                    .map_err(<S::Error as serde::ser::Error>::custom)?;
+                let buf_str = core::str::from_utf8(&buf).map_err(|e| {
+                    <S::Error as serde::ser::Error>::custom(super::error_msg::MalformedHex(e))
+                })?;
+                return serializer.serialize_str(&buf_str);
+            } else {
+                serializer.serialize_bytes(source.as_ref())
+            }
         }
     }
 
@@ -526,6 +542,23 @@ mod error_msg {
     impl fmt::Display for InvalidScalar {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             write!(f, "invalid scalar")
+        }
+    }
+
+    pub struct MalformedHex(pub core::str::Utf8Error);
+    impl fmt::Display for MalformedHex {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "malformed hex: {}", self.0)
+        }
+    }
+
+    pub struct ByteArrayTooLarge {
+        pub len: usize,
+        pub supported_len: usize,
+    }
+    impl fmt::Display for ByteArrayTooLarge {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "byte array is too large: its length is {} bytes, but only up to {} bytes can be serialized", self.len, self.supported_len)
         }
     }
 }
