@@ -109,7 +109,9 @@ where
         let point_encoded = E::AffinePoint::from(self.0).to_encoded_point(true);
 
         let mut bytes = Self::Bytes::default();
-        bytes.copy_from_slice(point_encoded.as_bytes());
+        if !bool::from(Self::is_zero(self)) {
+            bytes.copy_from_slice(point_encoded.as_bytes());
+        }
 
         bytes
     }
@@ -126,7 +128,9 @@ where
         let point_encoded = E::AffinePoint::from(self.0).to_encoded_point(false);
 
         let mut bytes = Self::Bytes::default();
-        bytes.copy_from_slice(point_encoded.as_bytes());
+        if !bool::from(Self::is_zero(self)) {
+            bytes.copy_from_slice(point_encoded.as_bytes());
+        }
 
         bytes
     }
@@ -138,7 +142,13 @@ where
     E::AffinePoint: FromEncodedPoint<E> + Into<E::ProjectivePoint>,
     FieldBytesSize<E>: ModulusSize,
 {
-    fn decode(bytes: &[u8]) -> Option<Self> {
+    fn decode(mut bytes: &[u8]) -> Option<Self> {
+        let all_zero = bytes.iter().all(|b| *b == 0);
+        if all_zero {
+            // This is the only representation of identity point recognized
+            // by `elliptic-curve` library
+            bytes = &[0]
+        }
         let encoded_point = EncodedPoint::<E>::from_bytes(bytes).ok()?;
         Option::from(E::AffinePoint::from_encoded_point(&encoded_point))
             .map(|point: E::AffinePoint| Self(point.into()))

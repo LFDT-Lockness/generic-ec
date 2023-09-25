@@ -104,18 +104,19 @@ mod tests {
     fn point_bytes<E: Curve>() {
         let mut rng = DevRng::new();
 
-        let s = Scalar::<E>::random(&mut rng);
-        let p = Point::generator() * s;
+        let random_point = Point::generator() * Scalar::<E>::random(&mut rng);
 
-        let bytes_compressed = p.to_bytes(true);
-        let bytes_uncompressed = p.to_bytes(false);
-        assert!(bytes_compressed.len() <= bytes_uncompressed.len());
+        for point in [Point::zero(), Point::generator().into(), random_point] {
+            let bytes_compressed = point.to_bytes(true);
+            let bytes_uncompressed = point.to_bytes(false);
+            assert!(bytes_compressed.len() <= bytes_uncompressed.len());
 
-        let p1 = Point::<E>::from_bytes(&bytes_compressed).unwrap();
-        let p2 = Point::<E>::from_bytes(&bytes_uncompressed).unwrap();
+            let p1 = Point::<E>::from_bytes(&bytes_compressed).unwrap();
+            let p2 = Point::<E>::from_bytes(&bytes_uncompressed).unwrap();
 
-        assert_eq!(p, p1);
-        assert_eq!(p, p2);
+            assert_eq!(point, p1);
+            assert_eq!(point, p2);
+        }
     }
 
     #[test]
@@ -161,15 +162,17 @@ mod tests {
     fn scalar_from_bytes_mod_order<E: Curve>() {
         let mut rng = DevRng::new();
 
-        let s = Scalar::<E>::random(&mut rng);
-        let s_be = s.to_be_bytes();
-        let s_le = s.to_le_bytes();
+        let random_scalar = Scalar::<E>::random(&mut rng);
+        for s in [Scalar::zero(), random_scalar] {
+            let s_be = s.to_be_bytes();
+            let s_le = s.to_le_bytes();
 
-        let s1 = Scalar::<E>::from_be_bytes_mod_order(&s_be);
-        let s2 = Scalar::<E>::from_le_bytes_mod_order(&s_le);
+            let s1 = Scalar::<E>::from_be_bytes_mod_order(&s_be);
+            let s2 = Scalar::<E>::from_le_bytes_mod_order(&s_le);
 
-        assert_eq!(s, s1);
-        assert_eq!(s, s2);
+            assert_eq!(s, s1);
+            assert_eq!(s, s2);
+        }
     }
 
     fn _is_copy<T: Copy>() {}
