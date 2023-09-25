@@ -6,9 +6,18 @@ publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[dev-dependencies]
-generic-ec = { path = "../generic-ec", features = ["all-curves"] }
+[dependencies]
+generic-ec = { path = "../generic-ec", default-features = false, features = ["all-curves", "serde"] }
 
+[dev-dependencies]
 generic-tests = "0.1"
 rand_dev = "0.1"
 rand = "0.8"
+
+serde = "1"
+serde_with = "2"
+serde_test = "1"
+hex = "0.4"
+
+[features]
+default = ["generic-ec/std"]
