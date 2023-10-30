@@ -13,6 +13,7 @@ use zeroize::Zeroize;
     )),
     serde(into = "T", try_from = "T")
 )]
+#[cfg_attr(feature = "udigest", derive(udigest::Digestable))]
 pub struct NonZero<T>(T);
 
 impl<T> NonZero<T> {

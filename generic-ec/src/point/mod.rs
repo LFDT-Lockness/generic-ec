@@ -202,3 +202,18 @@ impl<E: Curve> crate::traits::Zero for Point<E> {
         x.ct_eq(&Self::zero())
     }
 }
+
+#[cfg(feature = "udigest")]
+impl<E: Curve> udigest::Digestable for Point<E> {
+    fn unambiguously_encode<B>(&self, encoder: udigest::encoding::EncodeValue<B>)
+    where
+        B: udigest::Buffer,
+    {
+        let mut s = encoder.encode_struct();
+        s.add_field("curve").encode_leaf().chain(E::CURVE_NAME);
+        s.add_field("point")
+            .encode_leaf()
+            .chain(self.to_bytes(true));
+        s.finish();
+    }
+}
