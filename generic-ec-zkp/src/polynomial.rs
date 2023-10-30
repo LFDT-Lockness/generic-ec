@@ -18,6 +18,7 @@ mod requires_alloc {
     /// Polynomial is generic over type of coefficients `C`, it can be `Scalar<E>`, `NonZero<Scalar<E>>`, `SecretScalar<E>`, `Point<E>`,
     /// or any other type that implements necessary traits.
     #[derive(Debug, Clone)]
+    #[cfg_attr(feature = "udigest", derive(udigest::Digestable))]
     pub struct Polynomial<C> {
         /// `coefs[i]` is coefficient of `x^i` term
         ///
