@@ -342,9 +342,7 @@ impl<E: Curve> Hash for Scalar<E> {
 
 impl<E: Curve> PartialOrd for Scalar<E> {
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
-        self.to_be_bytes()
-            .as_bytes()
-            .partial_cmp(other.to_be_bytes().as_bytes())
+        Some(self.cmp(other))
     }
 }
 

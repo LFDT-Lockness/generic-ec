@@ -173,9 +173,7 @@ impl<E: Curve> Hash for Point<E> {
 
 impl<E: Curve> PartialOrd for Point<E> {
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
-        self.to_bytes(true)
-            .as_bytes()
-            .partial_cmp(other.to_bytes(true).as_bytes())
+        Some(self.cmp(other))
     }
 }
 
