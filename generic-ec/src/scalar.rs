@@ -342,9 +342,7 @@ impl<E: Curve> Hash for Scalar<E> {
 
 impl<E: Curve> PartialOrd for Scalar<E> {
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
-        self.to_be_bytes()
-            .as_bytes()
-            .partial_cmp(other.to_be_bytes().as_bytes())
+        Some(self.cmp(other))
     }
 }
 
@@ -353,5 +351,18 @@ impl<E: Curve> Ord for Scalar<E> {
         self.to_be_bytes()
             .as_bytes()
             .cmp(other.to_be_bytes().as_bytes())
+    }
+}
+
+#[cfg(feature = "udigest")]
+impl<E: Curve> udigest::Digestable for Scalar<E> {
+    fn unambiguously_encode<B>(&self, encoder: udigest::encoding::EncodeValue<B>)
+    where
+        B: udigest::Buffer,
+    {
+        let mut s = encoder.encode_struct();
+        s.add_field("curve").encode_leaf_value(E::CURVE_NAME);
+        s.add_field("scalar").encode_leaf_value(self.to_be_bytes());
+        s.finish();
     }
 }

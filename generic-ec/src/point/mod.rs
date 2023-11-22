@@ -173,9 +173,7 @@ impl<E: Curve> Hash for Point<E> {
 
 impl<E: Curve> PartialOrd for Point<E> {
     fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
-        self.to_bytes(true)
-            .as_bytes()
-            .partial_cmp(other.to_bytes(true).as_bytes())
+        Some(self.cmp(other))
     }
 }
 
@@ -200,5 +198,18 @@ impl<E: Curve> crate::traits::Zero for Point<E> {
 
     fn is_zero(x: &Self) -> Choice {
         x.ct_eq(&Self::zero())
+    }
+}
+
+#[cfg(feature = "udigest")]
+impl<E: Curve> udigest::Digestable for Point<E> {
+    fn unambiguously_encode<B>(&self, encoder: udigest::encoding::EncodeValue<B>)
+    where
+        B: udigest::Buffer,
+    {
+        let mut s = encoder.encode_struct();
+        s.add_field("curve").encode_leaf_value(E::CURVE_NAME);
+        s.add_field("point").encode_leaf_value(self.to_bytes(true));
+        s.finish();
     }
 }

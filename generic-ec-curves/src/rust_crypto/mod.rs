@@ -99,8 +99,8 @@ impl<C, X> PartialEq for RustCryptoCurve<C, X> {
 impl<C, X> Eq for RustCryptoCurve<C, X> {}
 
 impl<C, X> PartialOrd for RustCryptoCurve<C, X> {
-    fn partial_cmp(&self, _other: &Self) -> Option<core::cmp::Ordering> {
-        Some(core::cmp::Ordering::Equal)
+    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
+        Some(self.cmp(other))
     }
 }
 

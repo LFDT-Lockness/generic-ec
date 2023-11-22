@@ -7,9 +7,9 @@ edition = "2021"
 
 [dependencies]
 generic-ec = { path = "../generic-ec", default-features = false }
+udigest = { git = "https://github.com/dfns-labs/udigest", branch = "m", features = ["derive"], optional = true }
 
 subtle = "2.4"
-digest = "0.10"
 rand_core = "0.6"
 
 serde = { version = "1", features = ["derive"], optional = true }
@@ -29,5 +29,6 @@ generic-ec = { path = "../generic-ec", default-features = false, features = ["al
 [features]
 default = ["std"]
 std = ["alloc"]
-alloc = []
+alloc = ["udigest/alloc"]
 serde = ["dep:serde", "generic-ec/serde", "generic-array/serde"]
+udigest = ["dep:udigest", "generic-ec/udigest"]

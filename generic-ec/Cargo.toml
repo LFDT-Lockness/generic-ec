@@ -13,6 +13,7 @@ categories = []
 [dependencies]
 generic-ec-core = { path = "../generic-ec-core" }
 generic-ec-curves = { path = "../generic-ec-curves", optional = true }
+udigest = { git = "https://github.com/dfns-labs/udigest", branch = "m", features = ["derive"], optional = true }
 
 subtle = { version = "2.4", default-features = false }
 rand_core = { version = "0.6", default-features = false }
@@ -37,6 +38,7 @@ default = ["std", "serde"]
 std = ["alloc"]
 alloc = ["hex/alloc"]
 serde = ["dep:serde", "generic-ec-core/serde", "hex", "serde_with"]
+udigest = ["dep:udigest"]
 
 curves = ["generic-ec-curves"]
 curve-secp256k1 = ["curves", "generic-ec-curves/secp256k1"]
