@@ -361,10 +361,8 @@ impl<E: Curve> udigest::Digestable for Scalar<E> {
         B: udigest::Buffer,
     {
         let mut s = encoder.encode_struct();
-        s.add_field("curve").encode_leaf().chain(E::CURVE_NAME);
-        s.add_field("scalar")
-            .encode_leaf()
-            .chain(self.to_be_bytes());
+        s.add_field("curve").encode_leaf_value(E::CURVE_NAME);
+        s.add_field("scalar").encode_leaf_value(self.to_be_bytes());
         s.finish();
     }
 }
