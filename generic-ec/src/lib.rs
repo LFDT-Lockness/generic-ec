@@ -1,3 +1,7 @@
+//! ![License](https://img.shields.io/crates/l/generic-ec.svg)
+//! [![Docs](https://docs.rs/generic-ec/badge.svg)](https://docs.rs/generic-ec)
+//! [![Crates io](https://img.shields.io/crates/v/generic-ec.svg)](https://crates.io/crates/generic-ec)
+//!
 //! # General elliptic curve cryptography
 //!
 //! The library provides a set of simple abstractions boosting experience of doing elliptic curve arithmetic
