@@ -1,3 +1,7 @@
+//! # Core traits of `generic-ec` crate
+//!
+//! This crate is not currently properly documented, and API is not considered stable.
+
 #![no_std]
 #![cfg_attr(not(test), forbid(unused_crate_dependencies))]
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used))]
