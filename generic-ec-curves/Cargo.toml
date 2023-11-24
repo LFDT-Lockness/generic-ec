@@ -2,11 +2,14 @@
 name = "generic-ec-curves"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+description = "Elliptic curves for `generic-ec` crate"
+repository = "https://github.com/dfns/generic-ec"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-generic-ec-core = { path = "../generic-ec-core" }
+generic-ec-core = "0.1"
 
 subtle = { version = "2.4", default-features = false }
 rand_core = { version = "0.6", default-features = false }
@@ -17,7 +20,7 @@ elliptic-curve = { version = "0.13", features = ["sec1", "hash2curve"], optional
 k256 = { version = "0.13", optional = true, features = ["hash2curve"] }
 p256 = { version = "0.13", optional = true, features = ["hash2curve"] }
 sha2 = { version = "0.10", optional = true }
-stark-curve = { git = "https://github.com/dfns-labs/stark-curve", optional = true }
+stark-curve = { version = "0.1", optional = true }
 
 [features]
 default = []
@@ -26,3 +29,7 @@ rust-crypto = ["elliptic-curve", "crypto-bigint"]
 secp256k1 = ["rust-crypto", "k256", "sha2"]
 secp256r1 = ["rust-crypto", "p256", "sha2"]
 stark = ["rust-crypto", "stark-curve", "sha2"]
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs", "--html-in-header", "katex-header.html"]

@@ -1,19 +1,21 @@
 [package]
 name = "generic-ec"
-version = "0.0.0"
+version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-description = ""
+repository = "https://github.com/dfns/generic-ec"
+description = "General elliptic curve cryptography"
+readme = "../README.md"
 
-keywords = []
-categories = []
+categories = ["cryptography", "no-std", "no-std::no-alloc"]
+keywords = ["elliptic-curves"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-generic-ec-core = { path = "../generic-ec-core" }
-generic-ec-curves = { path = "../generic-ec-curves", optional = true }
-udigest = { git = "https://github.com/dfns-labs/udigest", branch = "m", features = ["derive"], optional = true }
+generic-ec-core = "0.1"
+generic-ec-curves = { version = "0.1", optional = true }
+udigest = { version = "0.1", features = ["derive"], optional = true }
 
 subtle = { version = "2.4", default-features = false }
 rand_core = { version = "0.6", default-features = false }
@@ -50,4 +52,4 @@ wasm = ["getrandom/js"]
 
 [package.metadata.docs.rs]
 all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
+rustdoc-args = ["--cfg", "docsrs", "--html-in-header", "katex-header.html"]

@@ -11,3 +11,6 @@ docs-private:
 
 readme:
 	cargo rdme -w generic-ec -r README.md
+	cargo rdme -w generic-ec-core -r generic-ec-core/README.md
+	cargo rdme -w generic-ec-curves -r generic-ec-curves/README.md
+	cargo rdme -w generic-ec-zkp -r generic-ec-zkp/README.md

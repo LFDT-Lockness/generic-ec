@@ -1,3 +1,7 @@
+//! # Zero-Knowledge Proofs
+//!
+//! The crate provides ZK-proofs and primitives built on top of `generic-ec` crate.
+
 #![cfg_attr(not(test), forbid(unused_crate_dependencies))]
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used))]
 #![cfg_attr(docsrs, feature(doc_cfg))]
