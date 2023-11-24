@@ -1,0 +1,64 @@
+on:
+  push:
+    tags:        
+      - 'v*'
+      - 'core-v*'
+      - 'curves-v*'
+      - 'zkp-v*'
+  workflow_dispatch:
+
+name: Publish
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_NET_GIT_FETCH_WITH_CLI: true
+
+jobs:
+  publish-round-based:
+    name: Publish generic-ec
+    environment: crates.io
+    runs-on: ubuntu-latest
+    if: >-
+      github.ref_type == 'tag' 
+      && startsWith(github.ref_name, 'v')
+    steps:
+    - uses: actions/checkout@v3
+    - run: cargo publish -p generic-ec --token ${CRATES_TOKEN}
+      env:
+        CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
+  publish-core:
+    name: Publish generic-ec-core
+    environment: crates.io
+    runs-on: ubuntu-latest
+    if: >-
+      github.ref_type == 'tag' 
+      && startsWith(github.ref_name, 'core-v')
+    steps:
+    - uses: actions/checkout@v3
+    - run: cargo publish -p generic-ec-core --token ${CRATES_TOKEN}
+      env:
+        CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
+  publish-curves:
+    name: Publish generic-ec-curves
+    environment: crates.io
+    runs-on: ubuntu-latest
+    if: >-
+      github.ref_type == 'tag' 
+      && startsWith(github.ref_name, 'curves-v')
+    steps:
+    - uses: actions/checkout@v3
+    - run: cargo publish -p generic-ec-curves --token ${CRATES_TOKEN}
+      env:
+        CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
+  publish-zkp:
+    name: Publish generic-ec-zkp
+    environment: crates.io
+    runs-on: ubuntu-latest
+    if: >-
+      github.ref_type == 'tag' 
+      && startsWith(github.ref_name, 'zkp-v')
+    steps:
+    - uses: actions/checkout@v3
+    - run: cargo publish -p generic-ec-zkp --token ${CRATES_TOKEN}
+      env:
+        CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
