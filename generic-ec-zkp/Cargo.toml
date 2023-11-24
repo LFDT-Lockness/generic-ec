@@ -13,7 +13,7 @@ keywords = ["elliptic-curves", "zk-proof"]
 
 [dependencies]
 generic-ec = { path = "../generic-ec", default-features = false }
-udigest = { git = "https://github.com/dfns-labs/udigest", branch = "m", features = ["derive"], optional = true }
+udigest = { version = "0.1", features = ["derive"], optional = true }
 
 subtle = "2.4"
 rand_core = "0.6"

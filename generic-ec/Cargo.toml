@@ -13,9 +13,9 @@ keywords = ["elliptic-curves"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-generic-ec-core = { path = "../generic-ec-core" }
+generic-ec-core = "0.1"
 generic-ec-curves = { path = "../generic-ec-curves", optional = true }
-udigest = { git = "https://github.com/dfns-labs/udigest", branch = "m", features = ["derive"], optional = true }
+udigest = { version = "0.1", features = ["derive"], optional = true }
 
 subtle = { version = "2.4", default-features = false }
 rand_core = { version = "0.6", default-features = false }
