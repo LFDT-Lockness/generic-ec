@@ -13,7 +13,7 @@ generic-array = "0.14"
 subtle = { version = "2.4", default-features = false }
 rand_core = { version = "0.6", default-features = false }
 zeroize = { version = "1", default-features = false }
-serde = { version = "1", default-features = false, optional = true }
+serde = { version = "1", default-features = false, features = ["derive"], optional = true }
 
 [features]
 default = []
