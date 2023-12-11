@@ -19,7 +19,7 @@ jobs:
         crate: cargo-rdme
     - name: Check that readme matches lib.rs
       run: |
-        cargo rdme -w generic-ec -r README.md --check
-        cargo rdme -w generic-ec-zkp -r generic-ec-zkp/README.md --check
-        cargo rdme -w generic-ec-curves -r generic-ec-curves/README.md --check
-        cargo rdme -w generic-ec-core -r generic-ec-core/README.md --check
+        (cd generic-ec; cargo rdme -r ../README.md --check)
+        (cd generic-ec-zkp; cargo rdme -r README.md --check)
+        (cd generic-ec-curves; cargo rdme -r README.md --check)
+        (cd generic-ec-core; cargo rdme -r README.md --check)
