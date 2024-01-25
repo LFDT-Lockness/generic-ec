@@ -23,15 +23,15 @@ jobs:
     - name: Build all-features
       run: cargo build -p generic-ec --all-features
     - name: Run tests
-      run: cargo test
+      run: cargo test --all-features
     - name: Check formatting
       run: cargo fmt --all -- --check
     - name: Run clippy
-      run: cargo clippy --all --lib --exclude generic-ec-tests -- --no-deps -D clippy::all -D clippy::unwrap_used -D clippy::expect_used
+      run: cargo clippy --all --lib --all-features --exclude generic-ec-tests -- --no-deps -D clippy::all -D clippy::unwrap_used -D clippy::expect_used
     - name: Run clippy no-std
       run: cargo clippy -p generic-ec --no-default-features -- -D clippy::all
     - name: Run clippy tests
-      run: cargo clippy --tests -- -D clippy::all
+      run: cargo clippy --tests --all-features -- -D clippy::all
   build-wasm:
     runs-on: ubuntu-latest
     steps:
