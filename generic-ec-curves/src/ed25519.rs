@@ -116,16 +116,16 @@ impl core::cmp::PartialOrd for Point {
 
 impl core::cmp::Ord for Point {
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
-        let lhs: curve25519::EdwardsPoint = self.0.into();
-        let rhs: curve25519::EdwardsPoint = other.0.into();
-        lhs.compress().as_bytes().cmp(rhs.compress().as_bytes())
+        self.0
+            .compress()
+            .as_bytes()
+            .cmp(other.0.compress().as_bytes())
     }
 }
 
 impl core::hash::Hash for Point {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        let point: curve25519::EdwardsPoint = self.0.into();
-        point.compress().as_bytes().hash(state)
+        self.0.compress().as_bytes().hash(state)
     }
 }
 
