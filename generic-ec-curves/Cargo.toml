@@ -22,6 +22,15 @@ p256 = { version = "0.13", optional = true, features = ["hash2curve"] }
 sha2 = { version = "0.10", optional = true }
 stark-curve = { version = "0.1", optional = true }
 
+group = { version = "0.13", default-features = false, optional = true }
+
+[dependencies.curve25519]
+package = "curve25519-dalek"
+version = "4"
+default-features = false
+features = ["group", "zeroize", "rand_core", "precomputed-tables"]
+optional = true
+
 [features]
 default = []
 
@@ -29,6 +38,7 @@ rust-crypto = ["elliptic-curve", "crypto-bigint"]
 secp256k1 = ["rust-crypto", "k256", "sha2"]
 secp256r1 = ["rust-crypto", "p256", "sha2"]
 stark = ["rust-crypto", "stark-curve", "sha2"]
+ed25519 = ["dep:curve25519", "dep:group"]
 
 [package.metadata.docs.rs]
 all-features = true

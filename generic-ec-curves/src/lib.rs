@@ -7,6 +7,8 @@
 
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used))]
 
+#[cfg(feature = "ed25519")]
+pub mod ed25519;
 #[cfg(feature = "rust-crypto")]
 pub mod rust_crypto;
 
@@ -18,3 +20,6 @@ pub use rust_crypto::Secp256r1;
 
 #[cfg(feature = "stark")]
 pub use rust_crypto::Stark;
+
+#[cfg(feature = "ed25519")]
+pub use ed25519::Ed25519;

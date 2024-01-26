@@ -227,8 +227,10 @@ pub use self::{
 };
 
 /// Curves supported out of the box
-#[cfg(feature = "curves")]
 pub mod curves {
+    #[cfg(feature = "curve-ed25519")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "curve-ed25519")))]
+    pub use generic_ec_curves::Ed25519;
     #[cfg(feature = "curve-secp256k1")]
     #[cfg_attr(docsrs, doc(cfg(feature = "curve-secp256k1")))]
     pub use generic_ec_curves::Secp256k1;

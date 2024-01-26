@@ -14,7 +14,7 @@ keywords = ["elliptic-curves"]
 
 [dependencies]
 generic-ec-core = "0.1"
-generic-ec-curves = { version = "0.1", optional = true }
+generic-ec-curves = { path = "../generic-ec-curves", optional = true }
 udigest = { version = "0.1", features = ["derive"], optional = true }
 
 subtle = { version = "2.4", default-features = false }
@@ -46,6 +46,7 @@ curves = ["generic-ec-curves"]
 curve-secp256k1 = ["curves", "generic-ec-curves/secp256k1"]
 curve-secp256r1 = ["curves", "generic-ec-curves/secp256r1"]
 curve-stark = ["curves", "generic-ec-curves/stark"]
+curve-ed25519 = ["curves", "generic-ec-curves/ed25519"]
 all-curves = ["curve-secp256k1", "curve-secp256r1", "curve-stark"]
 
 wasm = ["getrandom/js"]

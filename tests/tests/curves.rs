@@ -175,6 +175,16 @@ mod tests {
         }
     }
 
+    #[test]
+    fn scalar_one_be<E: Curve>() {
+        let one = Scalar::<E>::one();
+        let one_be = one.to_be_bytes();
+        let len = one_be.len();
+        assert_eq!(one_be[len - 1], 1);
+        assert!(one_be[..len - 1].iter().all(|x| *x == 0));
+        assert_eq!(Scalar::<E>::from_be_bytes(one_be).unwrap(), one);
+    }
+
     fn _is_copy<T: Copy>() {}
     fn _test_point_and_scalar_are_copy<E: Curve>() {
         _is_copy::<Scalar<E>>();
@@ -189,6 +199,9 @@ mod tests {
 
     #[instantiate_tests(<Stark>)]
     mod stark {}
+
+    #[instantiate_tests(<Ed25519>)]
+    mod ed25519 {}
 }
 
 #[generic_tests::define]
