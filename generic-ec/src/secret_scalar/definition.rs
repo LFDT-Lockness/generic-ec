@@ -1,4 +1,5 @@
 #[cfg(feature = "alloc")]
+#[cfg_attr(docsrs, doc(cfg(all())))]
 mod with_alloc {
     use alloc::sync::Arc;
     use zeroize::{Zeroize, Zeroizing};
@@ -33,6 +34,7 @@ mod with_alloc {
 }
 
 #[cfg(not(feature = "alloc"))]
+#[cfg_attr(docsrs, doc(cfg(all())))]
 mod without_alloc {
     use zeroize::{Zeroize, Zeroizing};
 
@@ -65,8 +67,10 @@ mod without_alloc {
 
 mod secret_scalar {
     #[cfg(feature = "alloc")]
+    #[cfg_attr(docsrs, doc(cfg(all())))]
     pub use super::with_alloc::SecretScalar;
     #[cfg(not(feature = "alloc"))]
+    #[cfg_attr(docsrs, doc(cfg(all())))]
     pub use super::without_alloc::SecretScalar;
 }
 

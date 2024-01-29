@@ -9,7 +9,7 @@ env:
   CARGO_NET_GIT_FETCH_WITH_CLI: true
 
 jobs:
-  build:
+  build-nostd:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -18,20 +18,76 @@ jobs:
         cache-on-failure: "true"
     - name: Build no-std
       run: cargo build -p generic-ec --no-default-features
+  build-alloc:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+      with:
+        cache-on-failure: "true"
     - name: Build with `alloc` only
       run: cargo build -p generic-ec --no-default-features --features alloc
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+      with:
+        cache-on-failure: "true"
     - name: Build all-features
       run: cargo build -p generic-ec --all-features
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+      with:
+        cache-on-failure: "true"
     - name: Run tests
       run: cargo test --all-features
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
     - name: Check formatting
       run: cargo fmt --all -- --check
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+      with:
+        cache-on-failure: "true"
     - name: Run clippy
       run: cargo clippy --all --lib --all-features --exclude generic-ec-tests -- --no-deps -D clippy::all -D clippy::unwrap_used -D clippy::expect_used
+  clippy-nostd:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+      with:
+        cache-on-failure: "true"
     - name: Run clippy no-std
       run: cargo clippy -p generic-ec --no-default-features -- -D clippy::all
+  clippy-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+      with:
+        cache-on-failure: "true"
     - name: Run clippy tests
       run: cargo clippy --tests --all-features -- -D clippy::all
+  check-doc:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: dtolnay/rust-toolchain@nightly
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+      with:
+        cache-on-failure: "true"
+    - name: Check docs
+      run: RUSTDOCFLAGS="--cfg docsrs -D warnings" cargo +nightly doc --all-features --no-deps
   build-wasm:
     runs-on: ubuntu-latest
     steps:
