@@ -1,6 +1,6 @@
 [package]
 name = "generic-ec"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dfns/generic-ec"
@@ -14,7 +14,7 @@ keywords = ["elliptic-curves"]
 
 [dependencies]
 generic-ec-core = "0.1"
-generic-ec-curves = { path = "../generic-ec-curves", optional = true }
+generic-ec-curves = { version = "0.1", optional = true }
 udigest = { version = "0.1", features = ["derive"], optional = true }
 
 subtle = { version = "2.4", default-features = false }
