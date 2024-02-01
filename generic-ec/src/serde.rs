@@ -77,13 +77,11 @@
 use core::{convert::TryInto, fmt};
 
 use phantom_type::PhantomType;
-use serde::{de::Visitor, Deserialize, Serialize};
-use serde_with::{DeserializeAs, SerializeAs};
 
 use crate::core::Curve;
-use crate::{Point, Scalar, SecretScalar};
 
-impl<E: Curve> Serialize for Point<E> {
+#[cfg(feature = "serde")]
+impl<E: Curve> serde::Serialize for crate::Point<E> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -92,7 +90,8 @@ impl<E: Curve> Serialize for Point<E> {
     }
 }
 
-impl<'de, E: Curve> Deserialize<'de> for Point<E> {
+#[cfg(feature = "serde")]
+impl<'de, E: Curve> serde::Deserialize<'de> for crate::Point<E> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -103,7 +102,8 @@ impl<'de, E: Curve> Deserialize<'de> for Point<E> {
     }
 }
 
-impl<E: Curve> Serialize for Scalar<E> {
+#[cfg(feature = "serde")]
+impl<E: Curve> serde::Serialize for crate::Scalar<E> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -112,7 +112,8 @@ impl<E: Curve> Serialize for Scalar<E> {
     }
 }
 
-impl<'de, E: Curve> Deserialize<'de> for Scalar<E> {
+#[cfg(feature = "serde")]
+impl<'de, E: Curve> serde::Deserialize<'de> for crate::Scalar<E> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -123,7 +124,8 @@ impl<'de, E: Curve> Deserialize<'de> for Scalar<E> {
     }
 }
 
-impl<E: Curve> Serialize for SecretScalar<E> {
+#[cfg(feature = "serde")]
+impl<E: Curve> serde::Serialize for crate::SecretScalar<E> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -132,82 +134,103 @@ impl<E: Curve> Serialize for SecretScalar<E> {
     }
 }
 
-impl<'de, E: Curve> Deserialize<'de> for SecretScalar<E> {
+#[cfg(feature = "serde")]
+impl<'de, E: Curve> serde::Deserialize<'de> for crate::SecretScalar<E> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        Ok(SecretScalar::new(&mut Scalar::deserialize(deserializer)?))
+        Ok(crate::SecretScalar::new(&mut crate::Scalar::deserialize(
+            deserializer,
+        )?))
     }
 }
 
+#[cfg(feature = "serde")]
 /// Compact serialization format
 pub struct Compact;
 
-impl<E: Curve> SerializeAs<Point<E>> for Compact {
-    fn serialize_as<S>(source: &Point<E>, serializer: S) -> Result<S::Ok, S::Error>
+#[cfg(feature = "serde")]
+impl<E: Curve> serde_with::SerializeAs<crate::Point<E>> for Compact {
+    fn serialize_as<S>(source: &crate::Point<E>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
+        use serde::Serialize;
         models::PointCompact::from(source).serialize(serializer)
     }
 }
 
-impl<'de, E: Curve> DeserializeAs<'de, Point<E>> for Compact {
-    fn deserialize_as<D>(deserializer: D) -> Result<Point<E>, D::Error>
+#[cfg(feature = "serde")]
+impl<'de, E: Curve> serde_with::DeserializeAs<'de, crate::Point<E>> for Compact {
+    fn deserialize_as<D>(deserializer: D) -> Result<crate::Point<E>, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
+        use serde::Deserialize;
         models::PointCompact::deserialize(deserializer)?
             .try_into()
             .map_err(<D::Error as serde::de::Error>::custom)
     }
 }
 
-impl<E: Curve> SerializeAs<Scalar<E>> for Compact {
-    fn serialize_as<S>(source: &Scalar<E>, serializer: S) -> Result<S::Ok, S::Error>
+#[cfg(feature = "serde")]
+impl<E: Curve> serde_with::SerializeAs<crate::Scalar<E>> for Compact {
+    fn serialize_as<S>(source: &crate::Scalar<E>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
+        use serde::Serialize;
         models::ScalarCompact::from(source).serialize(serializer)
     }
 }
 
-impl<'de, E: Curve> DeserializeAs<'de, Scalar<E>> for Compact {
-    fn deserialize_as<D>(deserializer: D) -> Result<Scalar<E>, D::Error>
+#[cfg(feature = "serde")]
+impl<'de, E: Curve> serde_with::DeserializeAs<'de, crate::Scalar<E>> for Compact {
+    fn deserialize_as<D>(deserializer: D) -> Result<crate::Scalar<E>, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
+        use serde::Deserialize;
         models::ScalarCompact::deserialize(deserializer)?
             .try_into()
             .map_err(<D::Error as serde::de::Error>::custom)
     }
 }
 
-impl<E: Curve> SerializeAs<SecretScalar<E>> for Compact {
-    fn serialize_as<S>(source: &SecretScalar<E>, serializer: S) -> Result<S::Ok, S::Error>
+#[cfg(feature = "serde")]
+impl<E: Curve> serde_with::SerializeAs<crate::SecretScalar<E>> for Compact {
+    fn serialize_as<S>(source: &crate::SecretScalar<E>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
     {
+        use serde::Serialize;
         models::ScalarCompact::from(source.as_ref()).serialize(serializer)
     }
 }
 
-impl<'de, E: Curve> DeserializeAs<'de, SecretScalar<E>> for Compact {
-    fn deserialize_as<D>(deserializer: D) -> Result<SecretScalar<E>, D::Error>
+#[cfg(feature = "serde")]
+impl<'de, E: Curve> serde_with::DeserializeAs<'de, crate::SecretScalar<E>> for Compact {
+    fn deserialize_as<D>(deserializer: D) -> Result<crate::SecretScalar<E>, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
-        let mut scalar = <Compact as DeserializeAs<'de, Scalar<E>>>::deserialize_as(deserializer)?;
-        Ok(SecretScalar::new(&mut scalar))
+        let mut scalar =
+            <Compact as serde_with::DeserializeAs<'de, crate::Scalar<E>>>::deserialize_as(
+                deserializer,
+            )?;
+        Ok(crate::SecretScalar::new(&mut scalar))
     }
 }
 
 /// A guard type asserting that deserialized value belongs to curve `E`
 ///
-/// It implements [Serialize] and [Deserialize] traits. When serialized, `CurveName`
-/// is converted into string containing curve name. When deserialized, it parses a string
-/// and requires it to match curve name, otherwise deserialization error is returned.
+/// It implements [serde::Serialize] and [serde::Deserialize] traits if `serde` feature is
+/// enabled. When serialized, `CurveName` is converted into string containing curve name.
+/// When deserialized, it parses a string and requires it to match curve name, otherwise
+/// deserialization error is returned.
+///
+/// This structure is present even if `serde` feature is disabled.
 ///
 /// ## Example
 ///
@@ -244,7 +267,8 @@ impl<E: Curve> Default for CurveName<E> {
     }
 }
 
-impl<E: Curve> Serialize for CurveName<E> {
+#[cfg(feature = "serde")]
+impl<E: Curve> serde::Serialize for CurveName<E> {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -253,13 +277,14 @@ impl<E: Curve> Serialize for CurveName<E> {
     }
 }
 
-impl<'de, E: Curve> Deserialize<'de> for CurveName<E> {
+#[cfg(feature = "serde")]
+impl<'de, E: Curve> serde::Deserialize<'de> for CurveName<E> {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         pub struct CurveNameVisitor<E: Curve>(PhantomType<E>);
-        impl<'de, E: Curve> Visitor<'de> for CurveNameVisitor<E> {
+        impl<'de, E: Curve> serde::de::Visitor<'de> for CurveNameVisitor<E> {
             type Value = CurveName<E>;
             fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
                 write!(f, "curve {name}", name = E::CURVE_NAME)
@@ -282,6 +307,7 @@ impl<'de, E: Curve> Deserialize<'de> for CurveName<E> {
     }
 }
 
+#[cfg(feature = "serde")]
 mod models {
     use core::convert::TryFrom;
 
@@ -381,6 +407,7 @@ mod models {
     }
 }
 
+#[cfg(feature = "serde")]
 mod utils {
     use core::fmt;
 
@@ -502,6 +529,7 @@ mod utils {
     }
 }
 
+#[cfg(feature = "serde")]
 mod error_msg {
     use core::fmt;
 
