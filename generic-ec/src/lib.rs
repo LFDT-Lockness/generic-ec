@@ -213,6 +213,7 @@ pub mod traits {
     }
 }
 
+#[cfg(feature = "serde")]
 pub mod serde;
 
 pub use self::{
