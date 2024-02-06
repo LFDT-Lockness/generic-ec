@@ -182,11 +182,6 @@
 #[cfg(feature = "alloc")]
 extern crate alloc;
 
-// We do not use getrandom directly, we just need to enable certain features
-// when `wasm` is required
-#[cfg(feature = "wasm")]
-use getrandom as _;
-
 pub use generic_ec_core as core;
 
 mod arithmetic;

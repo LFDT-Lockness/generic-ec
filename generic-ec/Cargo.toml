@@ -27,9 +27,6 @@ hex = { version = "0.4", default-features = false, optional = true }
 
 phantom-type = { version = "0.4", default-features = false }
 
-# We don't depend on this crate directly, but we need to enable certain features when wasm is required
-getrandom = { version = "0.2", optional = true }
-
 [dev-dependencies]
 rand = "0.8"
 serde_json = "1"
@@ -48,8 +45,6 @@ curve-secp256r1 = ["curves", "generic-ec-curves/secp256r1"]
 curve-stark = ["curves", "generic-ec-curves/stark"]
 curve-ed25519 = ["curves", "generic-ec-curves/ed25519"]
 all-curves = ["curve-secp256k1", "curve-secp256r1", "curve-stark", "curve-ed25519"]
-
-wasm = ["getrandom/js"]
 
 [package.metadata.docs.rs]
 all-features = true

@@ -8,9 +8,10 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-generic-ec = { path = "../../generic-ec", features = ["all-curves", "wasm"] }
+generic-ec = { path = "../../generic-ec", features = ["all-curves"] }
 rand_core = "0.6"
 wasm-bindgen = "0.2.84"
+getrandom = { version = "0.2", features = ["js"] }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.3.34"
