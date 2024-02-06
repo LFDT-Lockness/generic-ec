@@ -17,9 +17,9 @@ zeroize = { version = "1", default-features = false }
 
 crypto-bigint = { version = "0.5", optional = true }
 elliptic-curve = { version = "0.13", features = ["sec1", "hash2curve"], optional = true }
-k256 = { version = "0.13", optional = true, features = ["hash2curve"] }
-p256 = { version = "0.13", optional = true, features = ["hash2curve"] }
-sha2 = { version = "0.10", optional = true }
+k256 = { version = "0.13", optional = true, default-features = false, features = ["hash2curve"] }
+p256 = { version = "0.13", optional = true, default-features = false, features = ["hash2curve"] }
+sha2 = { version = "0.10", default-features = false, optional = true }
 stark-curve = { version = "0.1", optional = true }
 
 group = { version = "0.13", default-features = false, optional = true }
