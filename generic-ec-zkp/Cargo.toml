@@ -16,7 +16,7 @@ generic-ec = { version = "0.1", default-features = false }
 udigest = { version = "0.1", features = ["derive"], optional = true }
 
 subtle = "2.4"
-rand_core = "0.6"
+rand_core = { version = "0.6", default-features = false }
 
 serde = { version = "1", default-features = false, features = ["derive"], optional = true }
 
