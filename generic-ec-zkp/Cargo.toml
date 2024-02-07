@@ -18,7 +18,7 @@ udigest = { version = "0.1", features = ["derive"], optional = true }
 subtle = "2.4"
 rand_core = { version = "0.6", default-features = false }
 
-serde = { version = "1", default-features = false, features = ["derive"], optional = true }
+serde = { version = "1", default-features = false, features = ["derive", "alloc"], optional = true }
 
 # We don't depend on this crates directly, but need to specify features to make it compile
 generic-array = "0.14"
