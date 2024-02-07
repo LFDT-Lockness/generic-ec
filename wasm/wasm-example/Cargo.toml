@@ -9,7 +9,7 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 generic-ec = { path = "../../generic-ec", features = ["all-curves"] }
-rand_core = "0.6"
+rand_core = { version = "0.6", features = ["getrandom"] }
 wasm-bindgen = "0.2.84"
 getrandom = { version = "0.2", features = ["js"] }
 
