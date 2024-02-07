@@ -74,6 +74,7 @@
 //! # Ok(()) }
 //! ```
 
+#![cfg(feature = "serde")]
 use core::{convert::TryInto, fmt};
 
 use phantom_type::PhantomType;

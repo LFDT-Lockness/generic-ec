@@ -15,10 +15,10 @@ keywords = ["elliptic-curves", "zk-proof"]
 generic-ec = { version = "0.1", path = "../generic-ec", default-features = false }
 udigest = { version = "0.1", features = ["derive"], optional = true }
 
-subtle = "2.4"
+subtle = { version = "2.4", default-features = false }
 rand_core = { version = "0.6", default-features = false }
 
-serde = { version = "1", default-features = false, features = ["derive", "alloc"], optional = true }
+serde = { version = "1", default-features = false, features = ["derive"], optional = true }
 
 # We don't depend on this crates directly, but need to specify features to make it compile
 generic-array = "0.14"
@@ -35,7 +35,7 @@ generic-ec = { version = "0.1", path = "../generic-ec", default-features = false
 [features]
 default = ["std"]
 std = ["alloc"]
-alloc = ["udigest/alloc"]
+alloc = ["udigest?/alloc", "serde?/alloc"]
 serde = ["dep:serde", "generic-ec/serde", "generic-array/serde"]
 udigest = ["dep:udigest", "generic-ec/udigest"]
 
