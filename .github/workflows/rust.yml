@@ -106,3 +106,16 @@ jobs:
         crate: wasm-pack
     - name: wasm-pack an example project
       run: (cd wasm/wasm-example; wasm-pack build)
+
+  build-wasm-nostd:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+      with:
+        cache-on-failure: "true"
+    - name: Install wasm32-unknown-unknown toolchain
+      run: rustup target add wasm32-unknown-unknown
+    - name: Build on wasm32-unknown-unknown (no_std)
+      run:
+        cargo build -p nostd-example --target wasm32-unknown-unknown

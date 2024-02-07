@@ -1,0 +1,9 @@
+[package]
+name = "nostd-example"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+generic-ec = { path = "../../generic-ec", default-features = false, features = ["udigest", "all-curves"] }
+generic-ec-zkp = { path = "../../generic-ec-zkp", default-features = false, features = ["udigest"] }
