@@ -33,7 +33,7 @@ optional = true
 
 [features]
 default = []
-
+std = []
 rust-crypto = ["elliptic-curve", "crypto-bigint"]
 secp256k1 = ["rust-crypto", "k256", "sha2"]
 secp256r1 = ["rust-crypto", "p256", "sha2"]

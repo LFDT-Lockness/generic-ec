@@ -6,6 +6,7 @@
 //! [`generic-ec` crate]: https://docs.rs/generic-ec
 
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used))]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 #[cfg(feature = "ed25519")]
 pub mod ed25519;

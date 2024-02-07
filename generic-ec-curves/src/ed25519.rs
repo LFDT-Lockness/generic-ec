@@ -124,7 +124,7 @@ impl core::cmp::Ord for Point {
 }
 
 impl core::hash::Hash for Point {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+    fn hash<H: core::hash::Hasher>(&self, state: &mut H) {
         self.0.compress().as_bytes().hash(state)
     }
 }
