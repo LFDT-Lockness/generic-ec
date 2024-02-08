@@ -16,9 +16,16 @@ rand_core = { version = "0.6", default-features = false }
 zeroize = { version = "1", default-features = false }
 
 crypto-bigint = { version = "0.5", default-features = false, optional = true }
-elliptic-curve = { version = "0.13", default-features = false, features = ["sec1", "hash2curve"], optional = true }
-k256 = { version = "0.13", optional = true, default-features = false, features = ["hash2curve"] }
-p256 = { version = "0.13", optional = true, default-features = false, features = ["hash2curve"] }
+elliptic-curve = { version = "0.13", default-features = false, features = [
+    "sec1",
+    "hash2curve",
+], optional = true }
+k256 = { version = "0.13", optional = true, default-features = false, features = [
+    "hash2curve",
+] }
+p256 = { version = "0.13", optional = true, default-features = false, features = [
+    "hash2curve",
+] }
 sha2 = { version = "0.10", default-features = false, optional = true }
 stark-curve = { version = "0.1", default-features = false, optional = true }
 
@@ -33,7 +40,6 @@ optional = true
 
 [features]
 default = []
-std = []
 rust-crypto = ["elliptic-curve", "crypto-bigint"]
 secp256k1 = ["rust-crypto", "k256", "sha2"]
 secp256r1 = ["rust-crypto", "p256", "sha2"]
