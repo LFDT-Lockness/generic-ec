@@ -44,7 +44,7 @@ jobs:
       with:
         cache-on-failure: "true"
     - name: Run tests
-      run: cargo test --all-features
+      run: cargo test --all-features --workspace --exclude nostd-example
   fmt:
     runs-on: ubuntu-latest
     steps:
@@ -59,7 +59,7 @@ jobs:
       with:
         cache-on-failure: "true"
     - name: Run clippy
-      run: cargo clippy --all --lib --all-features --exclude generic-ec-tests -- --no-deps -D clippy::all -D clippy::unwrap_used -D clippy::expect_used
+      run: cargo clippy --all --lib --workspace --all-features --exclude generic-ec-tests --exclude nostd-example -- --no-deps -D clippy::all -D clippy::unwrap_used -D clippy::expect_used
   clippy-nostd:
     runs-on: ubuntu-latest
     steps:
@@ -77,7 +77,7 @@ jobs:
       with:
         cache-on-failure: "true"
     - name: Run clippy tests
-      run: cargo clippy --tests --all-features -- -D clippy::all
+      run: cargo clippy --workspace --tests --all-features --exclude nostd-example -- -D clippy::all
   check-doc:
     runs-on: ubuntu-latest
     steps:
@@ -87,7 +87,7 @@ jobs:
       with:
         cache-on-failure: "true"
     - name: Check docs
-      run: RUSTDOCFLAGS="--cfg docsrs -D warnings" cargo +nightly doc --all-features --no-deps
+      run: RUSTDOCFLAGS="--cfg docsrs -D warnings" cargo +nightly doc --workspace --all-features --no-deps --exclude nostd-example
   build-wasm:
     runs-on: ubuntu-latest
     steps:
@@ -99,10 +99,23 @@ jobs:
       run: rustup target add wasm32-unknown-unknown
     - name: Build on wasm32-unknown-unknown
       run:
-        cargo check -p generic-ec --target wasm32-unknown-unknown --features wasm,all-curves
+        cargo check -p generic-ec --target wasm32-unknown-unknown --features all-curves
     - name: Install wasm-pack
       uses: baptiste0928/cargo-install@v1
       with:
         crate: wasm-pack
     - name: wasm-pack an example project
       run: (cd wasm/wasm-example; wasm-pack build)
+
+  build-wasm-nostd:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+      with:
+        cache-on-failure: "true"
+    - name: Install wasm32-unknown-unknown toolchain
+      run: rustup target add wasm32-unknown-unknown
+    - name: Build on wasm32-unknown-unknown (no_std)
+      run:
+        cargo build -p nostd-example --target wasm32-unknown-unknown

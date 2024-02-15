@@ -6,5 +6,6 @@ members = [
   "generic-ec-curves",
   "generic-ec-zkp",
   "wasm/wasm-example",
+  "wasm/nostd",
   "tests",
 ]

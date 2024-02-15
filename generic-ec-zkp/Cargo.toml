@@ -12,13 +12,13 @@ keywords = ["elliptic-curves", "zk-proof"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-generic-ec = { version = "0.1", default-features = false }
+generic-ec = { version = "0.1", path = "../generic-ec", default-features = false }
 udigest = { version = "0.1", features = ["derive"], optional = true }
 
-subtle = "2.4"
-rand_core = "0.6"
+subtle = { version = "2.4", default-features = false }
+rand_core = { version = "0.6", default-features = false }
 
-serde = { version = "1", features = ["derive"], optional = true }
+serde = { version = "1", default-features = false, features = ["derive"], optional = true }
 
 # We don't depend on this crates directly, but need to specify features to make it compile
 generic-array = "0.14"
@@ -30,12 +30,12 @@ sha2 = "0.10"
 
 generic-tests = "0.1"
 
-generic-ec = { version = "0.1", default-features = false, features = ["all-curves"] }
+generic-ec = { version = "0.1", path = "../generic-ec", default-features = false, features = ["all-curves"] }
 
 [features]
 default = ["std"]
 std = ["alloc"]
-alloc = ["udigest/alloc"]
+alloc = ["udigest?/alloc", "serde?/alloc"]
 serde = ["dep:serde", "generic-ec/serde", "generic-array/serde"]
 udigest = ["dep:udigest", "generic-ec/udigest"]
 
