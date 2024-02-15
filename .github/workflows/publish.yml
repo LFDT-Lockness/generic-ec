@@ -1,6 +1,6 @@
 on:
   push:
-    tags:        
+    tags:
       - 'v*'
       - 'core-v*'
       - 'curves-v*'
@@ -19,7 +19,7 @@ jobs:
     environment: crates.io
     runs-on: ubuntu-latest
     if: >-
-      github.ref_type == 'tag' 
+      github.ref_type == 'tag'
       && startsWith(github.ref_name, 'v')
     steps:
     - uses: actions/checkout@v3
@@ -31,7 +31,7 @@ jobs:
     environment: crates.io
     runs-on: ubuntu-latest
     if: >-
-      github.ref_type == 'tag' 
+      github.ref_type == 'tag'
       && startsWith(github.ref_name, 'core-v')
     steps:
     - uses: actions/checkout@v3
@@ -43,7 +43,7 @@ jobs:
     environment: crates.io
     runs-on: ubuntu-latest
     if: >-
-      github.ref_type == 'tag' 
+      github.ref_type == 'tag'
       && startsWith(github.ref_name, 'curves-v')
     steps:
     - uses: actions/checkout@v3
@@ -55,7 +55,7 @@ jobs:
     environment: crates.io
     runs-on: ubuntu-latest
     if: >-
-      github.ref_type == 'tag' 
+      github.ref_type == 'tag'
       && startsWith(github.ref_name, 'zkp-v')
     steps:
     - uses: actions/checkout@v3
