@@ -185,7 +185,7 @@ extern crate alloc;
 pub use generic_ec_core as core;
 
 mod arithmetic;
-mod as_raw;
+pub mod as_raw;
 pub mod coords;
 mod encoded;
 pub mod errors;
