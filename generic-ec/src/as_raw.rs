@@ -42,6 +42,7 @@ pub trait TryFromRaw: AsRaw {
     fn ct_try_from_raw(raw: Self::Raw) -> CtOption<Self>;
 }
 
+/// Constructs a point/scalar from its backend library representation when conversion can be done infallibly
 pub trait FromRaw: AsRaw {
     /// Infallibly wraps raw value
     fn from_raw(raw: Self::Raw) -> Self;

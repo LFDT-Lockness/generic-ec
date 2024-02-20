@@ -27,6 +27,26 @@ pub struct RustCryptoCurve<C, X> {
     _ph: PhantomData<fn() -> (C, X)>,
 }
 
+impl<C, X> RustCryptoCurve<C, X>
+where
+    C: CurveArithmetic,
+{
+    /// Constructs a point on the curve
+    pub fn point(point: C::ProjectivePoint) -> RustCryptoPoint<C> {
+        RustCryptoPoint(point)
+    }
+}
+
+impl<C, X> RustCryptoCurve<C, X>
+where
+    C: CurveArithmetic,
+{
+    /// Constructs a point on the curve
+    pub fn scalar(scalar: C::Scalar) -> RustCryptoScalar<C> {
+        RustCryptoScalar(scalar)
+    }
+}
+
 /// secp256k1 curve
 ///
 /// Based on [k256] crate
