@@ -339,8 +339,8 @@ impl_binary_ops! {
     Mul (Scalar<E>, mul, Generator<E> = Point<E>) laws::mul_of_scalar_at_generator_is_valid_point,
 }
 
-// Point <> SecretScalar, Scalar <> SecretScalar, NonZero<Point> <> SecretScalar,
-// NonZero<Scalar> <> SecretScalar arithmetic ops
+// SecretScalar and NonZero<SecretScalar> multiplication, addition, substruction with Scalar,
+// NonZero<Scalar>, Point, and NonZero<Point>
 impl_binary_ops! {
     Add (SecretScalar<E>, add, Scalar<E> = Scalar<E>) scalar::add,
     Add (Scalar<E>, add, SecretScalar<E> = Scalar<E>) scalar::add,
