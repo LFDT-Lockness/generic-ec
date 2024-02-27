@@ -10,6 +10,9 @@ mod laws {
     };
     use crate::{Point, Scalar};
 
+    pub trait AlwaysNonZero {}
+    impl<T> AlwaysNonZero for NonZero<T> {}
+
     /// If $A$ and $B$ are valid `Point<E>`, then $A + B$ is a valid `Point<E>`
     ///
     /// For `Point<E>` to be valid it needs to meet two conditions:
@@ -140,7 +143,7 @@ mod laws {
     /// As $n$ is valid `Scalar<E>`, it's less than curve `group_order`, therefore $n A \ne O$.
     #[inline]
     pub fn mul_of_nonzero_scalar_at_nonzero_point_is_valid_nonzero_point<E: Curve>(
-        n: &NonZero<Scalar<E>>,
+        n: &(impl AsRef<Scalar<E>> + AlwaysNonZero),
         a: &NonZero<Point<E>>,
     ) -> NonZero<Point<E>> {
         let prod = mul_of_scalar_at_point_is_valid_point(n, a);
@@ -152,7 +155,7 @@ mod laws {
     #[inline]
     pub fn mul_of_nonzero_point_at_nonzero_scalar_is_valid_nonzero_point<E: Curve>(
         a: &NonZero<Point<E>>,
-        n: &NonZero<Scalar<E>>,
+        n: &(impl AsRef<Scalar<E>> + AlwaysNonZero),
     ) -> NonZero<Point<E>> {
         mul_of_nonzero_scalar_at_nonzero_point_is_valid_nonzero_point(n, a)
     }
@@ -162,7 +165,7 @@ mod laws {
     /// Proof is the same as in [`mul_of_nonzero_scalar_at_nonzero_point_is_valid_nonzero_point`]
     #[inline]
     pub fn mul_of_nonzero_scalar_at_generator_is_valid_nonzero_point<E: Curve>(
-        n: &Scalar<E>,
+        n: &(impl AsRef<Scalar<E>> + AlwaysNonZero),
         g: &Generator<E>,
     ) -> NonZero<Point<E>> {
         let prod = mul_of_scalar_at_generator_is_valid_point(n, g);
@@ -174,7 +177,7 @@ mod laws {
     #[inline]
     pub fn mul_of_generator_at_nonzero_scalar_is_valid_nonzero_point<E: Curve>(
         g: &Generator<E>,
-        n: &Scalar<E>,
+        n: &(impl AsRef<Scalar<E>> + AlwaysNonZero),
     ) -> NonZero<Point<E>> {
         mul_of_nonzero_scalar_at_generator_is_valid_nonzero_point(n, g)
     }
@@ -198,8 +201,8 @@ mod laws {
     /// Product of two non-zero integers mod $q$ can be zero if, and only if, $A \cdot B$ divides $q$.
     /// It's not possible as $q$ is prime and $A,B < q$.
     pub fn non_zero_scalar_at_non_zero_scalar_is_non_zero_scalar<E: Curve>(
-        a: &NonZero<Scalar<E>>,
-        b: &NonZero<Scalar<E>>,
+        a: &(impl AsRef<Scalar<E>> + AlwaysNonZero),
+        b: &(impl AsRef<Scalar<E>> + AlwaysNonZero),
     ) -> NonZero<Scalar<E>> {
         let prod = super::scalar::mul(a, b);
         // Correctness: refer to doc commnet of the function
@@ -210,8 +213,7 @@ mod laws {
 mod scalar {
     use crate::as_raw::{AsRaw, FromRaw};
     use crate::core::*;
-    use crate::NonZero;
-    use crate::Scalar;
+    use crate::{NonZero, Scalar};
 
     #[inline]
     pub fn add<E: Curve>(a: impl AsRef<Scalar<E>>, b: impl AsRef<Scalar<E>>) -> Scalar<E> {
@@ -345,15 +347,28 @@ impl_binary_ops! {
     Add (SecretScalar<E>, add, NonZero<Scalar<E>> = Scalar<E>) scalar::add,
     Add (NonZero<Scalar<E>>, add, SecretScalar<E> = Scalar<E>) scalar::add,
 
+    Add (NonZero<SecretScalar<E>>, add, Scalar<E> = Scalar<E>) scalar::add,
+    Add (Scalar<E>, add, NonZero<SecretScalar<E>> = Scalar<E>) scalar::add,
+    Add (NonZero<SecretScalar<E>>, add, NonZero<Scalar<E>> = Scalar<E>) scalar::add,
+    Add (NonZero<Scalar<E>>, add, NonZero<SecretScalar<E>> = Scalar<E>) scalar::add,
+
     Sub (SecretScalar<E>, sub, Scalar<E> = Scalar<E>) scalar::sub,
     Sub (Scalar<E>, sub, SecretScalar<E> = Scalar<E>) scalar::sub,
     Sub (SecretScalar<E>, sub, NonZero<Scalar<E>> = Scalar<E>) scalar::sub,
     Sub (NonZero<Scalar<E>>, sub, SecretScalar<E> = Scalar<E>) scalar::sub,
 
+    Sub (NonZero<SecretScalar<E>>, sub, Scalar<E> = Scalar<E>) scalar::sub,
+    Sub (Scalar<E>, sub, NonZero<SecretScalar<E>> = Scalar<E>) scalar::sub,
+    Sub (NonZero<SecretScalar<E>>, sub, NonZero<Scalar<E>> = Scalar<E>) scalar::sub,
+    Sub (NonZero<Scalar<E>>, sub, NonZero<SecretScalar<E>> = Scalar<E>) scalar::sub,
+
     Mul (SecretScalar<E>, mul, Scalar<E> = Scalar<E>) scalar::mul,
     Mul (Scalar<E>, mul, SecretScalar<E> = Scalar<E>) scalar::mul,
     Mul (SecretScalar<E>, mul, NonZero<Scalar<E>> = Scalar<E>) scalar::mul,
     Mul (NonZero<Scalar<E>>, mul, SecretScalar<E> = Scalar<E>) scalar::mul,
+
+    Mul (NonZero<SecretScalar<E>>, mul, Scalar<E> = Scalar<E>) scalar::mul,
+    Mul (Scalar<E>, mul, NonZero<SecretScalar<E>> = Scalar<E>) scalar::mul,
 
     Mul (Point<E>, mul, SecretScalar<E> = Point<E>) laws::mul_of_point_at_scalar_is_valid_point,
     Mul (SecretScalar<E>, mul, Point<E> = Point<E>) laws::mul_of_scalar_at_point_is_valid_point,
@@ -361,6 +376,9 @@ impl_binary_ops! {
     Mul (SecretScalar<E>, mul, Generator<E> = Point<E>) laws::mul_of_scalar_at_generator_is_valid_point,
     Mul (NonZero<Point<E>>, mul, SecretScalar<E> = Point<E>) laws::mul_of_point_at_scalar_is_valid_point,
     Mul (SecretScalar<E>, mul, NonZero<Point<E>> = Point<E>) laws::mul_of_scalar_at_point_is_valid_point,
+
+    Mul (Point<E>, mul, NonZero<SecretScalar<E>> = Point<E>) laws::mul_of_point_at_scalar_is_valid_point,
+    Mul (NonZero<SecretScalar<E>>, mul, Point<E> = Point<E>) laws::mul_of_scalar_at_point_is_valid_point,
 }
 
 // NonZero<Point> <> NonZero<Scalar> arithmetic ops
@@ -369,6 +387,11 @@ impl_binary_ops! {
     Mul (NonZero<Scalar<E>>, mul, NonZero<Point<E>> = NonZero<Point<E>>) laws::mul_of_nonzero_scalar_at_nonzero_point_is_valid_nonzero_point,
     Mul (Generator<E>, mul, NonZero<Scalar<E>> = NonZero<Point<E>>) laws::mul_of_generator_at_nonzero_scalar_is_valid_nonzero_point,
     Mul (NonZero<Scalar<E>>, mul, Generator<E> = NonZero<Point<E>>) laws::mul_of_nonzero_scalar_at_generator_is_valid_nonzero_point,
+
+    Mul (NonZero<Point<E>>, mul, NonZero<SecretScalar<E>> = NonZero<Point<E>>) laws::mul_of_nonzero_point_at_nonzero_scalar_is_valid_nonzero_point,
+    Mul (NonZero<SecretScalar<E>>, mul, NonZero<Point<E>> = NonZero<Point<E>>) laws::mul_of_nonzero_scalar_at_nonzero_point_is_valid_nonzero_point,
+    Mul (Generator<E>, mul, NonZero<SecretScalar<E>> = NonZero<Point<E>>) laws::mul_of_generator_at_nonzero_scalar_is_valid_nonzero_point,
+    Mul (NonZero<SecretScalar<E>>, mul, Generator<E> = NonZero<Point<E>>) laws::mul_of_nonzero_scalar_at_generator_is_valid_nonzero_point,
 }
 
 // Point <> NonZero<Point>, Scalar <> NonZero<Scalar>,
@@ -379,6 +402,9 @@ impl_nonzero_ops! {
 
     Add (Scalar<E>, add, Scalar<E> = Scalar<E>) scalar::add,
     Sub (Scalar<E>, sub, Scalar<E> = Scalar<E>) scalar::sub,
+
+    Add (SecretScalar<E>, add, SecretScalar<E> = Scalar<E>) scalar::add,
+    Sub (SecretScalar<E>, sub, SecretScalar<E> = Scalar<E>) scalar::sub,
 }
 
 // NonZero<Scalar> * NonZero<Scalar>, Scalar * NonZero<Scalar>, NonZero<Scalar> * Scalar
@@ -386,6 +412,10 @@ impl_binary_ops! {
     Mul (NonZero<Scalar<E>>, mul, NonZero<Scalar<E>> = NonZero<Scalar<E>>) laws::non_zero_scalar_at_non_zero_scalar_is_non_zero_scalar,
     Mul (Scalar<E>, mul, NonZero<Scalar<E>> = Scalar<E>) scalar::mul,
     Mul (NonZero<Scalar<E>>, mul, Scalar<E> = Scalar<E>) scalar::mul,
+
+    Mul (NonZero<SecretScalar<E>>, mul, NonZero<SecretScalar<E>> = NonZero<Scalar<E>>) laws::non_zero_scalar_at_non_zero_scalar_is_non_zero_scalar,
+    Mul (NonZero<Scalar<E>>, mul, NonZero<SecretScalar<E>> = NonZero<Scalar<E>>) laws::non_zero_scalar_at_non_zero_scalar_is_non_zero_scalar,
+    Mul (NonZero<SecretScalar<E>>, mul, NonZero<Scalar<E>> = NonZero<Scalar<E>>) laws::non_zero_scalar_at_non_zero_scalar_is_non_zero_scalar,
 }
 
 // Point <> NonZero<Scalar>, NonZero<Point> <> Scalar
@@ -420,6 +450,7 @@ fn ensure_ops_implemented<E: Curve>(
     non_zero_point: NonZero<Point<E>>,
     non_zero_scalar: NonZero<Scalar<E>>,
     secret_scalar: SecretScalar<E>,
+    non_zero_secret_scalar: NonZero<SecretScalar<E>>,
 ) {
     macro_rules! assert_binary_ops {
         ($($a:ident $op:tt $b:expr => $out:ty),+,) => {$(
@@ -451,6 +482,10 @@ fn ensure_ops_implemented<E: Curve>(
         point * secret_scalar.clone() => Point<E>,
         non_zero_point * secret_scalar.clone() => Point<E>,
 
+        g * non_zero_secret_scalar.clone() => NonZero<Point<E>>,
+        point * non_zero_secret_scalar.clone() => Point<E>,
+        non_zero_point * non_zero_secret_scalar.clone() => NonZero<Point<E>>,
+
         point + point => Point<E>,
         point + non_zero_point => Point<E>,
         non_zero_point + non_zero_point => Point<E>,
@@ -466,6 +501,9 @@ fn ensure_ops_implemented<E: Curve>(
         scalar + secret_scalar.clone() => Scalar<E>,
         non_zero_scalar + secret_scalar.clone() => Scalar<E>,
 
+        scalar + non_zero_secret_scalar.clone() => Scalar<E>,
+        non_zero_scalar + non_zero_secret_scalar.clone() => Scalar<E>,
+
         scalar - scalar => Scalar<E>,
         scalar - non_zero_scalar => Scalar<E>,
         non_zero_scalar - non_zero_scalar => Scalar<E>,
@@ -473,12 +511,18 @@ fn ensure_ops_implemented<E: Curve>(
         scalar - secret_scalar.clone() => Scalar<E>,
         non_zero_scalar - secret_scalar.clone() => Scalar<E>,
 
+        scalar - non_zero_secret_scalar.clone() => Scalar<E>,
+        non_zero_scalar - non_zero_secret_scalar.clone() => Scalar<E>,
+
         scalar * scalar => Scalar<E>,
         scalar * non_zero_scalar => Scalar<E>,
         non_zero_scalar * non_zero_scalar => NonZero<Scalar<E>>,
 
         scalar * secret_scalar.clone() => Scalar<E>,
         non_zero_scalar * secret_scalar.clone() => Scalar<E>,
+
+        scalar * non_zero_secret_scalar.clone() => Scalar<E>,
+        non_zero_scalar * non_zero_secret_scalar.clone() => NonZero<Scalar<E>>,
     );
 
     assert_unary_ops!(
