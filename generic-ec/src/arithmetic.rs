@@ -485,9 +485,9 @@ impl_op_assign! {
     Point<E>, AddAssign, NonZero<Point<E>>, add_assign, +,
     Point<E>, AddAssign, Generator<E>, add_assign, +,
 
-    Point<E>, SubAssign, Point<E>, sub_assign, +,
-    Point<E>, SubAssign, NonZero<Point<E>>, sub_assign, +,
-    Point<E>, SubAssign, Generator<E>, sub_assign, +,
+    Point<E>, SubAssign, Point<E>, sub_assign, -,
+    Point<E>, SubAssign, NonZero<Point<E>>, sub_assign, -,
+    Point<E>, SubAssign, Generator<E>, sub_assign, -,
 
     Point<E>, MulAssign, Scalar<E>, mul_assign, *,
     Point<E>, MulAssign, NonZero<Scalar<E>>, mul_assign, *,
@@ -499,10 +499,10 @@ impl_op_assign! {
     Scalar<E>, AddAssign, SecretScalar<E>, add_assign, +,
     Scalar<E>, AddAssign, NonZero<SecretScalar<E>>, add_assign, +,
 
-    Scalar<E>, SubAssign, Scalar<E>, sub_assign, +,
-    Scalar<E>, SubAssign, NonZero<Scalar<E>>, sub_assign, +,
-    Scalar<E>, SubAssign, SecretScalar<E>, sub_assign, +,
-    Scalar<E>, SubAssign, NonZero<SecretScalar<E>>, sub_assign, +,
+    Scalar<E>, SubAssign, Scalar<E>, sub_assign, -,
+    Scalar<E>, SubAssign, NonZero<Scalar<E>>, sub_assign, -,
+    Scalar<E>, SubAssign, SecretScalar<E>, sub_assign, -,
+    Scalar<E>, SubAssign, NonZero<SecretScalar<E>>, sub_assign, -,
 
     Scalar<E>, MulAssign, Scalar<E>, mul_assign, *,
     Scalar<E>, MulAssign, NonZero<Scalar<E>>, mul_assign, *,
