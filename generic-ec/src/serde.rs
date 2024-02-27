@@ -224,6 +224,33 @@ impl<'de, E: Curve> serde_with::DeserializeAs<'de, crate::SecretScalar<E>> for C
     }
 }
 
+impl<T> serde_with::SerializeAs<crate::NonZero<T>> for Compact
+where
+    Compact: serde_with::SerializeAs<T>,
+{
+    fn serialize_as<S>(source: &crate::NonZero<T>, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        Compact::serialize_as(source.as_ref(), serializer)
+    }
+}
+
+impl<'de, T> serde_with::DeserializeAs<'de, crate::NonZero<T>> for Compact
+where
+    Compact: serde_with::DeserializeAs<'de, T>,
+    crate::NonZero<T>: TryFrom<T>,
+    <crate::NonZero<T> as TryFrom<T>>::Error: core::fmt::Display,
+{
+    fn deserialize_as<D>(deserializer: D) -> Result<crate::NonZero<T>, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let value = Compact::deserialize_as(deserializer)?;
+        crate::NonZero::try_from(value).map_err(<D::Error as serde::de::Error>::custom)
+    }
+}
+
 /// A guard type asserting that deserialized value belongs to curve `E`
 ///
 /// It implements [serde::Serialize] and [serde::Deserialize] traits if `serde` feature is
