@@ -96,6 +96,14 @@ impl<E: Curve> NonZero<Scalar<E>> {
         // Correctness: `inv` is nonzero by definition
         Self::new_unchecked(inv)
     }
+
+    /// Upgrades the non-zero scalar into non-zero [`SecretScalar`]
+    pub fn into_secret(self) -> NonZero<SecretScalar<E>> {
+        let mut scalar = self.into_inner();
+        let secret_scalar = SecretScalar::new(&mut scalar);
+        // Correctness: `scalar` was checked to be nonzero
+        NonZero::new_unchecked(secret_scalar)
+    }
 }
 
 impl<E: Curve> NonZero<SecretScalar<E>> {
@@ -213,6 +221,22 @@ impl<'s, E: Curve> Sum<&'s NonZero<Scalar<E>>> for Scalar<E> {
     }
 }
 
+impl<'s, E: Curve> Sum<&'s NonZero<SecretScalar<E>>> for SecretScalar<E> {
+    fn sum<I: Iterator<Item = &'s NonZero<SecretScalar<E>>>>(iter: I) -> Self {
+        let mut out = Scalar::zero();
+        iter.for_each(|x| out += x);
+        SecretScalar::new(&mut out)
+    }
+}
+
+impl<E: Curve> Sum<NonZero<SecretScalar<E>>> for SecretScalar<E> {
+    fn sum<I: Iterator<Item = NonZero<SecretScalar<E>>>>(iter: I) -> Self {
+        let mut out = Scalar::zero();
+        iter.for_each(|x| out += x);
+        SecretScalar::new(&mut out)
+    }
+}
+
 impl<E: Curve> Product<NonZero<Scalar<E>>> for NonZero<Scalar<E>> {
     fn product<I: Iterator<Item = NonZero<Scalar<E>>>>(iter: I) -> Self {
         iter.fold(Self::one(), |acc, x| acc * x)
@@ -222,6 +246,22 @@ impl<E: Curve> Product<NonZero<Scalar<E>>> for NonZero<Scalar<E>> {
 impl<'s, E: Curve> Product<&'s NonZero<Scalar<E>>> for NonZero<Scalar<E>> {
     fn product<I: Iterator<Item = &'s NonZero<Scalar<E>>>>(iter: I) -> Self {
         iter.fold(Self::one(), |acc, x| acc * x)
+    }
+}
+
+impl<'s, E: Curve> Product<&'s NonZero<SecretScalar<E>>> for NonZero<SecretScalar<E>> {
+    fn product<I: Iterator<Item = &'s NonZero<SecretScalar<E>>>>(iter: I) -> Self {
+        let mut out = NonZero::<Scalar<E>>::one();
+        iter.for_each(|x| out *= x);
+        out.into_secret()
+    }
+}
+
+impl<E: Curve> Product<NonZero<SecretScalar<E>>> for NonZero<SecretScalar<E>> {
+    fn product<I: Iterator<Item = NonZero<SecretScalar<E>>>>(iter: I) -> Self {
+        let mut out = NonZero::<Scalar<E>>::one();
+        iter.for_each(|x| out *= x);
+        out.into_secret()
     }
 }
 
