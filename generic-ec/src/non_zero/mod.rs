@@ -155,7 +155,7 @@ impl<E: Curve> NonZero<SecretScalar<E>> {
 
     /// Returns scalar inverse $S^{-1}$
     ///
-    /// Similar to [Scalar::invert], but this function is always defined as inverse is defined for all
+    /// Similar to [SecretScalar::invert], but this function is always defined as inverse is defined for all
     /// non-zero scalars
     pub fn invert(&self) -> NonZero<SecretScalar<E>> {
         #[allow(clippy::expect_used)]
