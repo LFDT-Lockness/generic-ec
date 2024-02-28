@@ -48,7 +48,7 @@ mod requires_alloc {
         /// let x = Scalar::random(&mut OsRng);
         /// assert_eq!(
         ///     coefs[0] + x * coefs[1] + x * x * coefs[2],
-        ///     polynomial.value(&x),
+        ///     polynomial.value::<_, Scalar<_>>(&x),
         /// );
         /// ```
         pub fn from_coefs(mut coefs: Vec<C>) -> Self {
@@ -118,7 +118,7 @@ mod requires_alloc {
         ///
         /// let const_term = Scalar::<Secp256k1>::from(1234);
         /// let polynomial = Polynomial::sample_with_const_term(&mut OsRng, 3, const_term);
-        /// assert_eq!(const_term, polynomial.value(&Scalar::zero()));
+        /// assert_eq!(const_term, polynomial.value::<_, Scalar<_>>(&Scalar::zero()));
         /// ```
         pub fn sample_with_const_term(
             rng: &mut impl RngCore,
@@ -400,7 +400,10 @@ mod tests {
         // 2. Commit to the secret
         // F(x) = G * f(x)
         let F = &f * &Point::generator();
-        assert_eq!(&secret * Point::generator(), F.value(&Scalar::zero()));
+        assert_eq!(
+            &secret * Point::generator(),
+            F.value::<_, Point<_>>(&Scalar::zero())
+        );
 
         // 3. Derive 4 secret and public shares
         let shares_indexes: [NonZero<Scalar<E>>; 4] = [
@@ -415,7 +418,7 @@ mod tests {
         // Chech that `public_shares[i] = F(i)`
         {
             for (i, public_share) in (1..).zip(&public_shares) {
-                assert_eq!(public_share, &F.value(&Scalar::from(i)));
+                assert_eq!(public_share, &F.value::<_, Point<E>>(&Scalar::from(i)));
             }
         }
 
@@ -447,8 +450,8 @@ mod tests {
 
         let point = Scalar::random(&mut rng);
 
-        let value_actual1 = polynomials_sum1.value(&point);
-        let value_actual2 = polynomials_sum2.value(&point);
+        let value_actual1 = polynomials_sum1.value::<_, Scalar<E>>(&point);
+        let value_actual2 = polynomials_sum2.value::<_, Scalar<E>>(&point);
 
         let value_expected: Scalar<E> = polynomials
             .iter()
