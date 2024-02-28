@@ -280,14 +280,7 @@ impl<E: Curve> crate::traits::Samplable for NonZero<Scalar<E>> {
 
 impl<E: Curve> crate::traits::Samplable for NonZero<SecretScalar<E>> {
     fn random<R: RngCore>(rng: &mut R) -> Self {
-        match iter::repeat_with(|| <SecretScalar<E> as crate::traits::Samplable>::random(rng))
-            .take(100)
-            .flat_map(NonZero::from_secret_scalar)
-            .next()
-        {
-            Some(s) => s,
-            None => panic!("defected source of randomness"),
-        }
+        NonZero::<Scalar<E>>::random(rng).into_secret()
     }
 }
 
