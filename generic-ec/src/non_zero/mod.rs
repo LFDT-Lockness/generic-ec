@@ -268,6 +268,17 @@ impl<E: Curve> Product<NonZero<SecretScalar<E>>> for NonZero<SecretScalar<E>> {
     }
 }
 
+impl<E: Curve> Sum<NonZero<Point<E>>> for Point<E> {
+    fn sum<I: Iterator<Item = NonZero<Point<E>>>>(iter: I) -> Self {
+        iter.fold(Point::zero(), |acc, x| acc + x)
+    }
+}
+impl<'s, E: Curve> Sum<&'s NonZero<Point<E>>> for Point<E> {
+    fn sum<I: Iterator<Item = &'s NonZero<Point<E>>>>(iter: I) -> Self {
+        iter.fold(Point::zero(), |acc, x| acc + x)
+    }
+}
+
 impl<E: Curve> crate::traits::Samplable for NonZero<Scalar<E>> {
     fn random<R: RngCore>(rng: &mut R) -> Self {
         Self::random(rng)
