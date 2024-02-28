@@ -1,4 +1,7 @@
-use core::iter::{self, Product, Sum};
+use core::{
+    cmp,
+    iter::{self, Product, Sum},
+};
 
 use rand_core::{CryptoRng, RngCore};
 use subtle::{ConstantTimeEq, CtOption};
@@ -117,14 +120,7 @@ impl<E: Curve> NonZero<SecretScalar<E>> {
     /// Panics if randomness source returned 100 zero scalars in a row. It happens with
     /// $2^{-25600}$ probability, which practically means that randomness source is broken.
     pub fn random<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
-        match iter::repeat_with(|| SecretScalar::random(rng))
-            .take(100)
-            .flat_map(NonZero::from_secret_scalar)
-            .next()
-        {
-            Some(s) => s,
-            None => panic!("defected source of randomness"),
-        }
+        <Self as crate::traits::Samplable>::random(rng)
     }
 
     /// Constructs $S = 1$
@@ -265,9 +261,26 @@ impl<E: Curve> Product<NonZero<SecretScalar<E>>> for NonZero<SecretScalar<E>> {
     }
 }
 
+impl<E: Curve> Sum<NonZero<Point<E>>> for Point<E> {
+    fn sum<I: Iterator<Item = NonZero<Point<E>>>>(iter: I) -> Self {
+        iter.fold(Point::zero(), |acc, x| acc + x)
+    }
+}
+impl<'s, E: Curve> Sum<&'s NonZero<Point<E>>> for Point<E> {
+    fn sum<I: Iterator<Item = &'s NonZero<Point<E>>>>(iter: I) -> Self {
+        iter.fold(Point::zero(), |acc, x| acc + x)
+    }
+}
+
 impl<E: Curve> crate::traits::Samplable for NonZero<Scalar<E>> {
     fn random<R: RngCore>(rng: &mut R) -> Self {
         Self::random(rng)
+    }
+}
+
+impl<E: Curve> crate::traits::Samplable for NonZero<SecretScalar<E>> {
+    fn random<R: RngCore>(rng: &mut R) -> Self {
+        NonZero::<Scalar<E>>::random(rng).into_secret()
     }
 }
 
@@ -293,6 +306,57 @@ impl<E: Curve> AsRef<Scalar<E>> for NonZero<SecretScalar<E>> {
     fn as_ref(&self) -> &Scalar<E> {
         let secret_scalar: &SecretScalar<E> = self.as_ref();
         secret_scalar.as_ref()
+    }
+}
+
+impl<T> cmp::PartialEq<T> for NonZero<T>
+where
+    T: cmp::PartialEq,
+{
+    fn eq(&self, other: &T) -> bool {
+        self.as_ref() == other
+    }
+}
+
+impl<T> cmp::PartialOrd<T> for NonZero<T>
+where
+    T: cmp::PartialOrd,
+{
+    fn partial_cmp(&self, other: &T) -> Option<cmp::Ordering> {
+        self.as_ref().partial_cmp(other)
+    }
+}
+
+/// We can't write blanket implementation `impl<T> cmp::PartialEq<NonZero<T>> for T` due to
+/// the restrictions of the compiler, which implies unfortunate limitations that we can
+/// do `a == b` but we can't write `b == a` and that's not user-friendly.
+///
+/// However, we can write implementation of PartialEq/PartialOrd for specific `T` such as
+/// `Scalar<E>`, `Point<E>` and others. Moreover, we know for sure all possible `T` for which
+/// `NonZero<T>` is defined, so we use this macro to implement these traits for all possible `T`.
+macro_rules! impl_reverse_partial_eq_cmp {
+    ($($t:ty),+) => {$(
+        impl<E: Curve> cmp::PartialEq<NonZero<$t>> for $t {
+            fn eq(&self, other: &NonZero<$t>) -> bool {
+                let other: &$t = other.as_ref();
+                self == other
+            }
+        }
+        impl<E: Curve> cmp::PartialOrd<NonZero<$t>> for $t {
+            fn partial_cmp(&self, other: &NonZero<$t>) -> Option<cmp::Ordering> {
+                let other: &$t = other.as_ref();
+                self.partial_cmp(other)
+            }
+        }
+    )*};
+}
+
+// Note: not implemented for SecretScalar as it doesn't implement `PartialEq` for security reasons.
+impl_reverse_partial_eq_cmp!(Point<E>, Scalar<E>);
+
+impl<T: ConstantTimeEq> ConstantTimeEq for NonZero<T> {
+    fn ct_eq(&self, other: &Self) -> subtle::Choice {
+        self.as_ref().ct_eq(other.as_ref())
     }
 }
 

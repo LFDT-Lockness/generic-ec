@@ -84,17 +84,25 @@ where
     fn invert(x: &Self) -> CtOption<Self>;
 }
 
+/// Type that has zero value (additive identity)
 pub trait Zero {
+    /// Constructs zero value of `Self`
     fn zero() -> Self;
+    /// Checks (in constant-time) if `x` is zero
     fn is_zero(x: &Self) -> Choice;
 }
 
+/// Type that has "one" value (multiplicative identity)
 pub trait One {
+    /// Constructs one value of `Self`
     fn one() -> Self;
+    /// Checks (in constant-time) if `x` is one
     fn is_one(x: &Self) -> Choice;
 }
 
+/// Type can be uniformely sampled from source of randomness
 pub trait Samplable {
+    /// Uniformely samples a random value of `Self`
     fn random<R: RngCore>(rng: &mut R) -> Self;
 }
 
