@@ -1,4 +1,5 @@
 /target
+/wasm/nostd/target
 Cargo.lock
 
 /.idea
