@@ -1,4 +1,7 @@
-use core::iter::{self, Product, Sum};
+use core::{
+    cmp,
+    iter::{self, Product, Sum},
+};
 
 use rand_core::{CryptoRng, RngCore};
 use subtle::{ConstantTimeEq, CtOption};
@@ -293,6 +296,57 @@ impl<E: Curve> AsRef<Scalar<E>> for NonZero<SecretScalar<E>> {
     fn as_ref(&self) -> &Scalar<E> {
         let secret_scalar: &SecretScalar<E> = self.as_ref();
         secret_scalar.as_ref()
+    }
+}
+
+impl<T> cmp::PartialEq<T> for NonZero<T>
+where
+    T: cmp::PartialEq,
+{
+    fn eq(&self, other: &T) -> bool {
+        self.as_ref() == other
+    }
+}
+
+impl<T> cmp::PartialOrd<T> for NonZero<T>
+where
+    T: cmp::PartialOrd,
+{
+    fn partial_cmp(&self, other: &T) -> Option<cmp::Ordering> {
+        self.as_ref().partial_cmp(other)
+    }
+}
+
+/// We can't write blanket implementation `impl<T> cmp::PartialEq<NonZero<T>> for T` due to
+/// the restrictions of the compiler, which implies unfortunate limitations that we can
+/// do `a == b` but we can't write `b == a` and that's not user-friendly.
+///
+/// However, we can write implementation of PartialEq/PartialOrd for specific `T` such as
+/// `Scalar<E>`, `Point<E>` and others. Moreover, we know for sure all possible `T` for which
+/// `NonZero<T>` is defined, so we use this macro to implement these traits for all possible `T`.
+macro_rules! impl_reverse_partial_eq_cmp {
+    ($($t:ty),+) => {$(
+        impl<E: Curve> cmp::PartialEq<NonZero<$t>> for $t {
+            fn eq(&self, other: &NonZero<$t>) -> bool {
+                let other: &$t = other.as_ref();
+                self == other
+            }
+        }
+        impl<E: Curve> cmp::PartialOrd<NonZero<$t>> for $t {
+            fn partial_cmp(&self, other: &NonZero<$t>) -> Option<cmp::Ordering> {
+                let other: &$t = other.as_ref();
+                self.partial_cmp(other)
+            }
+        }
+    )*};
+}
+
+// Note: not implemented for SecretScalar as it doesn't implement `PartialEq` for security reasons.
+impl_reverse_partial_eq_cmp!(Point<E>, Scalar<E>);
+
+impl<T: ConstantTimeEq> ConstantTimeEq for NonZero<T> {
+    fn ct_eq(&self, other: &Self) -> subtle::Choice {
+        self.as_ref().ct_eq(other.as_ref())
     }
 }
 
