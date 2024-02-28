@@ -285,6 +285,32 @@ impl<E: Curve> crate::traits::Samplable for NonZero<Scalar<E>> {
     }
 }
 
+impl<E: Curve> crate::traits::Samplable for NonZero<SecretScalar<E>> {
+    fn random<R: RngCore>(rng: &mut R) -> Self {
+        // Samplable trait doesn't have requirement that `R` impls `CryptoRng`, but `SecretScalar` does require
+        // it. We'll lie to secret scalar and pretend that `rng` does implement `CryptoRng` to make the trait
+        // usable
+        struct Rng<R>(R);
+        impl<R: RngCore> RngCore for Rng<R> {
+            fn next_u32(&mut self) -> u32 {
+                self.0.next_u32()
+            }
+            fn next_u64(&mut self) -> u64 {
+                self.0.next_u64()
+            }
+            fn fill_bytes(&mut self, dest: &mut [u8]) {
+                self.0.fill_bytes(dest)
+            }
+            fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> {
+                self.0.try_fill_bytes(dest)
+            }
+        }
+        impl<R> CryptoRng for Rng<R> {}
+
+        Self::random(&mut Rng(rng))
+    }
+}
+
 impl<T> crate::traits::IsZero for NonZero<T> {
     /// Returns `false` as `NonZero<T>` cannot be zero
     #[inline(always)]
