@@ -120,14 +120,7 @@ impl<E: Curve> NonZero<SecretScalar<E>> {
     /// Panics if randomness source returned 100 zero scalars in a row. It happens with
     /// $2^{-25600}$ probability, which practically means that randomness source is broken.
     pub fn random<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
-        match iter::repeat_with(|| SecretScalar::random(rng))
-            .take(100)
-            .flat_map(NonZero::from_secret_scalar)
-            .next()
-        {
-            Some(s) => s,
-            None => panic!("defected source of randomness"),
-        }
+        <Self as crate::traits::Samplable>::random(rng)
     }
 
     /// Constructs $S = 1$
@@ -287,27 +280,14 @@ impl<E: Curve> crate::traits::Samplable for NonZero<Scalar<E>> {
 
 impl<E: Curve> crate::traits::Samplable for NonZero<SecretScalar<E>> {
     fn random<R: RngCore>(rng: &mut R) -> Self {
-        // Samplable trait doesn't have requirement that `R` impls `CryptoRng`, but `SecretScalar` does require
-        // it. We'll lie to secret scalar and pretend that `rng` does implement `CryptoRng` to make the trait
-        // usable
-        struct Rng<R>(R);
-        impl<R: RngCore> RngCore for Rng<R> {
-            fn next_u32(&mut self) -> u32 {
-                self.0.next_u32()
-            }
-            fn next_u64(&mut self) -> u64 {
-                self.0.next_u64()
-            }
-            fn fill_bytes(&mut self, dest: &mut [u8]) {
-                self.0.fill_bytes(dest)
-            }
-            fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> {
-                self.0.try_fill_bytes(dest)
-            }
+        match iter::repeat_with(|| <SecretScalar<E> as crate::traits::Samplable>::random(rng))
+            .take(100)
+            .flat_map(NonZero::from_secret_scalar)
+            .next()
+        {
+            Some(s) => s,
+            None => panic!("defected source of randomness"),
         }
-        impl<R> CryptoRng for Rng<R> {}
-
-        Self::random(&mut Rng(rng))
     }
 }
 
