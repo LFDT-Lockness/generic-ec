@@ -23,10 +23,6 @@ jobs:
       && startsWith(github.ref_name, 'v')
     steps:
     - uses: actions/checkout@v3
-    - name: Check semver
-      uses: obi1kenobi/cargo-semver-checks-action@v2
-      with:
-        package: generic-ec
     - run: cargo publish -p generic-ec --token ${CRATES_TOKEN}
       env:
         CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
@@ -39,10 +35,6 @@ jobs:
       && startsWith(github.ref_name, 'core-v')
     steps:
     - uses: actions/checkout@v3
-    - name: Check semver
-      uses: obi1kenobi/cargo-semver-checks-action@v2
-      with:
-        package: generic-ec-core
     - run: cargo publish -p generic-ec-core --token ${CRATES_TOKEN}
       env:
         CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
@@ -54,11 +46,6 @@ jobs:
       github.ref_type == 'tag'
       && startsWith(github.ref_name, 'curves-v')
     steps:
-    - uses: actions/checkout@v3
-    - name: Check semver
-      uses: obi1kenobi/cargo-semver-checks-action@v2
-      with:
-        package: generic-ec-curves
     - run: cargo publish -p generic-ec-curves --token ${CRATES_TOKEN}
       env:
         CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
@@ -71,10 +58,6 @@ jobs:
       && startsWith(github.ref_name, 'zkp-v')
     steps:
     - uses: actions/checkout@v3
-    - name: Check semver
-      uses: obi1kenobi/cargo-semver-checks-action@v2
-      with:
-        package: generic-ec-zkp
     - run: cargo publish -p generic-ec-zkp --token ${CRATES_TOKEN}
       env:
         CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}

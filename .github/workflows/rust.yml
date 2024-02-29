@@ -134,3 +134,21 @@ jobs:
         cache-on-failure: "true"
     - name: Dry-run publish
       run: cargo publish --dry-run -p ${{ matrix.package }}
+  check-semver:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        package:
+        - generic-ec
+        - generic-ec-core
+        # TODO: this fails because the currently published version doesn't compile
+        # by itself. A fix is present and will be published soon, uncomment this
+        # when it's published
+        # - generic-ec-curves
+        - generic-ec-zkp
+    steps:
+    - uses: actions/checkout@v3
+    - name: Check semver
+      uses: obi1kenobi/cargo-semver-checks-action@v2
+      with:
+        package: ${{ matrix.package }}
