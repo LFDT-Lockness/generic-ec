@@ -146,8 +146,9 @@ jobs:
         # when it's published
         # - generic-ec-curves
         - generic-ec-zkp
+    steps:
     - uses: actions/checkout@v3
     - name: Check semver
       uses: obi1kenobi/cargo-semver-checks-action@v2
       with:
-        package: ${{ package }}
+        package: ${{ matrix.package }}
