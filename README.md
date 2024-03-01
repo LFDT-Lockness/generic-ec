@@ -73,10 +73,12 @@ Crate provides support for following elliptic curves out of box:
 | secp256k1    | `curve-secp256k1`  | [RustCrypto/k256] |
 | secp256r1    | `curve-secp256r1`  | [RustCrypto/p256] |
 | stark-curve  | `curve-stark`      | [Dfns/stark]      |
+| Ed25519      | `curve-ed25519`    | [curve25519-dalek]|
 
 [RustCrypto/k256]: https://github.com/RustCrypto/elliptic-curves/tree/master/k256
 [RustCrypto/p256]: https://github.com/RustCrypto/elliptic-curves/tree/master/p256
 [Dfns/stark]: https://github.com/dfns/stark-curve/
+[curve25519-dalek]: https://docs.rs/curve25519-dalek/
 
 In order to use one of the supported curves, you need to turn on corresponding feature. E.g. if you want
 to use secp256k1 curve, add this to Cargo.toml:
