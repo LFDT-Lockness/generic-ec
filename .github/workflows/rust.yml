@@ -141,14 +141,15 @@ jobs:
         package:
         - generic-ec
         - generic-ec-core
-        # TODO: this fails because the currently published version doesn't compile
-        # by itself. A fix is present and will be published soon, uncomment this
-        # when it's published
-        # - generic-ec-curves
+        - generic-ec-curves
         - generic-ec-zkp
+        feature-group:
+        - all-features
+        - only-explicit-features
     steps:
     - uses: actions/checkout@v3
     - name: Check semver
       uses: obi1kenobi/cargo-semver-checks-action@v2
       with:
         package: ${{ matrix.package }}
+        feature-group: ${{ matrix.feature-group }}
