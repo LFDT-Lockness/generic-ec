@@ -74,9 +74,6 @@
 //! # Ok(()) }
 //! ```
 
-#![cfg(feature = "serde")]
-use core::{convert::TryInto, fmt};
-
 use phantom_type::PhantomType;
 
 use crate::core::Curve;
@@ -224,6 +221,7 @@ impl<'de, E: Curve> serde_with::DeserializeAs<'de, crate::SecretScalar<E>> for C
     }
 }
 
+#[cfg(feature = "serde")]
 impl<T> serde_with::SerializeAs<crate::NonZero<T>> for Compact
 where
     Compact: serde_with::SerializeAs<T>,
@@ -236,6 +234,7 @@ where
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de, T> serde_with::DeserializeAs<'de, crate::NonZero<T>> for Compact
 where
     Compact: serde_with::DeserializeAs<'de, T>,
@@ -314,7 +313,7 @@ impl<'de, E: Curve> serde::Deserialize<'de> for CurveName<E> {
         pub struct CurveNameVisitor<E: Curve>(PhantomType<E>);
         impl<'de, E: Curve> serde::de::Visitor<'de> for CurveNameVisitor<E> {
             type Value = CurveName<E>;
-            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            fn expecting(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
                 write!(f, "curve {name}", name = E::CURVE_NAME)
             }
             fn visit_str<Error>(self, v: &str) -> Result<Self::Value, Error>
