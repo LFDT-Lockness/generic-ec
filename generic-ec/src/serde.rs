@@ -330,6 +330,18 @@ mod optional {
         }
     }
 
+    impl<'a, T> serde_with::SerializeAs<&'a T> for Compact
+    where
+        Compact: serde_with::SerializeAs<T>,
+    {
+        fn serialize_as<S>(source: &&'a T, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            Compact::serialize_as(*source, serializer)
+        }
+    }
+
     mod models {
         use core::convert::TryFrom;
 
