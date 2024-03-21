@@ -78,178 +78,6 @@ use phantom_type::PhantomType;
 
 use crate::core::Curve;
 
-#[cfg(feature = "serde")]
-impl<E: Curve> serde::Serialize for crate::Point<E> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        models::PointUncompressed::from(self).serialize(serializer)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de, E: Curve> serde::Deserialize<'de> for crate::Point<E> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        models::PointUncompressed::deserialize(deserializer)?
-            .try_into()
-            .map_err(<D::Error as serde::de::Error>::custom)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<E: Curve> serde::Serialize for crate::Scalar<E> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        models::ScalarUncompressed::from(self).serialize(serializer)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de, E: Curve> serde::Deserialize<'de> for crate::Scalar<E> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        models::ScalarUncompressed::deserialize(deserializer)?
-            .try_into()
-            .map_err(<D::Error as serde::de::Error>::custom)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<E: Curve> serde::Serialize for crate::SecretScalar<E> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        self.as_ref().serialize(serializer)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de, E: Curve> serde::Deserialize<'de> for crate::SecretScalar<E> {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        Ok(crate::SecretScalar::new(&mut crate::Scalar::deserialize(
-            deserializer,
-        )?))
-    }
-}
-
-#[cfg(feature = "serde")]
-/// Compact serialization format
-pub struct Compact;
-
-#[cfg(feature = "serde")]
-impl<E: Curve> serde_with::SerializeAs<crate::Point<E>> for Compact {
-    fn serialize_as<S>(source: &crate::Point<E>, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::Serialize;
-        models::PointCompact::from(source).serialize(serializer)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de, E: Curve> serde_with::DeserializeAs<'de, crate::Point<E>> for Compact {
-    fn deserialize_as<D>(deserializer: D) -> Result<crate::Point<E>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        use serde::Deserialize;
-        models::PointCompact::deserialize(deserializer)?
-            .try_into()
-            .map_err(<D::Error as serde::de::Error>::custom)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<E: Curve> serde_with::SerializeAs<crate::Scalar<E>> for Compact {
-    fn serialize_as<S>(source: &crate::Scalar<E>, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::Serialize;
-        models::ScalarCompact::from(source).serialize(serializer)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de, E: Curve> serde_with::DeserializeAs<'de, crate::Scalar<E>> for Compact {
-    fn deserialize_as<D>(deserializer: D) -> Result<crate::Scalar<E>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        use serde::Deserialize;
-        models::ScalarCompact::deserialize(deserializer)?
-            .try_into()
-            .map_err(<D::Error as serde::de::Error>::custom)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<E: Curve> serde_with::SerializeAs<crate::SecretScalar<E>> for Compact {
-    fn serialize_as<S>(source: &crate::SecretScalar<E>, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        use serde::Serialize;
-        models::ScalarCompact::from(source.as_ref()).serialize(serializer)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de, E: Curve> serde_with::DeserializeAs<'de, crate::SecretScalar<E>> for Compact {
-    fn deserialize_as<D>(deserializer: D) -> Result<crate::SecretScalar<E>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let mut scalar =
-            <Compact as serde_with::DeserializeAs<'de, crate::Scalar<E>>>::deserialize_as(
-                deserializer,
-            )?;
-        Ok(crate::SecretScalar::new(&mut scalar))
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<T> serde_with::SerializeAs<crate::NonZero<T>> for Compact
-where
-    Compact: serde_with::SerializeAs<T>,
-{
-    fn serialize_as<S>(source: &crate::NonZero<T>, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        Compact::serialize_as(source.as_ref(), serializer)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de, T> serde_with::DeserializeAs<'de, crate::NonZero<T>> for Compact
-where
-    Compact: serde_with::DeserializeAs<'de, T>,
-    crate::NonZero<T>: TryFrom<T>,
-    <crate::NonZero<T> as TryFrom<T>>::Error: core::fmt::Display,
-{
-    fn deserialize_as<D>(deserializer: D) -> Result<crate::NonZero<T>, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let value = Compact::deserialize_as(deserializer)?;
-        crate::NonZero::try_from(value).map_err(<D::Error as serde::de::Error>::custom)
-    }
-}
-
 /// A guard type asserting that deserialized value belongs to curve `E`
 ///
 /// It implements [serde::Serialize] and [serde::Deserialize] traits if `serde` feature is
@@ -323,7 +151,7 @@ impl<'de, E: Curve> serde::Deserialize<'de> for CurveName<E> {
                 if v == E::CURVE_NAME {
                     Ok(CurveName::default())
                 } else {
-                    Err(Error::custom(error_msg::ExpectedCurve {
+                    Err(Error::custom(optional::error_msg::ExpectedCurve {
                         expected: E::CURVE_NAME,
                         got: v,
                     }))
@@ -335,285 +163,451 @@ impl<'de, E: Curve> serde::Deserialize<'de> for CurveName<E> {
 }
 
 #[cfg(feature = "serde")]
-mod models {
-    use core::convert::TryFrom;
-
-    use serde::{Deserialize, Serialize};
-    use serde_with::serde_as;
-
-    use crate::core::{CompressedEncoding, IntegerEncoding, UncompressedEncoding};
-    use crate::{as_raw::AsRaw, Curve, Point, Scalar};
-
-    use super::{
-        error_msg::{InvalidPoint, InvalidScalar},
-        CurveName,
-    };
-
-    #[serde_as]
-    #[derive(Serialize, Deserialize)]
-    #[serde(bound = "")]
-    pub struct PointUncompressed<E: Curve> {
-        curve: CurveName<E>,
-        #[serde_as(as = "super::utils::Bytes")]
-        point: E::UncompressedPointArray,
-    }
-    impl<E: Curve> From<&Point<E>> for PointUncompressed<E> {
-        fn from(p: &Point<E>) -> Self {
-            let bytes = p.as_raw().to_bytes_uncompressed();
-            Self {
-                curve: CurveName::new(),
-                point: bytes,
-            }
-        }
-    }
-    impl<E: Curve> TryFrom<PointUncompressed<E>> for Point<E> {
-        type Error = InvalidPoint;
-        fn try_from(value: PointUncompressed<E>) -> Result<Self, Self::Error> {
-            Point::from_bytes(value.point).or(Err(InvalidPoint))
-        }
-    }
-
-    #[serde_as]
-    #[derive(Serialize, Deserialize)]
-    #[serde(bound = "")]
-    pub struct PointCompact<E: Curve>(
-        #[serde_as(as = "super::utils::Bytes")] E::CompressedPointArray,
-    );
-    impl<E: Curve> From<&Point<E>> for PointCompact<E> {
-        fn from(p: &Point<E>) -> Self {
-            let bytes = p.as_raw().to_bytes_compressed();
-            Self(bytes)
-        }
-    }
-    impl<E: Curve> TryFrom<PointCompact<E>> for Point<E> {
-        type Error = InvalidPoint;
-        fn try_from(value: PointCompact<E>) -> Result<Self, Self::Error> {
-            Point::from_bytes(value.0).or(Err(InvalidPoint))
-        }
-    }
-
-    #[serde_as]
-    #[derive(Serialize, Deserialize)]
-    #[serde(bound = "")]
-    pub struct ScalarUncompressed<E: Curve> {
-        curve: CurveName<E>,
-        #[serde_as(as = "super::utils::Bytes")]
-        scalar: E::ScalarArray,
-    }
-    impl<E: Curve> From<&Scalar<E>> for ScalarUncompressed<E> {
-        fn from(s: &Scalar<E>) -> Self {
-            let bytes = s.as_raw().to_be_bytes();
-            Self {
-                curve: CurveName::new(),
-                scalar: bytes,
-            }
-        }
-    }
-    impl<E: Curve> TryFrom<ScalarUncompressed<E>> for Scalar<E> {
-        type Error = InvalidScalar;
-        fn try_from(value: ScalarUncompressed<E>) -> Result<Self, Self::Error> {
-            Scalar::from_be_bytes(value.scalar).or(Err(InvalidScalar))
-        }
-    }
-
-    #[serde_as]
-    #[derive(Serialize, Deserialize)]
-    #[serde(bound = "")]
-    pub struct ScalarCompact<E: Curve>(#[serde_as(as = "super::utils::Bytes")] E::ScalarArray);
-    impl<E: Curve> From<&Scalar<E>> for ScalarCompact<E> {
-        fn from(s: &Scalar<E>) -> Self {
-            let bytes = s.as_raw().to_be_bytes();
-            Self(bytes)
-        }
-    }
-    impl<E: Curve> TryFrom<ScalarCompact<E>> for Scalar<E> {
-        type Error = InvalidScalar;
-        fn try_from(value: ScalarCompact<E>) -> Result<Self, Self::Error> {
-            Scalar::from_be_bytes(&value.0).or(Err(InvalidScalar))
-        }
-    }
-}
-
+pub use optional::*;
 #[cfg(feature = "serde")]
-mod utils {
-    use core::fmt;
+mod optional {
+    use crate::core::Curve;
 
-    use serde::de::{self, Visitor};
-    use serde_with::{DeserializeAs, SerializeAs};
+    use super::CurveName;
 
-    use crate::core::ByteArray;
-
-    pub struct Bytes;
-
-    impl<T> SerializeAs<T> for Bytes
-    where
-        T: AsRef<[u8]>,
-    {
-        fn serialize_as<S>(source: &T, serializer: S) -> Result<S::Ok, S::Error>
+    impl<E: Curve> serde::Serialize for crate::Point<E> {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: serde::Serializer,
         {
-            if serializer.is_human_readable() {
-                // We only support serialization of byte arrays up to 128 bytes. It can be generalized when
-                // Rust has better support of const generics
-                let mut buf = [0u8; 256];
-
-                if source.as_ref().len() * 2 > buf.len() {
-                    return Err(<S::Error as serde::ser::Error>::custom(
-                        super::error_msg::ByteArrayTooLarge {
-                            len: source.as_ref().len(),
-                            supported_len: buf.len() / 2,
-                        },
-                    ));
-                }
-                let buf = &mut buf[..2 * source.as_ref().len()];
-                hex::encode_to_slice(source, buf)
-                    .map_err(<S::Error as serde::ser::Error>::custom)?;
-                let buf_str = core::str::from_utf8(buf).map_err(|e| {
-                    <S::Error as serde::ser::Error>::custom(super::error_msg::MalformedHex(e))
-                })?;
-                serializer.serialize_str(buf_str)
-            } else {
-                serializer.serialize_bytes(source.as_ref())
-            }
+            models::PointUncompressed::from(self).serialize(serializer)
         }
     }
 
-    impl<'de, T> DeserializeAs<'de, T> for Bytes
-    where
-        T: ByteArray,
-    {
-        fn deserialize_as<D>(deserializer: D) -> Result<T, D::Error>
+    impl<'de, E: Curve> serde::Deserialize<'de> for crate::Point<E> {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where
             D: serde::Deserializer<'de>,
         {
-            pub struct BytesVisitor<T>(T);
-            impl<'de, T: AsMut<[u8]>> Visitor<'de> for BytesVisitor<T> {
-                type Value = T;
-                fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                    write!(f, "bytes")
+            models::PointUncompressed::deserialize(deserializer)?
+                .try_into()
+                .map_err(<D::Error as serde::de::Error>::custom)
+        }
+    }
+
+    impl<E: Curve> serde::Serialize for crate::Scalar<E> {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            models::ScalarUncompressed::from(self).serialize(serializer)
+        }
+    }
+
+    impl<'de, E: Curve> serde::Deserialize<'de> for crate::Scalar<E> {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            models::ScalarUncompressed::deserialize(deserializer)?
+                .try_into()
+                .map_err(<D::Error as serde::de::Error>::custom)
+        }
+    }
+
+    impl<E: Curve> serde::Serialize for crate::SecretScalar<E> {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            self.as_ref().serialize(serializer)
+        }
+    }
+
+    impl<'de, E: Curve> serde::Deserialize<'de> for crate::SecretScalar<E> {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            Ok(crate::SecretScalar::new(&mut crate::Scalar::deserialize(
+                deserializer,
+            )?))
+        }
+    }
+
+    /// Compact serialization format
+    pub struct Compact;
+
+    impl<E: Curve> serde_with::SerializeAs<crate::Point<E>> for Compact {
+        fn serialize_as<S>(source: &crate::Point<E>, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            use serde::Serialize;
+            models::PointCompact::from(source).serialize(serializer)
+        }
+    }
+
+    impl<'de, E: Curve> serde_with::DeserializeAs<'de, crate::Point<E>> for Compact {
+        fn deserialize_as<D>(deserializer: D) -> Result<crate::Point<E>, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            use serde::Deserialize;
+            models::PointCompact::deserialize(deserializer)?
+                .try_into()
+                .map_err(<D::Error as serde::de::Error>::custom)
+        }
+    }
+
+    impl<E: Curve> serde_with::SerializeAs<crate::Scalar<E>> for Compact {
+        fn serialize_as<S>(source: &crate::Scalar<E>, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            use serde::Serialize;
+            models::ScalarCompact::from(source).serialize(serializer)
+        }
+    }
+
+    impl<'de, E: Curve> serde_with::DeserializeAs<'de, crate::Scalar<E>> for Compact {
+        fn deserialize_as<D>(deserializer: D) -> Result<crate::Scalar<E>, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            use serde::Deserialize;
+            models::ScalarCompact::deserialize(deserializer)?
+                .try_into()
+                .map_err(<D::Error as serde::de::Error>::custom)
+        }
+    }
+
+    impl<E: Curve> serde_with::SerializeAs<crate::SecretScalar<E>> for Compact {
+        fn serialize_as<S>(
+            source: &crate::SecretScalar<E>,
+            serializer: S,
+        ) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            use serde::Serialize;
+            models::ScalarCompact::from(source.as_ref()).serialize(serializer)
+        }
+    }
+
+    impl<'de, E: Curve> serde_with::DeserializeAs<'de, crate::SecretScalar<E>> for Compact {
+        fn deserialize_as<D>(deserializer: D) -> Result<crate::SecretScalar<E>, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            let mut scalar =
+                <Compact as serde_with::DeserializeAs<'de, crate::Scalar<E>>>::deserialize_as(
+                    deserializer,
+                )?;
+            Ok(crate::SecretScalar::new(&mut scalar))
+        }
+    }
+
+    impl<T> serde_with::SerializeAs<crate::NonZero<T>> for Compact
+    where
+        Compact: serde_with::SerializeAs<T>,
+    {
+        fn serialize_as<S>(source: &crate::NonZero<T>, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            Compact::serialize_as(source.as_ref(), serializer)
+        }
+    }
+
+    impl<'de, T> serde_with::DeserializeAs<'de, crate::NonZero<T>> for Compact
+    where
+        Compact: serde_with::DeserializeAs<'de, T>,
+        crate::NonZero<T>: TryFrom<T>,
+        <crate::NonZero<T> as TryFrom<T>>::Error: core::fmt::Display,
+    {
+        fn deserialize_as<D>(deserializer: D) -> Result<crate::NonZero<T>, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            let value = Compact::deserialize_as(deserializer)?;
+            crate::NonZero::try_from(value).map_err(<D::Error as serde::de::Error>::custom)
+        }
+    }
+
+    mod models {
+        use core::convert::TryFrom;
+
+        use serde::{Deserialize, Serialize};
+        use serde_with::serde_as;
+
+        use crate::core::{CompressedEncoding, IntegerEncoding, UncompressedEncoding};
+        use crate::{as_raw::AsRaw, Curve, Point, Scalar};
+
+        use super::{
+            error_msg::{InvalidPoint, InvalidScalar},
+            CurveName,
+        };
+
+        #[serde_as]
+        #[derive(Serialize, Deserialize)]
+        #[serde(bound = "")]
+        pub struct PointUncompressed<E: Curve> {
+            curve: CurveName<E>,
+            #[serde_as(as = "super::utils::Bytes")]
+            point: E::UncompressedPointArray,
+        }
+        impl<E: Curve> From<&Point<E>> for PointUncompressed<E> {
+            fn from(p: &Point<E>) -> Self {
+                let bytes = p.as_raw().to_bytes_uncompressed();
+                Self {
+                    curve: CurveName::new(),
+                    point: bytes,
                 }
-                fn visit_str<E>(mut self, v: &str) -> Result<Self::Value, E>
-                where
-                    E: serde::de::Error,
-                {
-                    hex::decode_to_slice(v, self.0.as_mut()).map_err(E::custom)?;
-                    Ok(self.0)
+            }
+        }
+        impl<E: Curve> TryFrom<PointUncompressed<E>> for Point<E> {
+            type Error = InvalidPoint;
+            fn try_from(value: PointUncompressed<E>) -> Result<Self, Self::Error> {
+                Point::from_bytes(value.point).or(Err(InvalidPoint))
+            }
+        }
+
+        #[serde_as]
+        #[derive(Serialize, Deserialize)]
+        #[serde(bound = "")]
+        pub struct PointCompact<E: Curve>(
+            #[serde_as(as = "super::utils::Bytes")] E::CompressedPointArray,
+        );
+        impl<E: Curve> From<&Point<E>> for PointCompact<E> {
+            fn from(p: &Point<E>) -> Self {
+                let bytes = p.as_raw().to_bytes_compressed();
+                Self(bytes)
+            }
+        }
+        impl<E: Curve> TryFrom<PointCompact<E>> for Point<E> {
+            type Error = InvalidPoint;
+            fn try_from(value: PointCompact<E>) -> Result<Self, Self::Error> {
+                Point::from_bytes(value.0).or(Err(InvalidPoint))
+            }
+        }
+
+        #[serde_as]
+        #[derive(Serialize, Deserialize)]
+        #[serde(bound = "")]
+        pub struct ScalarUncompressed<E: Curve> {
+            curve: CurveName<E>,
+            #[serde_as(as = "super::utils::Bytes")]
+            scalar: E::ScalarArray,
+        }
+        impl<E: Curve> From<&Scalar<E>> for ScalarUncompressed<E> {
+            fn from(s: &Scalar<E>) -> Self {
+                let bytes = s.as_raw().to_be_bytes();
+                Self {
+                    curve: CurveName::new(),
+                    scalar: bytes,
                 }
-                fn visit_bytes<E>(mut self, v: &[u8]) -> Result<Self::Value, E>
-                where
-                    E: serde::de::Error,
-                {
-                    let expected_len = self.0.as_mut().len();
-                    if v.len() != expected_len {
-                        return Err(E::invalid_length(
-                            v.len(),
-                            &super::error_msg::ExpectedLen(expected_len),
+            }
+        }
+        impl<E: Curve> TryFrom<ScalarUncompressed<E>> for Scalar<E> {
+            type Error = InvalidScalar;
+            fn try_from(value: ScalarUncompressed<E>) -> Result<Self, Self::Error> {
+                Scalar::from_be_bytes(value.scalar).or(Err(InvalidScalar))
+            }
+        }
+
+        #[serde_as]
+        #[derive(Serialize, Deserialize)]
+        #[serde(bound = "")]
+        pub struct ScalarCompact<E: Curve>(#[serde_as(as = "super::utils::Bytes")] E::ScalarArray);
+        impl<E: Curve> From<&Scalar<E>> for ScalarCompact<E> {
+            fn from(s: &Scalar<E>) -> Self {
+                let bytes = s.as_raw().to_be_bytes();
+                Self(bytes)
+            }
+        }
+        impl<E: Curve> TryFrom<ScalarCompact<E>> for Scalar<E> {
+            type Error = InvalidScalar;
+            fn try_from(value: ScalarCompact<E>) -> Result<Self, Self::Error> {
+                Scalar::from_be_bytes(&value.0).or(Err(InvalidScalar))
+            }
+        }
+    }
+
+    mod utils {
+        use core::fmt;
+
+        use serde::de::{self, Visitor};
+        use serde_with::{DeserializeAs, SerializeAs};
+
+        use crate::core::ByteArray;
+
+        pub struct Bytes;
+
+        impl<T> SerializeAs<T> for Bytes
+        where
+            T: AsRef<[u8]>,
+        {
+            fn serialize_as<S>(source: &T, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: serde::Serializer,
+            {
+                if serializer.is_human_readable() {
+                    // We only support serialization of byte arrays up to 128 bytes. It can be generalized when
+                    // Rust has better support of const generics
+                    let mut buf = [0u8; 256];
+
+                    if source.as_ref().len() * 2 > buf.len() {
+                        return Err(<S::Error as serde::ser::Error>::custom(
+                            super::error_msg::ByteArrayTooLarge {
+                                len: source.as_ref().len(),
+                                supported_len: buf.len() / 2,
+                            },
                         ));
                     }
-                    self.0.as_mut().copy_from_slice(v);
-                    Ok(self.0)
+                    let buf = &mut buf[..2 * source.as_ref().len()];
+                    hex::encode_to_slice(source, buf)
+                        .map_err(<S::Error as serde::ser::Error>::custom)?;
+                    let buf_str = core::str::from_utf8(buf).map_err(|e| {
+                        <S::Error as serde::ser::Error>::custom(super::error_msg::MalformedHex(e))
+                    })?;
+                    serializer.serialize_str(buf_str)
+                } else {
+                    serializer.serialize_bytes(source.as_ref())
                 }
-                fn visit_seq<A>(mut self, mut seq: A) -> Result<Self::Value, A::Error>
-                where
-                    A: serde::de::SeqAccess<'de>,
-                {
-                    let expected_len = self.0.as_mut().len();
-                    let bytes = self.0.as_mut().iter_mut().enumerate();
+            }
+        }
 
-                    for (i, byte_i) in bytes {
-                        let byte_parsed = seq.next_element()?.ok_or_else(|| {
-                            <A::Error as de::Error>::invalid_length(
-                                i,
-                                &super::error_msg::ExpectedLen(expected_len),
-                            )
-                        })?;
-                        *byte_i = byte_parsed;
+        impl<'de, T> DeserializeAs<'de, T> for Bytes
+        where
+            T: ByteArray,
+        {
+            fn deserialize_as<D>(deserializer: D) -> Result<T, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                pub struct BytesVisitor<T>(T);
+                impl<'de, T: AsMut<[u8]>> Visitor<'de> for BytesVisitor<T> {
+                    type Value = T;
+                    fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                        write!(f, "bytes")
                     }
-
-                    let mut unparsed_bytes = 0;
-                    while seq.next_element::<serde::de::IgnoredAny>()?.is_some() {
-                        unparsed_bytes += 1
-                    }
-
-                    if unparsed_bytes > 0 {
-                        Err(<A::Error as de::Error>::invalid_length(
-                            expected_len + unparsed_bytes,
-                            &super::error_msg::ExpectedLen(expected_len),
-                        ))
-                    } else {
+                    fn visit_str<E>(mut self, v: &str) -> Result<Self::Value, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        hex::decode_to_slice(v, self.0.as_mut()).map_err(E::custom)?;
                         Ok(self.0)
                     }
+                    fn visit_bytes<E>(mut self, v: &[u8]) -> Result<Self::Value, E>
+                    where
+                        E: serde::de::Error,
+                    {
+                        let expected_len = self.0.as_mut().len();
+                        if v.len() != expected_len {
+                            return Err(E::invalid_length(
+                                v.len(),
+                                &super::error_msg::ExpectedLen(expected_len),
+                            ));
+                        }
+                        self.0.as_mut().copy_from_slice(v);
+                        Ok(self.0)
+                    }
+                    fn visit_seq<A>(mut self, mut seq: A) -> Result<Self::Value, A::Error>
+                    where
+                        A: serde::de::SeqAccess<'de>,
+                    {
+                        let expected_len = self.0.as_mut().len();
+                        let bytes = self.0.as_mut().iter_mut().enumerate();
+
+                        for (i, byte_i) in bytes {
+                            let byte_parsed = seq.next_element()?.ok_or_else(|| {
+                                <A::Error as de::Error>::invalid_length(
+                                    i,
+                                    &super::error_msg::ExpectedLen(expected_len),
+                                )
+                            })?;
+                            *byte_i = byte_parsed;
+                        }
+
+                        let mut unparsed_bytes = 0;
+                        while seq.next_element::<serde::de::IgnoredAny>()?.is_some() {
+                            unparsed_bytes += 1
+                        }
+
+                        if unparsed_bytes > 0 {
+                            Err(<A::Error as de::Error>::invalid_length(
+                                expected_len + unparsed_bytes,
+                                &super::error_msg::ExpectedLen(expected_len),
+                            ))
+                        } else {
+                            Ok(self.0)
+                        }
+                    }
+                }
+                let visitor = BytesVisitor(T::zeroes());
+                if deserializer.is_human_readable() {
+                    deserializer.deserialize_str(visitor)
+                } else {
+                    deserializer.deserialize_bytes(visitor)
                 }
             }
-            let visitor = BytesVisitor(T::zeroes());
-            if deserializer.is_human_readable() {
-                deserializer.deserialize_str(visitor)
-            } else {
-                deserializer.deserialize_bytes(visitor)
+        }
+    }
+
+    pub(super) mod error_msg {
+        use core::fmt;
+
+        use serde::de::Expected;
+
+        pub struct ExpectedCurve<'g> {
+            pub expected: &'static str,
+            pub got: &'g str,
+        }
+
+        impl<'g> fmt::Display for ExpectedCurve<'g> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(
+                    f,
+                    "expected {e} curve, got {g}",
+                    e = self.expected,
+                    g = self.got
+                )
             }
         }
-    }
-}
 
-#[cfg(feature = "serde")]
-mod error_msg {
-    use core::fmt;
+        pub struct ExpectedLen(pub usize);
 
-    use serde::de::Expected;
-
-    pub struct ExpectedCurve<'g> {
-        pub expected: &'static str,
-        pub got: &'g str,
-    }
-
-    impl<'g> fmt::Display for ExpectedCurve<'g> {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            write!(
-                f,
-                "expected {e} curve, got {g}",
-                e = self.expected,
-                g = self.got
-            )
+        impl Expected for ExpectedLen {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                write!(f, "{} bytes", self.0)
+            }
         }
-    }
 
-    pub struct ExpectedLen(pub usize);
-
-    impl Expected for ExpectedLen {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-            write!(f, "{} bytes", self.0)
+        pub struct InvalidPoint;
+        impl fmt::Display for InvalidPoint {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(f, "invalid point")
+            }
         }
-    }
 
-    pub struct InvalidPoint;
-    impl fmt::Display for InvalidPoint {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            write!(f, "invalid point")
+        pub struct InvalidScalar;
+        impl fmt::Display for InvalidScalar {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(f, "invalid scalar")
+            }
         }
-    }
 
-    pub struct InvalidScalar;
-    impl fmt::Display for InvalidScalar {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            write!(f, "invalid scalar")
+        pub struct MalformedHex(pub core::str::Utf8Error);
+        impl fmt::Display for MalformedHex {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(f, "malformed hex: {}", self.0)
+            }
         }
-    }
 
-    pub struct MalformedHex(pub core::str::Utf8Error);
-    impl fmt::Display for MalformedHex {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            write!(f, "malformed hex: {}", self.0)
+        pub struct ByteArrayTooLarge {
+            pub len: usize,
+            pub supported_len: usize,
         }
-    }
-
-    pub struct ByteArrayTooLarge {
-        pub len: usize,
-        pub supported_len: usize,
-    }
-    impl fmt::Display for ByteArrayTooLarge {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            write!(f, "byte array is too large: its length is {} bytes, but only up to {} bytes can be serialized", self.len, self.supported_len)
+        impl fmt::Display for ByteArrayTooLarge {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(f, "byte array is too large: its length is {} bytes, but only up to {} bytes can be serialized", self.len, self.supported_len)
+            }
         }
     }
 }
