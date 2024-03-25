@@ -384,7 +384,7 @@ mod optional {
                 Compact: serde_with::DeserializeAs<'de, T>,
             {
                 type Value = T;
-                fn expecting(&self, f: &mut alloc::fmt::Formatter) -> alloc::fmt::Result {
+                fn expecting(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
                     f.write_str("preferably compact point/scalar")
                 }
 
