@@ -166,11 +166,11 @@ impl<'de, E: Curve> serde::Deserialize<'de> for CurveName<E> {
 pub use optional::*;
 #[cfg(feature = "serde")]
 mod optional {
-    use crate::core::Curve;
+    use crate::{core::Curve, Point, Scalar, SecretScalar};
 
     use super::CurveName;
 
-    impl<E: Curve> serde::Serialize for crate::Point<E> {
+    impl<E: Curve> serde::Serialize for Point<E> {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: serde::Serializer,
@@ -179,7 +179,7 @@ mod optional {
         }
     }
 
-    impl<'de, E: Curve> serde::Deserialize<'de> for crate::Point<E> {
+    impl<'de, E: Curve> serde::Deserialize<'de> for Point<E> {
         fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where
             D: serde::Deserializer<'de>,
@@ -190,7 +190,7 @@ mod optional {
         }
     }
 
-    impl<E: Curve> serde::Serialize for crate::Scalar<E> {
+    impl<E: Curve> serde::Serialize for Scalar<E> {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: serde::Serializer,
@@ -199,7 +199,7 @@ mod optional {
         }
     }
 
-    impl<'de, E: Curve> serde::Deserialize<'de> for crate::Scalar<E> {
+    impl<'de, E: Curve> serde::Deserialize<'de> for Scalar<E> {
         fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where
             D: serde::Deserializer<'de>,
@@ -210,7 +210,7 @@ mod optional {
         }
     }
 
-    impl<E: Curve> serde::Serialize for crate::SecretScalar<E> {
+    impl<E: Curve> serde::Serialize for SecretScalar<E> {
         fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: serde::Serializer,
@@ -219,22 +219,20 @@ mod optional {
         }
     }
 
-    impl<'de, E: Curve> serde::Deserialize<'de> for crate::SecretScalar<E> {
+    impl<'de, E: Curve> serde::Deserialize<'de> for SecretScalar<E> {
         fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where
             D: serde::Deserializer<'de>,
         {
-            Ok(crate::SecretScalar::new(&mut crate::Scalar::deserialize(
-                deserializer,
-            )?))
+            Ok(SecretScalar::new(&mut Scalar::deserialize(deserializer)?))
         }
     }
 
     /// Compact serialization format
     pub struct Compact;
 
-    impl<E: Curve> serde_with::SerializeAs<crate::Point<E>> for Compact {
-        fn serialize_as<S>(source: &crate::Point<E>, serializer: S) -> Result<S::Ok, S::Error>
+    impl<E: Curve> serde_with::SerializeAs<Point<E>> for Compact {
+        fn serialize_as<S>(source: &Point<E>, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: serde::Serializer,
         {
@@ -243,8 +241,8 @@ mod optional {
         }
     }
 
-    impl<'de, E: Curve> serde_with::DeserializeAs<'de, crate::Point<E>> for Compact {
-        fn deserialize_as<D>(deserializer: D) -> Result<crate::Point<E>, D::Error>
+    impl<'de, E: Curve> serde_with::DeserializeAs<'de, Point<E>> for Compact {
+        fn deserialize_as<D>(deserializer: D) -> Result<Point<E>, D::Error>
         where
             D: serde::Deserializer<'de>,
         {
@@ -255,8 +253,8 @@ mod optional {
         }
     }
 
-    impl<E: Curve> serde_with::SerializeAs<crate::Scalar<E>> for Compact {
-        fn serialize_as<S>(source: &crate::Scalar<E>, serializer: S) -> Result<S::Ok, S::Error>
+    impl<E: Curve> serde_with::SerializeAs<Scalar<E>> for Compact {
+        fn serialize_as<S>(source: &Scalar<E>, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: serde::Serializer,
         {
@@ -265,8 +263,8 @@ mod optional {
         }
     }
 
-    impl<'de, E: Curve> serde_with::DeserializeAs<'de, crate::Scalar<E>> for Compact {
-        fn deserialize_as<D>(deserializer: D) -> Result<crate::Scalar<E>, D::Error>
+    impl<'de, E: Curve> serde_with::DeserializeAs<'de, Scalar<E>> for Compact {
+        fn deserialize_as<D>(deserializer: D) -> Result<Scalar<E>, D::Error>
         where
             D: serde::Deserializer<'de>,
         {
@@ -277,11 +275,8 @@ mod optional {
         }
     }
 
-    impl<E: Curve> serde_with::SerializeAs<crate::SecretScalar<E>> for Compact {
-        fn serialize_as<S>(
-            source: &crate::SecretScalar<E>,
-            serializer: S,
-        ) -> Result<S::Ok, S::Error>
+    impl<E: Curve> serde_with::SerializeAs<SecretScalar<E>> for Compact {
+        fn serialize_as<S>(source: &SecretScalar<E>, serializer: S) -> Result<S::Ok, S::Error>
         where
             S: serde::Serializer,
         {
@@ -290,16 +285,16 @@ mod optional {
         }
     }
 
-    impl<'de, E: Curve> serde_with::DeserializeAs<'de, crate::SecretScalar<E>> for Compact {
-        fn deserialize_as<D>(deserializer: D) -> Result<crate::SecretScalar<E>, D::Error>
+    impl<'de, E: Curve> serde_with::DeserializeAs<'de, SecretScalar<E>> for Compact {
+        fn deserialize_as<D>(deserializer: D) -> Result<SecretScalar<E>, D::Error>
         where
             D: serde::Deserializer<'de>,
         {
             let mut scalar =
-                <Compact as serde_with::DeserializeAs<'de, crate::Scalar<E>>>::deserialize_as(
+                <Compact as serde_with::DeserializeAs<'de, Scalar<E>>>::deserialize_as(
                     deserializer,
                 )?;
-            Ok(crate::SecretScalar::new(&mut scalar))
+            Ok(SecretScalar::new(&mut scalar))
         }
     }
 
@@ -339,6 +334,173 @@ mod optional {
             S: serde::Serializer,
         {
             Compact::serialize_as(*source, serializer)
+        }
+    }
+
+    /// Serializes point/scalar compactly. Deserializes both compact
+    /// and non-compact points/scalars.
+    ///
+    /// It can be used when some data used to be serialized in default serialization
+    /// format, and at some point you decided to use a compact serialization format.
+    /// `PreferCompact` serializes points/scalar in compact format, but at deserialization
+    /// it accepts both compact and non-compact forms.
+    ///
+    /// `PreferCompact` does not work on `serde` backends which serialize structs as
+    /// lists, such as `bincode`. Notably, (de)serialization of points/scalars in compact
+    /// format will still work, but deserialization from non-compact form will produce
+    /// an error.
+    pub struct PreferCompact;
+
+    impl<T> serde_with::SerializeAs<T> for PreferCompact
+    where
+        Compact: serde_with::SerializeAs<T>,
+    {
+        fn serialize_as<S>(source: &T, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            <Compact as serde_with::SerializeAs<T>>::serialize_as(source, serializer)
+        }
+    }
+
+    impl<'de, T> serde_with::DeserializeAs<'de, T> for PreferCompact
+    where
+        T: serde::Deserialize<'de>,
+        Compact: serde_with::DeserializeAs<'de, T>,
+    {
+        fn deserialize_as<D>(deserializer: D) -> Result<T, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            use serde_with::DeserializeAs;
+
+            struct Visitor<T> {
+                is_human_readable: bool,
+                _out: core::marker::PhantomData<T>,
+            }
+            impl<'de, T> serde::de::Visitor<'de> for Visitor<T>
+            where
+                T: serde::Deserialize<'de>,
+                Compact: serde_with::DeserializeAs<'de, T>,
+            {
+                type Value = T;
+                fn expecting(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
+                    f.write_str("preferably compact point/scalar")
+                }
+
+                fn visit_bytes<Err>(self, v: &[u8]) -> Result<Self::Value, Err>
+                where
+                    Err: serde::de::Error,
+                {
+                    Compact::deserialize_as(NewTypeDeserializer::new(OverrideHumanReadable {
+                        deserializer: serde::de::value::BytesDeserializer::<Err>::new(v),
+                        is_human_readable: self.is_human_readable,
+                    }))
+                }
+                fn visit_str<Err>(self, v: &str) -> Result<Self::Value, Err>
+                where
+                    Err: serde::de::Error,
+                {
+                    Compact::deserialize_as(NewTypeDeserializer::new(OverrideHumanReadable {
+                        deserializer: serde::de::value::StrDeserializer::<Err>::new(v),
+                        is_human_readable: self.is_human_readable,
+                    }))
+                }
+
+                fn visit_seq<A>(self, _seq: A) -> Result<Self::Value, A::Error>
+                where
+                    A: serde::de::SeqAccess<'de>,
+                {
+                    Err(<A::Error as serde::de::Error>::custom(
+                        "cannot deserialize in `PreferCompact` mode \
+                        from sequence: it's ambiguous",
+                    ))
+                }
+                fn visit_map<A>(self, map: A) -> Result<Self::Value, A::Error>
+                where
+                    A: serde::de::MapAccess<'de>,
+                {
+                    T::deserialize(OverrideHumanReadable {
+                        deserializer: serde::de::value::MapAccessDeserializer::new(map),
+                        is_human_readable: self.is_human_readable,
+                    })
+                }
+
+                fn visit_newtype_struct<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+                where
+                    D: serde::Deserializer<'de>,
+                {
+                    Compact::deserialize_as(NewTypeDeserializer::new(OverrideHumanReadable {
+                        deserializer,
+                        is_human_readable: self.is_human_readable,
+                    }))
+                }
+            }
+
+            let is_human_readable = deserializer.is_human_readable();
+            deserializer.deserialize_any(Visitor {
+                is_human_readable,
+                _out: core::marker::PhantomData::<T>,
+            })
+        }
+    }
+
+    /// Wraps a [`serde::Deserializer`] and overrides `fn is_human_readable()`
+    struct OverrideHumanReadable<D> {
+        is_human_readable: bool,
+        deserializer: D,
+    }
+    impl<'de, D> serde::Deserializer<'de> for OverrideHumanReadable<D>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        type Error = <D as serde::Deserializer<'de>>::Error;
+
+        fn is_human_readable(&self) -> bool {
+            self.is_human_readable
+        }
+
+        fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+        where
+            V: serde::de::Visitor<'de>,
+        {
+            self.deserializer.deserialize_any(visitor)
+        }
+
+        serde::forward_to_deserialize_any! {
+            bool i8 i16 i32 i64 i128 u8 u16 u32 u64 u128 f32 f64 char str string
+            bytes byte_buf option unit unit_struct newtype_struct seq tuple
+            tuple_struct map struct enum identifier ignored_any
+        }
+    }
+
+    /// See [`serde::de::value`]. New type deserializer is missing in the `serde` crate.
+    struct NewTypeDeserializer<D> {
+        deserializer: D,
+    }
+    impl<D> NewTypeDeserializer<D> {
+        pub fn new(deserializer: D) -> Self {
+            Self { deserializer }
+        }
+    }
+    impl<'de, D> serde::Deserializer<'de> for NewTypeDeserializer<D>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        type Error = D::Error;
+        fn deserialize_any<V>(self, visitor: V) -> Result<V::Value, Self::Error>
+        where
+            V: serde::de::Visitor<'de>,
+        {
+            visitor.visit_newtype_struct(self.deserializer)
+        }
+        fn is_human_readable(&self) -> bool {
+            self.deserializer.is_human_readable()
+        }
+        serde::forward_to_deserialize_any! {
+            bool i8 i16 i32 i64 i128 u8 u16 u32 u64 u128 f32 f64 char str string
+            bytes byte_buf option unit unit_struct newtype_struct seq tuple
+            tuple_struct map struct enum identifier ignored_any
         }
     }
 
