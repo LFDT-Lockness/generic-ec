@@ -45,11 +45,11 @@ use crate::{Curve, Point, Radix16Iter, Scalar};
 /// Multiscalar multiplication algorithm
 ///
 /// See [module-level docs](self) for motivation and list of provided algorithms.
-pub trait MultiscalarMul {
+pub trait MultiscalarMul<E: Curve> {
     /// Performs multiscalar multiplication
     ///
     /// Takes iterator of pairs `(scalar, point)`. Returns sum of `scalar * point`.
-    fn multiscalar_mul<E: Curve, S, P>(scalar_points: impl IntoIterator<Item = (S, P)>) -> Point<E>
+    fn multiscalar_mul<S, P>(scalar_points: impl IntoIterator<Item = (S, P)>) -> Point<E>
     where
         S: AsRef<Scalar<E>>,
         P: AsRef<Point<E>>;
@@ -65,8 +65,8 @@ pub trait MultiscalarMul {
 /// $$\text{cost} = \log_2 s \cdot D + \frac{1}{2} \log_2 s \cdot A$$
 pub struct Naive;
 
-impl MultiscalarMul for Naive {
-    fn multiscalar_mul<E: Curve, S, P>(scalar_points: impl IntoIterator<Item = (S, P)>) -> Point<E>
+impl<E: Curve> MultiscalarMul<E> for Naive {
+    fn multiscalar_mul<S, P>(scalar_points: impl IntoIterator<Item = (S, P)>) -> Point<E>
     where
         S: AsRef<Scalar<E>>,
         P: AsRef<Point<E>>,
@@ -81,8 +81,8 @@ impl MultiscalarMul for Naive {
 /// Straus algorithm
 pub struct Straus;
 
-impl MultiscalarMul for Straus {
-    fn multiscalar_mul<E: Curve, S, P>(scalar_points: impl IntoIterator<Item = (S, P)>) -> Point<E>
+impl<E: Curve> MultiscalarMul<E> for Straus {
+    fn multiscalar_mul<S, P>(scalar_points: impl IntoIterator<Item = (S, P)>) -> Point<E>
     where
         S: AsRef<Scalar<E>>,
         P: AsRef<Point<E>>,
@@ -143,5 +143,82 @@ impl MultiscalarMul for Straus {
         }
 
         sum
+    }
+}
+
+/// Pippenger algorithm
+pub struct Pippenger;
+
+impl<E: Curve> MultiscalarMul<E> for Pippenger {
+    fn multiscalar_mul<S, P>(scalar_points: impl IntoIterator<Item = (S, P)>) -> Point<E>
+    where
+        S: AsRef<Scalar<E>>,
+        P: AsRef<Point<E>>,
+    {
+        let (mut scalars, points): (Vec<Radix16Iter<E>>, Vec<Point<E>>) = scalar_points
+            .into_iter()
+            .map(|(scalar, point)| (scalar.as_ref().as_radix16_be(), *point.as_ref()))
+            .unzip();
+        if scalars.is_empty() {
+            return Point::zero();
+        }
+
+        // `serialized_len` is amount of radix256-digits. We multiply it by 2 and get
+        // amount of radix16-digits
+        let num_digits = 2 * Scalar::<E>::serialized_len();
+
+        let mut result = Point::zero();
+        for i in 0..num_digits {
+            let mut buckets = [None; 15];
+
+            // Put each point into its bucket
+            scalars
+                .iter_mut()
+                .map(|radix16| {
+                    radix16
+                        .next()
+                        .expect("there must be next radix16 available")
+                })
+                .zip(&points)
+                .for_each(|(s_ij, &point_i)| {
+                    debug_assert!(s_ij < 16);
+                    if s_ij == 0 {
+                        // P_i * 0 = 0, we ignore it
+                        return;
+                    } else {
+                        match &mut buckets[usize::from(s_ij) - 1] {
+                            Some(bucket) => *bucket += point_i,
+                            bucket @ None => *bucket = Some(point_i),
+                        }
+                    }
+                });
+
+            // Compute full_sum = 1 * buckets[0] + 2 * buckets[1] + ... + 15 * buckets[14]
+            let mut sum = buckets[14].unwrap_or_else(|| Point::zero());
+            let mut full_sum = sum;
+
+            for bucket_j in buckets.iter().rev().skip(1) {
+                if let Some(bucket_j) = bucket_j {
+                    sum += bucket_j;
+                }
+                full_sum += sum;
+            }
+            debug_assert_eq!(
+                full_sum,
+                (1..)
+                    .zip(&buckets)
+                    .map(|(i, bucket_i)| bucket_i.unwrap_or_default() * Scalar::from(i))
+                    .sum::<Point<E>>()
+            );
+
+            if i == 0 {
+                result = full_sum
+            } else {
+                let result_at_16 = result.double().double().double().double();
+                result = result_at_16 + full_sum
+            }
+        }
+
+        result
     }
 }
