@@ -180,6 +180,34 @@ impl<E: Curve> Scalar<E> {
     pub fn serialized_len() -> usize {
         E::ScalarArray::zeroes().as_ref().len()
     }
+
+    /// Returns scalar big-endian representation in radix $2^4 = 16$
+    ///
+    /// Radix 16 representation is defined as sum:
+    ///
+    /// $$s = s_0 + s_1 16^1 + s_2 16^2 + \dots + s_{\log_{16}(s) - 1} 16^{\log_{16}(s) - 1}$$
+    ///
+    /// (note: we typically work with 256 bit scalars, so $\log_{16}(s) = \log_{16}(2^{256}) = 64$)
+    ///
+    /// Returns iterator over coefficients from most to least significant:
+    /// $s_{\log_{16}(s) - 1}, \dots, s_1, s_0$
+    pub fn as_radix16_be(&self) -> Radix16Iter<E> {
+        Radix16Iter::new(self.to_be_bytes(), true)
+    }
+
+    /// Returns scalar little-endian representation in radix $2^4 = 16$
+    ///
+    /// Radix 16 representation is defined as sum:
+    ///
+    /// $$s = s_0 + s_1 16^1 + s_2 16^2 + \dots + s_{\log_{16}(s) - 1} 16^{\log_{16}(s) - 1}$$
+    ///
+    /// (note: we typically work with 256 bit scalars, so $\log_{16}(s) = \log_{16}(2^{256}) = 64$)
+    ///
+    /// Returns iterator over coefficients from least to most significant:
+    /// $s_0, s_1, \dots, s_{\log_{16}(s) - 1}$
+    pub fn as_radix16_le(&self) -> Radix16Iter<E> {
+        Radix16Iter::new(self.to_le_bytes(), false)
+    }
 }
 
 impl<E: Curve> AsRaw for Scalar<E> {
@@ -364,5 +392,57 @@ impl<E: Curve> udigest::Digestable for Scalar<E> {
         s.add_field("curve").encode_leaf_value(E::CURVE_NAME);
         s.add_field("scalar").encode_leaf_value(self.to_be_bytes());
         s.finish();
+    }
+}
+
+/// Iterator over scalar coefficients in radix 16 representation
+///
+/// See [`Scalar::as_radix16_be`] and [`Scalar::as_radix16_le`]
+pub struct Radix16Iter<E: Curve> {
+    /// radix 256 representation of the scalar
+    encoded_scalar: EncodedScalar<E>,
+    next_radix16: Option<u8>,
+    next_index: usize,
+
+    /// Indicates that output is in big-endian. If it's false,
+    /// output is in little-endian
+    is_be: bool,
+}
+
+impl<E: Curve> Radix16Iter<E> {
+    fn new(encoded_scalar: EncodedScalar<E>, is_be: bool) -> Self {
+        Self {
+            encoded_scalar,
+            is_be,
+            next_radix16: None,
+            next_index: 0,
+        }
+    }
+}
+
+impl<E: Curve> Iterator for Radix16Iter<E> {
+    type Item = u8;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some(next_radix16) = self.next_radix16.take() {
+            return Some(next_radix16);
+        }
+
+        let next_radix256 = self.encoded_scalar.get(self.next_index)?;
+        self.next_index += 1;
+
+        let high_radix16 = next_radix256 >> 4;
+        let low_radix16 = next_radix256 & 0xF;
+        debug_assert_eq!((high_radix16 << 4) | low_radix16, *next_radix256);
+        debug_assert_eq!(high_radix16 & (!0xF), 0);
+        debug_assert_eq!(low_radix16 & (!0xF), 0);
+
+        if self.is_be {
+            self.next_radix16 = Some(low_radix16);
+            Some(high_radix16)
+        } else {
+            self.next_radix16 = Some(high_radix16);
+            Some(low_radix16)
+        }
     }
 }

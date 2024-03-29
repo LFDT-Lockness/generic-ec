@@ -191,6 +191,31 @@ mod tests {
         _is_copy::<Point<E>>();
     }
 
+    #[test]
+    fn scalar_radix16<E: Curve>() {
+        let mut rng = DevRng::new();
+
+        let random_scalar = Scalar::<E>::random(&mut rng);
+        for scalar in [Scalar::zero(), Scalar::one(), -Scalar::one(), random_scalar] {
+            let radix16_be = scalar.as_radix16_be().collect::<Vec<_>>();
+            assert_eq!(radix16_be.len(), Scalar::<E>::serialized_len() * 2);
+
+            let reconstructed_scalar = radix16_be.iter().fold(Scalar::<E>::zero(), |acc, x| {
+                assert!(*x < 16, "{x}");
+                acc * Scalar::from(16) + Scalar::from(*x)
+            });
+            assert_eq!(scalar, reconstructed_scalar);
+
+            let radix_le = scalar.as_radix16_le().collect::<Vec<_>>();
+            let expected = {
+                let mut rev = radix16_be;
+                rev.reverse();
+                rev
+            };
+            assert_eq!(radix_le, expected);
+        }
+    }
+
     #[instantiate_tests(<Secp256k1>)]
     mod secp256k1 {}
 
