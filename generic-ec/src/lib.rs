@@ -218,7 +218,7 @@ pub use self::{
     generator::Generator,
     non_zero::definition::NonZero,
     point::definition::Point,
-    scalar::Scalar,
+    scalar::{Radix16Iter, Scalar},
     secret_scalar::definition::SecretScalar,
 };
 
