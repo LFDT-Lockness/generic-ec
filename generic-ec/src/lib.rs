@@ -107,7 +107,6 @@
 //! * `all-curves` enables all supported curves
 //! * `serde` enables points/scalar (de)serialization support. (enabled by default)
 //! * `std` enables support of standard library (enabled by default)
-//! * `wasm` eanbles support for `wasm32-unknown-unknown` target
 //!
 //! ## Examples
 //!
