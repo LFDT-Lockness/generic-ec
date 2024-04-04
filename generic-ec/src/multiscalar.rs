@@ -233,6 +233,7 @@ impl Straus {
             let partial_sum = scalars
                 .iter_mut()
                 .map(|radix16| {
+                    #[allow(clippy::expect_used)]
                     radix16
                         .next()
                         .expect("there must be next radix16 available")
@@ -353,6 +354,7 @@ impl Pippenger {
             scalars
                 .iter_mut()
                 .map(|radix16| {
+                    #[allow(clippy::expect_used)]
                     radix16
                         .next()
                         .expect("there must be next radix16 available")
@@ -362,7 +364,6 @@ impl Pippenger {
                     debug_assert!(s_ij < 16);
                     if s_ij == 0 {
                         // P_i * 0 = 0, we ignore it
-                        return;
                     } else {
                         match &mut buckets[usize::from(s_ij) - 1] {
                             Some(bucket) => *bucket += point_i,

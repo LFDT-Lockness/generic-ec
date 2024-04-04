@@ -4,7 +4,7 @@ use plotters::prelude::*;
 
 fn main() -> Result<()> {
     let arg = std::env::args().nth(1);
-    match arg.as_ref().map(|x| x.as_str()) {
+    match arg.as_deref() {
         Some("multiscalar-estimation") => draw_multiscalar_perf_estimation(),
         Some("multiscalar-perf") => draw_multiscalar_perf(),
         Some(arg) => {
@@ -72,8 +72,8 @@ fn draw_multiscalar_perf_estimation() -> Result<()> {
 
     chart
         .configure_series_labels()
-        .background_style(&WHITE)
-        .border_style(&BLACK)
+        .background_style(WHITE)
+        .border_style(BLACK)
         .label_font(("sans-serif", 20))
         .draw()?;
     root.present()?;
@@ -249,13 +249,13 @@ fn draw_multiscalar_perf_for_curve(results: &[BenchmarkComplete<MultiscalarId>])
                 color,
             ))?
             .label(*algo)
-            .legend(move |(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], &color));
+            .legend(move |(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], color));
     }
 
     chart
         .configure_series_labels()
-        .background_style(&WHITE.mix(0.8))
-        .border_style(&BLACK)
+        .background_style(WHITE.mix(0.8))
+        .border_style(BLACK)
         .label_font(("sans-serif", 20))
         .draw()?;
 
