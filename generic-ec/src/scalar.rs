@@ -211,7 +211,8 @@ impl<E: Curve> Scalar<E> {
 
     /// Performs multiscalar multiplication
     ///
-    /// Takes iterator of pairs `(scalar, point)`. Returns sum of `scalar * point`.
+    /// Takes iterator of pairs `(scalar, point)`. Returns sum of `scalar * point`. Uses
+    /// [`Default`](crate::multiscalar::Default) algorithm.
     ///
     /// See [multiscalar module](crate::multiscalar) docs for more info.
     pub fn multiscalar_mul<S, P>(scalar_points: impl IntoIterator<Item = (S, P)>) -> crate::Point<E>

@@ -77,6 +77,9 @@ pub trait MultiscalarMul<E: Curve> {
 /// When `alloc` feature is on, it chooses the algorithm based on size of input `n`:
 /// * [`Straus`] when `n < 50`
 /// * [`Pippenger`] otherwise
+///
+/// It may be more convenient to use [`Scalar::multiscalar_mul`] which is an alias
+/// to `Default`.
 pub struct Default;
 
 #[cfg(not(feature = "alloc"))]
