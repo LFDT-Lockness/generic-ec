@@ -242,14 +242,14 @@ impl Straus {
                         .expect("there must be next radix16 available")
                 })
                 .enumerate()
-                .map(|(i, v)| {
+                .flat_map(|(i, v)| {
                     // We need to calculate `v * P_i`
                     if v == 0 {
-                        // P_i * 0 = 0
-                        Point::zero()
+                        // P_i * 0 = 0, we don't include it into the sum
+                        None
                     } else {
                         debug_assert!(v < 16);
-                        table[i][usize::from(v) - 1]
+                        Some(table[i][usize::from(v) - 1])
                     }
                 })
                 .sum::<Point<E>>();

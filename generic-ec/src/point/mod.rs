@@ -136,14 +136,20 @@ impl<E: Curve> AsRef<Point<E>> for Point<E> {
 }
 
 impl<E: Curve> Sum for Point<E> {
-    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(Point::zero(), |acc, p| acc + p)
+    fn sum<I: Iterator<Item = Self>>(mut iter: I) -> Self {
+        let Some(first_point) = iter.next() else {
+            return Point::zero();
+        };
+        iter.fold(first_point, |acc, p| acc + p)
     }
 }
 
 impl<'a, E: Curve> Sum<&'a Point<E>> for Point<E> {
-    fn sum<I: Iterator<Item = &'a Point<E>>>(iter: I) -> Self {
-        iter.fold(Point::zero(), |acc, p| acc + p)
+    fn sum<I: Iterator<Item = &'a Point<E>>>(mut iter: I) -> Self {
+        let Some(first_point) = iter.next() else {
+            return Point::zero();
+        };
+        iter.fold(*first_point, |acc, p| acc + p)
     }
 }
 

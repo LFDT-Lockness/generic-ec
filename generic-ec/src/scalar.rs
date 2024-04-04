@@ -302,26 +302,38 @@ impl<E: Curve> crate::traits::Samplable for Scalar<E> {
 }
 
 impl<E: Curve> iter::Sum for Scalar<E> {
-    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(Scalar::zero(), |acc, x| acc + x)
+    fn sum<I: Iterator<Item = Self>>(mut iter: I) -> Self {
+        let Some(first_scalar) = iter.next() else {
+            return Scalar::zero();
+        };
+        iter.fold(first_scalar, |acc, x| acc + x)
     }
 }
 
 impl<'a, E: Curve> iter::Sum<&'a Scalar<E>> for Scalar<E> {
-    fn sum<I: Iterator<Item = &'a Self>>(iter: I) -> Self {
-        iter.fold(Scalar::zero(), |acc, x| acc + x)
+    fn sum<I: Iterator<Item = &'a Self>>(mut iter: I) -> Self {
+        let Some(first_scalar) = iter.next() else {
+            return Scalar::zero();
+        };
+        iter.fold(*first_scalar, |acc, x| acc + x)
     }
 }
 
 impl<E: Curve> iter::Product for Scalar<E> {
-    fn product<I: Iterator<Item = Self>>(iter: I) -> Self {
-        iter.fold(Scalar::one(), |acc, x| acc * x)
+    fn product<I: Iterator<Item = Self>>(mut iter: I) -> Self {
+        let Some(first_scalar) = iter.next() else {
+            return Scalar::one();
+        };
+        iter.fold(first_scalar, |acc, x| acc * x)
     }
 }
 
 impl<'a, E: Curve> iter::Product<&'a Scalar<E>> for Scalar<E> {
-    fn product<I: Iterator<Item = &'a Self>>(iter: I) -> Self {
-        iter.fold(Scalar::one(), |acc, x| acc * x)
+    fn product<I: Iterator<Item = &'a Self>>(mut iter: I) -> Self {
+        let Some(first_scalar) = iter.next() else {
+            return Scalar::one();
+        };
+        iter.fold(*first_scalar, |acc, x| acc * x)
     }
 }
 
