@@ -9,7 +9,7 @@ repository = "https://github.com/dfns/generic-ec"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-generic-ec-core = { version = "0.1", path = "../generic-ec-core", default-features = false }
+generic-ec-core = { version = "0.1.4", path = "../generic-ec-core", default-features = false }
 
 subtle = { version = "2.4", default-features = false }
 rand_core = { version = "0.6", default-features = false }

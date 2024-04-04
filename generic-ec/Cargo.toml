@@ -13,8 +13,8 @@ keywords = ["elliptic-curves"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-generic-ec-core = { version = "0.1", path = "../generic-ec-core" }
-generic-ec-curves = { version = "0.1", path = "../generic-ec-curves", optional = true }
+generic-ec-core = { version = "0.1.4", path = "../generic-ec-core" }
+generic-ec-curves = { version = "0.1.5", path = "../generic-ec-curves", optional = true }
 udigest = { version = "0.1", features = ["derive"], optional = true }
 
 subtle = { version = "2.4", default-features = false }
