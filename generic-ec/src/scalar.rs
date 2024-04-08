@@ -472,6 +472,11 @@ impl<E: Curve> Iterator for Radix16Iter<E> {
             Some(low_radix16)
         }
     }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let len = self.len();
+        (len, Some(len))
+    }
 }
 
 impl<E: Curve> ExactSizeIterator for Radix16Iter<E> {
