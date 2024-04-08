@@ -9,15 +9,27 @@ publish = false
 [dependencies]
 generic-ec = { path = "../generic-ec", default-features = false, features = ["all-curves", "serde"] }
 
+plotters = "0.3"
+anyhow = "1"
+regex = "1.10"
+
+serde = { version = "1", features = ["derive"] }
+serde_with = "2"
+serde_test = "1"
+serde_json = "1"
+hex = "0.4"
+
 [dev-dependencies]
 generic-tests = "0.1"
 rand_dev = "0.1"
 rand = "0.8"
 
-serde = "1"
-serde_with = "2"
-serde_test = "1"
-hex = "0.4"
+criterion = { version = "0.5", features = ["html_reports"] }
 
 [features]
 default = ["generic-ec/std"]
+
+[[bench]]
+name = "measure_perf"
+harness = false
+

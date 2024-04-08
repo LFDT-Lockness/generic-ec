@@ -107,7 +107,6 @@
 //! * `all-curves` enables all supported curves
 //! * `serde` enables points/scalar (de)serialization support. (enabled by default)
 //! * `std` enables support of standard library (enabled by default)
-//! * `wasm` eanbles support for `wasm32-unknown-unknown` target
 //!
 //! ## Examples
 //!
@@ -178,8 +177,11 @@
 #![forbid(missing_docs)]
 #![cfg_attr(not(test), forbid(unused_crate_dependencies))]
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used))]
-#![cfg_attr(not(feature = "std"), no_std)]
+#![no_std]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
+
+#[cfg(feature = "std")]
+extern crate std;
 
 #[cfg(feature = "alloc")]
 extern crate alloc;
@@ -193,6 +195,7 @@ mod encoded;
 pub mod errors;
 mod generator;
 pub mod hash_to_curve;
+pub mod multiscalar;
 mod non_zero;
 mod point;
 mod scalar;
@@ -218,7 +221,7 @@ pub use self::{
     generator::Generator,
     non_zero::definition::NonZero,
     point::definition::Point,
-    scalar::Scalar,
+    scalar::{Radix16Iter, Scalar},
     secret_scalar::definition::SecretScalar,
 };
 

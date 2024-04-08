@@ -1,6 +1,6 @@
 [package]
 name = "generic-ec-curves"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Elliptic curves for `generic-ec` crate"
@@ -9,7 +9,7 @@ repository = "https://github.com/dfns/generic-ec"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-generic-ec-core = { version = "0.1", path = "../generic-ec-core", default-features = false }
+generic-ec-core = { version = "0.1.4", path = "../generic-ec-core", default-features = false }
 
 subtle = { version = "2.4", default-features = false }
 rand_core = { version = "0.6", default-features = false }
