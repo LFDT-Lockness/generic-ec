@@ -215,10 +215,10 @@ impl Straus {
             return Point::zero();
         }
 
-        // table[i] = [point_i, 2 * point_i, ..., 15 * point_i]
+        // table[i * 15 .. (i + 1) * 15] = [point_i, 2 * point_i, ..., 15 * point_i]
         let table = points
             .iter()
-            .map(|point_i| {
+            .flat_map(|point_i| {
                 iter::successors(Some(*point_i), |point| Some(point + point_i))
                     .take(15)
                     .collect::<Vec<_>>()
@@ -249,7 +249,7 @@ impl Straus {
                         None
                     } else {
                         debug_assert!(v < 16);
-                        Some(table[i][usize::from(v) - 1])
+                        Some(table[i * 15 + (usize::from(v) - 1)])
                     }
                 })
                 .sum::<Point<E>>();
