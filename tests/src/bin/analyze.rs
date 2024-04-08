@@ -17,66 +17,72 @@ fn main() -> Result<()> {
 }
 
 fn draw_multiscalar_perf_estimation() -> Result<()> {
-    let root =
-        SVGBackend::new("perf/multiscalar/estimation.svg", (640 * 2, 480 * 2)).into_drawing_area();
-    root.fill(&WHITE)?;
+    let out_path = "perf/multiscalar/estimation.svg";
+    let mut buffer = String::new();
 
-    let x_max = 150;
-    let y_max = 12000;
-    let mut chart = ChartBuilder::on(&root)
-        .caption(
-            "Multiscalar Performance Estimation",
-            ("sans-serif", 35).into_font(),
-        )
-        .margin(5)
-        .x_label_area_size(50)
-        .y_label_area_size(80)
-        .build_cartesian_2d(0..x_max, 0..y_max)?;
-    chart
-        .configure_mesh()
-        .x_desc("n")
-        .y_desc("A + D")
-        .axis_desc_style(("sans-serif", 25))
-        .label_style(("sans-serif", 20))
-        .draw()?;
+    {
+        let root = SVGBackend::with_string(&mut buffer, (640 * 2, 480 * 2)).into_drawing_area();
+        root.fill(&WHITE)?;
 
-    chart
-        .draw_series(LineSeries::new(
-            (2..x_max)
-                .map(|n| (n, n * (256 + 128) + n))
-                .filter(|(_x, y)| *y <= y_max),
-            BLUE.stroke_width(2),
-        ))?
-        .label("Naive")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], BLUE.stroke_width(2)));
+        let x_max = 150;
+        let y_max = 12000;
+        let mut chart = ChartBuilder::on(&root)
+            .caption(
+                "Multiscalar Performance Estimation",
+                ("sans-serif", 35).into_font(),
+            )
+            .margin(5)
+            .x_label_area_size(50)
+            .y_label_area_size(80)
+            .build_cartesian_2d(0..x_max, 0..y_max)?;
+        chart
+            .configure_mesh()
+            .x_desc("n")
+            .y_desc("A + D")
+            .axis_desc_style(("sans-serif", 25))
+            .label_style(("sans-serif", 20))
+            .draw()?;
 
-    chart
-        .draw_series(LineSeries::new(
-            (2..x_max)
-                .map(|n| (n, 5 * 63 + (n + 30) * 64))
-                .filter(|(_x, y)| *y <= y_max),
-            GREEN.stroke_width(2),
-        ))?
-        .label("Pippeger")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], GREEN.stroke_width(2)));
+        chart
+            .draw_series(LineSeries::new(
+                (2..x_max)
+                    .map(|n| (n, n * (256 + 128) + n))
+                    .filter(|(_x, y)| *y <= y_max),
+                BLUE.stroke_width(2),
+            ))?
+            .label("Naive")
+            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], BLUE.stroke_width(2)));
 
-    chart
-        .draw_series(LineSeries::new(
-            (2..x_max)
-                .map(|n| (n, 5 * 63 + (n - 1) * 64 + 16 * n))
-                .filter(|(_x, y)| *y <= y_max),
-            RED.stroke_width(2),
-        ))?
-        .label("Straus")
-        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], RED.stroke_width(2)));
+        chart
+            .draw_series(LineSeries::new(
+                (2..x_max)
+                    .map(|n| (n, 5 * 63 + (n + 30) * 64))
+                    .filter(|(_x, y)| *y <= y_max),
+                GREEN.stroke_width(2),
+            ))?
+            .label("Pippeger")
+            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], GREEN.stroke_width(2)));
 
-    chart
-        .configure_series_labels()
-        .background_style(WHITE)
-        .border_style(BLACK)
-        .label_font(("sans-serif", 20))
-        .draw()?;
-    root.present()?;
+        chart
+            .draw_series(LineSeries::new(
+                (2..x_max)
+                    .map(|n| (n, 5 * 63 + (n - 1) * 64 + 16 * n))
+                    .filter(|(_x, y)| *y <= y_max),
+                RED.stroke_width(2),
+            ))?
+            .label("Straus")
+            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], RED.stroke_width(2)));
+
+        chart
+            .configure_series_labels()
+            .background_style(WHITE)
+            .border_style(BLACK)
+            .label_font(("sans-serif", 20))
+            .draw()?;
+        root.present()?;
+    }
+
+    fmt_and_write_svg(&out_path, &buffer)?;
 
     Ok(())
 }
@@ -222,44 +228,57 @@ fn draw_multiscalar_perf_for_curve(results: &[BenchmarkComplete<MultiscalarId>])
     let y_max = range_y.end;
 
     let out_path = format!("perf/multiscalar/{curve}.svg");
+    let mut buffer = String::new();
 
-    let root = SVGBackend::new(&out_path, (640 * 2, 480 * 2)).into_drawing_area();
-    root.fill(&WHITE)?;
+    {
+        let root = SVGBackend::with_string(&mut buffer, (640 * 2, 480 * 2)).into_drawing_area();
+        root.fill(&WHITE)?;
 
-    let mut chart = ChartBuilder::on(&root)
-        .x_label_area_size(40)
-        .y_label_area_size(60)
-        .margin(20)
-        .caption(format!("MultiscalarMul, {curve}"), ("sans-serif", 35.0))
-        .build_cartesian_2d(range_x, range_y)?;
+        let mut chart = ChartBuilder::on(&root)
+            .x_label_area_size(40)
+            .y_label_area_size(60)
+            .margin(20)
+            .caption(format!("MultiscalarMul, {curve}"), ("sans-serif", 35.0))
+            .build_cartesian_2d(range_x, range_y)?;
 
-    chart
-        .configure_mesh()
-        .x_desc("n")
-        .y_desc(format!("Mean, {unit}"))
-        .axis_desc_style(("sans-serif", 25))
-        .label_style(("sans-serif", 20))
-        .draw()?;
-
-    for (i, (algo, results)) in ALGOS.iter().zip(&results_per_algo).enumerate() {
-        let color = PALLETE[i];
         chart
-            .draw_series(LineSeries::new(
-                results.iter().copied().filter(move |(_x, y)| *y <= y_max),
-                color,
-            ))?
-            .label(*algo)
-            .legend(move |(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], color));
+            .configure_mesh()
+            .x_desc("n")
+            .y_desc(format!("Mean, {unit}"))
+            .axis_desc_style(("sans-serif", 25))
+            .label_style(("sans-serif", 20))
+            .draw()?;
+
+        for (i, (algo, results)) in ALGOS.iter().zip(&results_per_algo).enumerate() {
+            let color = PALLETE[i];
+            chart
+                .draw_series(LineSeries::new(
+                    results.iter().copied().filter(move |(_x, y)| *y <= y_max),
+                    color,
+                ))?
+                .label(*algo)
+                .legend(move |(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], color));
+        }
+
+        chart
+            .configure_series_labels()
+            .background_style(WHITE.mix(0.8))
+            .border_style(BLACK)
+            .label_font(("sans-serif", 20))
+            .draw()?;
+
+        root.present()?;
     }
 
-    chart
-        .configure_series_labels()
-        .background_style(WHITE.mix(0.8))
-        .border_style(BLACK)
-        .label_font(("sans-serif", 20))
-        .draw()?;
+    fmt_and_write_svg(&out_path, &buffer)?;
 
-    root.present()?;
+    Ok(())
+}
 
+/// Deletes width and height attrs from svg to display images prettier in docs
+fn fmt_and_write_svg(path: impl AsRef<std::path::Path>, svg: &str) -> Result<()> {
+    let r = regex::Regex::new(r#"<svg width="\d+" height="\d+""#)?;
+    let out = r.replace_all(&svg, "<svg");
+    std::fs::write(&path, out.as_ref())?;
     Ok(())
 }

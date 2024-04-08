@@ -41,7 +41,7 @@
 //! You can see the perfromance comparison for different algorithms on secp256k1 curve
 //! on the plot below:
 //!
-//! <img src="https://raw.githubusercontent.com/dfns/generic-ec/m/perf/multiscalar/secp256k1.svg"/>
+#![doc = include_str!("../perf/multiscalar/secp256k1.svg")]
 //!
 //! ## How to use it
 //! In most cases, all you need is [`Scalar::multiscalar_mul`] which defaults
