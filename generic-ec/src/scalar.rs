@@ -476,7 +476,7 @@ impl<E: Curve> Iterator for Radix16Iter<E> {
 
 impl<E: Curve> ExactSizeIterator for Radix16Iter<E> {
     fn len(&self) -> usize {
-        self.encoded_scalar[self.next_index..].len()
+        self.encoded_scalar[self.next_index..].len() * 2
             + if self.next_radix16.is_some() { 1 } else { 0 }
     }
 }

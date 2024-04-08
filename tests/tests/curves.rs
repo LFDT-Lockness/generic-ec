@@ -216,6 +216,22 @@ mod tests {
         }
     }
 
+    #[test]
+    fn scalar_radix16_iter_len<E: Curve>() {
+        let scalar = Scalar::<E>::zero();
+        let mut radix16 = scalar.as_radix16_be();
+        // `serialized_len` is length of the scalar in radix 256.
+        // Multiply it by 2 and you get length of scalar in radix 16
+        let expected_len = Scalar::<E>::serialized_len() * 2;
+
+        assert_eq!(radix16.len(), expected_len);
+
+        for expected_len in (0..=expected_len - 1).rev() {
+            let _ = radix16.next().unwrap();
+            assert_eq!(radix16.len(), expected_len)
+        }
+    }
+
     #[instantiate_tests(<Secp256k1>)]
     mod secp256k1 {}
 
