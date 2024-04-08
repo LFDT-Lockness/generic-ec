@@ -223,9 +223,9 @@ impl Straus {
             })
             .collect::<Vec<_>>();
 
-        // `serialized_len` is amount of radix256-digits. We multiply it by 2 and get
-        // amount of radix16-digits
-        let num_digits = 2 * Scalar::<E>::serialized_len();
+        // Amount of radix16 digits, must be the same for all scalars
+        let num_digits = scalars[0].len();
+        debug_assert!(scalars.iter().all(|s| s.len() == num_digits));
 
         let mut sum = Point::<E>::zero();
         for j in 0..num_digits {
@@ -343,9 +343,9 @@ impl Pippenger {
             return Point::zero();
         }
 
-        // `serialized_len` is amount of radix256-digits. We multiply it by 2 and get
-        // amount of radix16-digits
-        let num_digits = 2 * Scalar::<E>::serialized_len();
+        // Amount of radix16 digits, must be the same for all scalars
+        let num_digits = scalars[0].len();
+        debug_assert!(scalars.iter().all(|s| s.len() == num_digits));
 
         let mut result = Point::zero();
         for i in 0..num_digits {
