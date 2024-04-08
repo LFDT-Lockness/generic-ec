@@ -219,9 +219,7 @@ impl Straus {
         let table = points
             .iter()
             .flat_map(|point_i| {
-                iter::successors(Some(*point_i), |point| Some(point + point_i))
-                    .take(15)
-                    .collect::<Vec<_>>()
+                iter::successors(Some(*point_i), move |point| Some(point + point_i)).take(15)
             })
             .collect::<Vec<_>>();
 
