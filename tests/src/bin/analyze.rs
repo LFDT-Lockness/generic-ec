@@ -82,7 +82,7 @@ fn draw_multiscalar_perf_estimation() -> Result<()> {
         root.present()?;
     }
 
-    fmt_and_write_svg(&out_path, &buffer)?;
+    fmt_and_write_svg(out_path, &buffer)?;
 
     Ok(())
 }
@@ -270,7 +270,7 @@ fn draw_multiscalar_perf_for_curve(results: &[BenchmarkComplete<MultiscalarId>])
         root.present()?;
     }
 
-    fmt_and_write_svg(&out_path, &buffer)?;
+    fmt_and_write_svg(out_path, &buffer)?;
 
     Ok(())
 }
@@ -278,7 +278,7 @@ fn draw_multiscalar_perf_for_curve(results: &[BenchmarkComplete<MultiscalarId>])
 /// Deletes width and height attrs from svg to display images prettier in docs
 fn fmt_and_write_svg(path: impl AsRef<std::path::Path>, svg: &str) -> Result<()> {
     let r = regex::Regex::new(r#"<svg width="\d+" height="\d+""#)?;
-    let out = r.replace_all(&svg, "<svg");
+    let out = r.replace_all(svg, "<svg");
     std::fs::write(&path, out.as_ref())?;
     Ok(())
 }
