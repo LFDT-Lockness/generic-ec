@@ -4,7 +4,7 @@ mod tests {
 
     use generic_ec::{
         curves::{Ed25519, Secp256k1, Secp256r1, Stark},
-        multiscalar::{MultiscalarMul, Naive, Pippenger, Straus},
+        multiscalar::{Dalek, MultiscalarMul, Naive, Pippenger, Straus},
         Curve, Point, Scalar,
     };
     use rand::Rng;
@@ -47,4 +47,6 @@ mod tests {
     mod ed25519_straus {}
     #[instantiate_tests(<Ed25519, Pippenger>)]
     mod ed25519_pippenger {}
+    #[instantiate_tests(<Ed25519, Dalek>)]
+    mod ed25519_dalek {}
 }

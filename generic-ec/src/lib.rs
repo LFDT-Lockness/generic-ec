@@ -201,6 +201,15 @@ mod point;
 mod scalar;
 mod secret_scalar;
 
+mod _unused_deps {
+    // This dependency is not used directly without `alloc` feature. Note that
+    // even if `alloc` feature is off, this crate is still present in the
+    // dependency tree as `curve-ed25519` feature is enabled, it's just not
+    // used directly
+    #[cfg(all(feature = "curve-ed25519", not(feature = "alloc")))]
+    use curve25519_dalek as _;
+}
+
 /// Common traits for points and scalars
 pub mod traits {
     #[doc(inline)]

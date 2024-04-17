@@ -50,12 +50,13 @@
 //! Alternatively, if you need to use a specific algorithm, this module provides
 //! [`Straus`] and [`Pippenger`].
 
+#[cfg(feature = "alloc")]
 use core::iter;
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
 
-use crate::{Curve, Point, Radix16Iter, Scalar};
+use crate::{Curve, Point, Scalar};
 
 /// Multiscalar multiplication algorithm
 ///
@@ -100,7 +101,7 @@ impl<E: Curve> MultiscalarMul<E> for Default {
         S: AsRef<Scalar<E>>,
         P: AsRef<Point<E>>,
     {
-        let (mut scalars, points): (Vec<Radix16Iter<E>>, Vec<Point<E>>) = scalar_points
+        let (mut scalars, points): (Vec<crate::Radix16Iter<E>>, Vec<Point<E>>) = scalar_points
             .into_iter()
             .map(|(scalar, point)| (scalar.as_ref().as_radix16_be(), *point.as_ref()))
             .unzip();
@@ -197,7 +198,7 @@ impl<E: Curve> MultiscalarMul<E> for Straus {
         S: AsRef<Scalar<E>>,
         P: AsRef<Point<E>>,
     {
-        let (mut scalars, points): (Vec<Radix16Iter<E>>, Vec<Point<E>>) = scalar_points
+        let (mut scalars, points): (Vec<crate::Radix16Iter<E>>, Vec<Point<E>>) = scalar_points
             .into_iter()
             .map(|(scalar, point)| (scalar.as_ref().as_radix16_be(), *point.as_ref()))
             .unzip();
@@ -208,7 +209,7 @@ impl<E: Curve> MultiscalarMul<E> for Straus {
 #[cfg(feature = "alloc")]
 impl Straus {
     fn multiscalar_mul_inner<E: Curve>(
-        scalars: &mut [Radix16Iter<E>],
+        scalars: &mut [crate::Radix16Iter<E>],
         points: &[Point<E>],
     ) -> Point<E> {
         if scalars.is_empty() {
@@ -321,7 +322,7 @@ impl<E: Curve> MultiscalarMul<E> for Pippenger {
         S: AsRef<Scalar<E>>,
         P: AsRef<Point<E>>,
     {
-        let (mut scalars, points): (Vec<Radix16Iter<E>>, Vec<Point<E>>) = scalar_points
+        let (mut scalars, points): (Vec<crate::Radix16Iter<E>>, Vec<Point<E>>) = scalar_points
             .into_iter()
             .map(|(scalar, point)| (scalar.as_ref().as_radix16_be(), *point.as_ref()))
             .unzip();
@@ -336,7 +337,7 @@ impl Pippenger {
     ///
     /// Requires that `scalars.len() == points.len()`
     fn mutliscalar_mul_inner<E: Curve>(
-        scalars: &mut [Radix16Iter<E>],
+        scalars: &mut [crate::Radix16Iter<E>],
         points: &[Point<E>],
     ) -> Point<E> {
         if scalars.is_empty() {
@@ -400,5 +401,39 @@ impl Pippenger {
         }
 
         result
+    }
+}
+
+/// Multiscalar implementation taken from [`curve25519_dalek`] library
+///
+/// Only works with [`Ed25519`](crate::curves::Ed25519) curve.
+#[cfg(all(feature = "curve-ed25519", feature = "alloc"))]
+pub struct Dalek;
+
+#[cfg(all(feature = "curve-ed25519", feature = "alloc"))]
+impl MultiscalarMul<crate::curves::Ed25519> for Dalek {
+    fn multiscalar_mul<S, P>(
+        scalar_points: impl IntoIterator<Item = (S, P)>,
+    ) -> Point<crate::curves::Ed25519>
+    where
+        S: AsRef<Scalar<crate::curves::Ed25519>>,
+        P: AsRef<Point<crate::curves::Ed25519>>,
+    {
+        use curve25519_dalek::traits::VartimeMultiscalarMul;
+        use generic_ec_core::{OnCurve, SmallFactor};
+
+        use crate::as_raw::AsRaw;
+
+        let (scalars, points): (Vec<_>, Vec<_>) = scalar_points
+            .into_iter()
+            .map(|(s, p)| (s.as_ref().as_raw().0, p.as_ref().as_raw().0))
+            .unzip();
+
+        let result = curve25519_dalek::EdwardsPoint::vartime_multiscalar_mul(scalars, points);
+        let result = generic_ec_curves::ed25519::Point(result);
+
+        // Resulting point must be valid
+        debug_assert!(result.is_on_curve().into() && result.is_torsion_free().into());
+        Point::from_raw_unchecked(result)
     }
 }
