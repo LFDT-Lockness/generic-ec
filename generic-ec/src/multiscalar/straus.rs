@@ -87,7 +87,7 @@ impl<E: Curve> LookupTable<E> {
 ///
 /// Always returns the same amount of coefficients for scalars of the same curve `E`.
 fn non_adjacent_form<E: Curve>(w: usize, scalar: &Scalar<E>) -> Vec<i8> {
-    assert!(2 <= w && w <= 8);
+    assert!((2..=8).contains(&w));
 
     let scalar_bytes = scalar.to_le_bytes();
     let mut x_u64 = vec![0u64; scalar_bytes.len() / 8 + 1];
@@ -154,6 +154,7 @@ fn read_le_u64_into(src: &[u8], dst: &mut [u64]) {
     );
     for (bytes, val) in src.chunks(8).zip(dst.iter_mut()) {
         *val = u64::from_le_bytes(
+            #[allow(clippy::expect_used)]
             bytes
                 .try_into()
                 .expect("Incorrect src length, should be 8 * dst.len()"),
