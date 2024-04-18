@@ -58,6 +58,12 @@ use alloc::vec::Vec;
 
 use crate::{Curve, Point, Scalar};
 
+#[cfg(feature = "alloc")]
+mod straus;
+
+#[cfg(feature = "alloc")]
+pub use self::straus::StrausV2;
+
 /// Multiscalar multiplication algorithm
 ///
 /// See [module-level docs](self) for motivation and list of provided algorithms.
