@@ -17,6 +17,10 @@ fn multiscalar(c: &mut criterion::Criterion) {
     multiscalar_for_curve::<curves::Secp256r1>(c, &mut rng, "secp256r1");
     multiscalar_for_curve::<curves::Stark>(c, &mut rng, "stark");
     multiscalar_for_curve::<curves::Ed25519>(c, &mut rng, "ed25519");
+
+    multiscalar_for_curve_and_algo::<curves::Ed25519, multiscalar::Dalek>(
+        c, &mut rng, "ed25519", "dalek",
+    );
 }
 
 fn multiscalar_for_curve<E: Curve>(
@@ -28,18 +32,9 @@ fn multiscalar_for_curve<E: Curve>(
     multiscalar::Straus: MultiscalarMul<E>,
     multiscalar::Pippenger: MultiscalarMul<E>,
 {
-    multiscalar_for_curve_and_algo::<curves::Ed25519, multiscalar::Naive>(
-        c, rng, curve_name, "naive",
-    );
-    multiscalar_for_curve_and_algo::<curves::Ed25519, multiscalar::Straus>(
-        c, rng, curve_name, "straus",
-    );
-    multiscalar_for_curve_and_algo::<curves::Ed25519, multiscalar::Pippenger>(
-        c,
-        rng,
-        curve_name,
-        "pippenger",
-    );
+    multiscalar_for_curve_and_algo::<E, multiscalar::Naive>(c, rng, curve_name, "naive");
+    multiscalar_for_curve_and_algo::<E, multiscalar::Straus>(c, rng, curve_name, "straus");
+    multiscalar_for_curve_and_algo::<E, multiscalar::Pippenger>(c, rng, curve_name, "pippenger");
 }
 
 fn multiscalar_for_curve_and_algo<E: Curve, M: MultiscalarMul<E>>(

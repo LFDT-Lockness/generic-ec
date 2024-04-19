@@ -160,7 +160,18 @@ impl std::str::FromStr for MultiscalarId {
     }
 }
 
-const PALLETE: &[RGBColor] = &[RED, BLUE, MAGENTA, CYAN];
+const PALLETE: &[RGBColor] = &[
+    RED,
+    full_palette::PURPLE,
+    full_palette::INDIGO,
+    full_palette::LIGHTBLUE,
+    full_palette::TEAL,
+    full_palette::LIME,
+    full_palette::YELLOW,
+    full_palette::ORANGE,
+    full_palette::BROWN,
+    full_palette::BLUEGREY,
+];
 
 const CURVES: &[&str] = &["secp256k1", "secp256r1", "stark", "ed25519"];
 const ALGOS: &[&str] = &["naive", "straus", "pippenger"];
@@ -198,6 +209,7 @@ fn draw_multiscalar_perf() -> Result<()> {
             .filter(|res| res.id.curve == *curve)
             .cloned()
             .collect::<Vec<_>>();
+        eprintln!("Draw plot for curve {curve}");
         draw_multiscalar_perf_for_curve(&sub_results)?
     }
 
