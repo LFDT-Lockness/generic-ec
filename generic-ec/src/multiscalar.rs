@@ -51,9 +51,6 @@
 //! [`Straus`] and [`Pippenger`].
 
 #[cfg(feature = "alloc")]
-use core::iter;
-
-#[cfg(feature = "alloc")]
 use alloc::vec::Vec;
 
 use crate::{Curve, Point, Scalar};
@@ -62,7 +59,7 @@ use crate::{Curve, Point, Scalar};
 mod straus;
 
 #[cfg(feature = "alloc")]
-pub use self::straus::StrausV2;
+pub use self::straus::Straus;
 
 /// Multiscalar multiplication algorithm
 ///
@@ -107,16 +104,7 @@ impl<E: Curve> MultiscalarMul<E> for Default {
         S: AsRef<Scalar<E>>,
         P: AsRef<Point<E>>,
     {
-        let (mut scalars, points): (Vec<crate::Radix16Iter<E>>, Vec<Point<E>>) = scalar_points
-            .into_iter()
-            .map(|(scalar, point)| (scalar.as_ref().as_radix16_be(), *point.as_ref()))
-            .unzip();
-
-        if scalars.len() < 50 {
-            Straus::multiscalar_mul_inner(&mut scalars, &points)
-        } else {
-            Pippenger::mutliscalar_mul_inner(&mut scalars, &points)
-        }
+        Straus::multiscalar_mul(scalar_points)
     }
 }
 
@@ -140,135 +128,6 @@ impl<E: Curve> MultiscalarMul<E> for Naive {
             .into_iter()
             .map(|(scalar, point)| scalar.as_ref() * point.as_ref())
             .sum()
-    }
-}
-
-/// Straus algorithm
-///
-/// Efficient for smaller $n$ up to 50. It has estimated complexity:
-///
-/// $$\text{cost} = (4D + A)(log_{16} s - 1) + (n - 1) log_{16} s \cdot A + 16 n \cdot D$$
-///
-/// ## Algorithm
-/// **Inputs:** list of $n$ points $P_1, \dots, P_n$ and scalars $s_1, \dots, s_n$. Each
-/// scalar is in radix 16 representation: $s_i = s_{i,0} + s_{i,1} 16^1 + \dots + s_{i,k-1} 16^{k-1}$
-/// where $k = log_{16} s$, and $0 \le s_{i,j} < 16$
-///
-/// **Outputs:** $Q = s_1 P_1 + \dots + s_n P_n$
-///
-/// **Steps:**
-///
-/// 1. Compute a table $T_i = [\O, P_i, 2 P_i, \dots, 15 P_i]$ for each $1 \le i \le n$
-/// 2. Compute $Q_{k-1} = \sum_i P_i s_{i,k-1} = \sum_i T_{i,s_{i,k-1}}$
-/// 3. Compute $Q_j = 16 Q_{j+1} + \sum_i T_{i,s_{i,j}}$
-/// 4. Output $Q = Q_0$
-///
-/// ## How it works
-/// Recall that each scalar is given in radix 16 representation. The whole sum $s_1 P_1 + \dots + s_n P_n$
-/// can be rewritten as:
-///
-/// $$
-/// \begin{aligned}
-/// s_1 P_1 &=&& s_{1,0} P_1 &&+&& 16^1 s_{1,1} P_1 &&+ \dots +&& 16^{k-1} s_{1,k-1} P_1 \\\\
-///    \+   & &&        +    && &&             +    &&         &&                   +    \\\\
-/// s_2 P_2 &=&& s_{2,0} P_2 &&+&& 16^1 s_{2,1} P_2 &&+ \dots +&& 16^{k-1} s_{2,k-1} P_2 \\\\
-///    \+   & &&        +    && &&             +    &&         &&                   +    \\\\
-/// \vdots  & && \vdots      && && \vdots           &&         && \vdots                 \\\\
-///    \+   & &&        +    && &&             +    &&         &&                   +    \\\\
-/// s_n P_n &=&& s_{n,0} P_n &&+&& 16^1 s_{n,1} P_n &&+ \dots +&& 16^{k-1} s_{n,k-1} P_n
-/// \end{aligned}
-/// $$
-///
-/// Straus algorithm computes the sum column by column from right to left, multiplying result
-/// by 16 after each column sum is computed. Also, it uses the precomputed table
-/// $T_i = [\O, P_i, 2 P_i, \dots, 15 P_i]$ to optimize multiplication $s_{i,j} P_i$.
-///
-/// Transformed sum that's computed by Straus algorithm looks like this:
-///
-/// $$
-/// \begin{aligned}
-/// Q_{k-1} &=             & T_{1,s_{1,k-1}} &+ \dots &+ T_{n,s_{n,k-1}}& \\\\
-/// Q_{k-2} &= 16 Q_{k-1} +& T_{1,s_{1,k-2}} &+ \dots &+ T_{n,s_{n,k-2}}& \\\\
-/// \vdots  &              &                 &        &                 & \\\\
-/// Q_1     &= 16 Q_2     +& T_{1,s_{1,1}}   &+ \dots &+ T_{n,s_{n,1}}  & \\\\
-/// Q = Q_0 &= 16 Q_1     +& T_{1,s_{1,0}}   &+ \dots &+ T_{n,s_{n,0}}  &
-/// \end{aligned}
-/// $$
-#[cfg(feature = "alloc")]
-pub struct Straus;
-
-#[cfg(feature = "alloc")]
-impl<E: Curve> MultiscalarMul<E> for Straus {
-    fn multiscalar_mul<S, P>(scalar_points: impl IntoIterator<Item = (S, P)>) -> Point<E>
-    where
-        S: AsRef<Scalar<E>>,
-        P: AsRef<Point<E>>,
-    {
-        let (mut scalars, points): (Vec<crate::Radix16Iter<E>>, Vec<Point<E>>) = scalar_points
-            .into_iter()
-            .map(|(scalar, point)| (scalar.as_ref().as_radix16_be(), *point.as_ref()))
-            .unzip();
-        Self::multiscalar_mul_inner(&mut scalars, &points)
-    }
-}
-
-#[cfg(feature = "alloc")]
-impl Straus {
-    fn multiscalar_mul_inner<E: Curve>(
-        scalars: &mut [crate::Radix16Iter<E>],
-        points: &[Point<E>],
-    ) -> Point<E> {
-        if scalars.is_empty() {
-            return Point::zero();
-        }
-
-        // table[i * 15 .. (i + 1) * 15] = [point_i, 2 * point_i, ..., 15 * point_i]
-        let table = points
-            .iter()
-            .flat_map(|point_i| {
-                iter::successors(Some(*point_i), move |point| Some(point + point_i)).take(15)
-            })
-            .collect::<Vec<_>>();
-
-        // Amount of radix16 digits, must be the same for all scalars
-        let num_digits = scalars[0].len();
-        debug_assert!(scalars.iter().all(|s| s.len() == num_digits));
-
-        let mut sum = Point::<E>::zero();
-        for j in 0..num_digits {
-            // partial_sum = \sum_i s_{i,k} P_i where `k` is index of the most significant
-            // unprocessed coefficient
-            let partial_sum = scalars
-                .iter_mut()
-                .map(|radix16| {
-                    #[allow(clippy::expect_used)]
-                    radix16
-                        .next()
-                        .expect("there must be next radix16 available")
-                })
-                .enumerate()
-                .flat_map(|(i, v)| {
-                    // We need to calculate `v * P_i`
-                    if v == 0 {
-                        // P_i * 0 = 0, we don't include it into the sum
-                        None
-                    } else {
-                        debug_assert!(v < 16);
-                        Some(table[i * 15 + (usize::from(v) - 1)])
-                    }
-                })
-                .sum::<Point<E>>();
-
-            if j == 0 {
-                sum = partial_sum
-            } else {
-                // sum = 16 * sum + partial_sum
-                let sum_at_16 = sum.double().double().double().double();
-                sum = sum_at_16 + partial_sum;
-            }
-        }
-
-        sum
     }
 }
 
