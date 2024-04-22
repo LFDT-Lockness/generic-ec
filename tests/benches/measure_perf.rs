@@ -43,7 +43,7 @@ fn multiscalar_for_curve_and_algo<E: Curve, M: MultiscalarMul<E>>(
     curve_name: &str,
     multiscalar_algo: &str,
 ) {
-    for n in iter::once(2).chain(10..=250) {
+    for n in iter::once(2).chain((10..=250).step_by(5)) {
         c.bench_function(
             &format!("multiscalar_mul/{multiscalar_algo}/{curve_name}/n{n}"),
             |b| {

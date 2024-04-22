@@ -29,7 +29,7 @@ phantom-type = { version = "0.4", default-features = false }
 
 # We use this dependency when both `curve-ed25519` and `alloc` features are enabled,
 # to provide `generic_ec::multiscalar::Dalek`
-curve25519-dalek = { version = "4", optional = true }
+curve25519-dalek = { version = "4", default-features = false, optional = true }
 
 [dev-dependencies]
 rand = "0.8"

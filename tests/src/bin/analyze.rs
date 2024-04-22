@@ -1,90 +1,11 @@
+use std::collections::BTreeSet;
+
 use anyhow::{bail, Context, Result};
 
 use plotters::prelude::*;
 
 fn main() -> Result<()> {
-    let arg = std::env::args().nth(1);
-    match arg.as_deref() {
-        Some("multiscalar-estimation") => draw_multiscalar_perf_estimation(),
-        Some("multiscalar-perf") => draw_multiscalar_perf(),
-        Some(arg) => {
-            bail!("Unexpected argument `{arg}`. See {}", file!())
-        }
-        None => {
-            bail!("Expected an argument. See {}", file!())
-        }
-    }
-}
-
-fn draw_multiscalar_perf_estimation() -> Result<()> {
-    let out_path = "perf/multiscalar/estimation.svg";
-    let mut buffer = String::new();
-
-    {
-        let root = SVGBackend::with_string(&mut buffer, (640 * 2, 480 * 2)).into_drawing_area();
-        root.fill(&WHITE)?;
-
-        let x_max = 150;
-        let y_max = 12000;
-        let mut chart = ChartBuilder::on(&root)
-            .caption(
-                "Multiscalar Performance Estimation",
-                ("sans-serif", 35).into_font(),
-            )
-            .margin(5)
-            .x_label_area_size(50)
-            .y_label_area_size(80)
-            .build_cartesian_2d(0..x_max, 0..y_max)?;
-        chart
-            .configure_mesh()
-            .x_desc("n")
-            .y_desc("A + D")
-            .axis_desc_style(("sans-serif", 25))
-            .label_style(("sans-serif", 20))
-            .draw()?;
-
-        chart
-            .draw_series(LineSeries::new(
-                (2..x_max)
-                    .map(|n| (n, n * (256 + 128) + n))
-                    .filter(|(_x, y)| *y <= y_max),
-                BLUE.stroke_width(2),
-            ))?
-            .label("Naive")
-            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], BLUE.stroke_width(2)));
-
-        chart
-            .draw_series(LineSeries::new(
-                (2..x_max)
-                    .map(|n| (n, 5 * 63 + (n + 30) * 64))
-                    .filter(|(_x, y)| *y <= y_max),
-                GREEN.stroke_width(2),
-            ))?
-            .label("Pippeger")
-            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], GREEN.stroke_width(2)));
-
-        chart
-            .draw_series(LineSeries::new(
-                (2..x_max)
-                    .map(|n| (n, 5 * 63 + (n - 1) * 64 + 16 * n))
-                    .filter(|(_x, y)| *y <= y_max),
-                RED.stroke_width(2),
-            ))?
-            .label("Straus")
-            .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], RED.stroke_width(2)));
-
-        chart
-            .configure_series_labels()
-            .background_style(WHITE)
-            .border_style(BLACK)
-            .label_font(("sans-serif", 20))
-            .draw()?;
-        root.present()?;
-    }
-
-    fmt_and_write_svg(out_path, &buffer)?;
-
-    Ok(())
+    draw_multiscalar_perf()
 }
 
 #[derive(serde::Deserialize, Clone, Debug)]
@@ -133,7 +54,7 @@ pub struct MultiscalarId {
 }
 impl std::str::FromStr for MultiscalarId {
     type Err = anyhow::Error;
-    fn from_str(id: &str) -> std::prelude::v1::Result<Self, Self::Err> {
+    fn from_str(id: &str) -> Result<Self, Self::Err> {
         let mut id = id.split('/');
 
         let operation = id.next().context("`id` doesn't have enough parts")?;
@@ -173,9 +94,6 @@ const PALLETE: &[RGBColor] = &[
     full_palette::BLUEGREY,
 ];
 
-const CURVES: &[&str] = &["secp256k1", "secp256r1", "stark", "ed25519"];
-const ALGOS: &[&str] = &["naive", "straus", "pippenger"];
-
 fn draw_multiscalar_perf() -> Result<()> {
     let stdin = std::io::stdin().lock();
     let stdin = serde_json::de::IoRead::new(stdin);
@@ -199,11 +117,12 @@ fn draw_multiscalar_perf() -> Result<()> {
         });
     }
 
-    assert!(results
+    let curves = results
         .iter()
-        .all(|res| CURVES.contains(&res.id.curve.as_str())));
+        .map(|res| res.id.curve.clone())
+        .collect::<BTreeSet<_>>();
 
-    for curve in CURVES {
+    for curve in curves {
         let sub_results = results
             .iter()
             .filter(|res| res.id.curve == *curve)
@@ -220,11 +139,16 @@ fn draw_multiscalar_perf_for_curve(results: &[BenchmarkComplete<MultiscalarId>])
     let curve = &results[0].id.curve;
     let unit = &results[0].mean.unit;
 
-    assert!(results.iter().all(|res| res.id.curve == *curve
-        && res.mean.unit == *unit
-        && ALGOS.contains(&res.id.algo.as_str())));
+    let algos = results
+        .iter()
+        .map(|res| res.id.algo.clone())
+        .collect::<BTreeSet<_>>();
 
-    let results_per_algo = ALGOS
+    assert!(results
+        .iter()
+        .all(|res| res.id.curve == *curve && res.mean.unit == *unit));
+
+    let results_per_algo = algos
         .iter()
         .map(|algo| {
             results
@@ -261,14 +185,14 @@ fn draw_multiscalar_perf_for_curve(results: &[BenchmarkComplete<MultiscalarId>])
             .label_style(("sans-serif", 20))
             .draw()?;
 
-        for (i, (algo, results)) in ALGOS.iter().zip(&results_per_algo).enumerate() {
+        for (i, (algo, results)) in algos.iter().zip(&results_per_algo).enumerate() {
             let color = PALLETE[i];
             chart
                 .draw_series(LineSeries::new(
                     results.iter().copied().filter(move |(_x, y)| *y <= y_max),
                     color,
                 ))?
-                .label(*algo)
+                .label(algo)
                 .legend(move |(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], color));
         }
 
