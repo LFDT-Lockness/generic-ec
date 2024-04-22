@@ -4,7 +4,7 @@ mod tests {
 
     use generic_ec::{
         curves::{Ed25519, Secp256k1, Secp256r1, Stark},
-        multiscalar::{Dalek, MultiscalarMul, Naive, Pippenger, Straus},
+        multiscalar::{Dalek, MultiscalarMul, Naive, Straus},
         Curve, Point, Scalar,
     };
     use rand::Rng;
@@ -33,20 +33,12 @@ mod tests {
 
     #[instantiate_tests(<Secp256k1, Straus>)]
     mod secp256k1_straus {}
-    #[instantiate_tests(<Secp256k1, Pippenger>)]
-    mod secp256k1_pippenger {}
     #[instantiate_tests(<Secp256r1, Straus>)]
     mod secp256r1_straus {}
-    #[instantiate_tests(<Secp256r1, Pippenger>)]
-    mod secp256r1_pippenger {}
     #[instantiate_tests(<Stark, Straus>)]
     mod stark_straus {}
-    #[instantiate_tests(<Stark, Pippenger>)]
-    mod stark_pippenger {}
     #[instantiate_tests(<Ed25519, Straus>)]
     mod ed25519_straus {}
-    #[instantiate_tests(<Ed25519, Pippenger>)]
-    mod ed25519_pippenger {}
     #[instantiate_tests(<Ed25519, Dalek>)]
     mod ed25519_dalek {}
 }

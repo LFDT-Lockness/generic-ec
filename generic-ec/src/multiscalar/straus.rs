@@ -5,18 +5,78 @@ use crate::{Curve, Point, Scalar};
 
 /// Straus algorithm
 ///
+/// # How it works
+/// Below we'll briefly explain how the algorithm works for better auditability. You can
+/// also refer to [original](#credits) implementation.
+///
+/// Note that algorithm is defined for a parameter $w$, however, in our implementation we hardcoded
+/// $w = 5$. It was observed in the benchmarks that $w=5$ gives the best performance for all
+/// $n$ (amount of input scalar/point pairs).
+///
+/// Recall that the multiscalar algorithm takes list of $n$ points $P_1, \dots, P_n$, and a list
+/// of $n$ scalars $s_1, \dots, s_n$, and it outputs $Q$ such that:
+///
+/// $$Q = s_1 P_1 + \dots + s_n P_n$$
+///
+/// ## Non-Adjacent Form (NAF)
+/// Straus algorithm works with scalars in Non-Adjacent Form. Each scalar $s$ is represented
+/// as:
+///
+/// $$s = s_0 2^0 + s_1 2^1 + \dots + s_k 2^k$$
+///
+/// where $-2^{w-1} \le s_i < 2^{w-1}$, each $s_i$ is either odd or zero, and $k = \log_2 s$ (most
+/// commonly, we work with scalars for which $k=256$).
+///
+/// ## Lookup tables
+/// For each point $P_i$, we precompute a lookup table $T_j = j P_i$. We only need to do that
+/// for odd $j$ up to $2^{w-1}$. In this way, NAF allows us to cut size of lookup tables by
+/// the factor of 4: we reduce size of tables by 2 because NAF has signed terms, and then we
+/// also reduce table size twice by working only with odd coefficients.
+///
+/// ## Computing the sum
+///
+/// Let's write the full sum that we need to compute:
+/// $$
+/// \begin{aligned}
+/// s_1 P_1 &=&& s_{1,0} P_1 &&+&& 2^1 s_{1,1} P_1 &&+ \dots +&& 2^{k} s_{1,k-1} P_1 \\\\
+///    \+   & &&        +    && &&            +    &&         &&                +    \\\\
+/// s_2 P_2 &=&& s_{2,0} P_2 &&+&& 2^1 s_{2,1} P_2 &&+ \dots +&& 2^{k} s_{2,k-1} P_2 \\\\
+///    \+   & &&        +    && &&            +    &&         &&                +    \\\\
+/// \vdots  & && \vdots      && && \vdots          &&         && \vdots              \\\\
+///    \+   & &&        +    && &&            +    &&         &&                +    \\\\
+/// s_n P_n &=&& s_{n,0} P_n &&+&& 2^1 s_{n,1} P_n &&+ \dots +&& 2^{k-1} s_{n,k-1} P_n
+/// \end{aligned}
+/// $$
+///
+/// Note that each $s_{i,j} P_i$ is already computed in a lookup table, and can be replaced with
+/// $T_{i, s_{i,j}}$. To compute a sum, we go column-by-column from right to left.
+///
+/// $$
+/// \begin{aligned}
+/// Q_k     &= &              &\sum_{i = 0}^n T_{i, s_{i,k}} \\\\
+/// Q_{k-1} &= &2 Q_k +       &\sum_{i = 0}^n T_{i, s_{i,k-1}} \\\\
+/// \vdots  &  &              &\\\\
+/// Q_j     &= &2 Q_{j + 1} + &\sum_{i = 0}^n T_{i, s_{i,j}} \\\\
+/// \vdots  &  &              &\\\\
+/// Q = Q_0 &= &2 Q_1 +       &\sum_{i = 0}^n T_{i, s_{i,0}} \\\\
+/// \end{aligned}
+/// $$
+///
+/// ## Credits
 /// Algorithm was adopted from [`curve25519_dalek`] crate, with the modification that
 /// it would work with any curve, not only with ed25519. You can find original implementation
 /// [here](https://github.com/dalek-cryptography/curve25519-dalek/blob/1efe6a93b176c4389b78e81e52b2cf85d728aac6/curve25519-dalek/src/backend/serial/scalar_mul/straus.rs#L147-L201).
 pub struct Straus;
 
 impl<E: Curve> super::MultiscalarMul<E> for Straus {
-    fn multiscalar_mul<S, P>(scalar_points: impl IntoIterator<Item = (S, P)>) -> crate::Point<E>
+    fn multiscalar_mul<S, P>(
+        scalar_points: impl ExactSizeIterator<Item = (S, P)>,
+    ) -> crate::Point<E>
     where
         S: AsRef<Scalar<E>>,
         P: AsRef<Point<E>>,
     {
-        let mut nafs = NafMatrix::new(5);
+        let mut nafs = NafMatrix::new(5, scalar_points.len());
         let lookup_tables: Vec<_> = scalar_points
             .into_iter()
             .map(|(scalar, point)| {
@@ -105,15 +165,20 @@ struct NafMatrix<E: Curve> {
 
 impl<E: Curve> NafMatrix<E> {
     /// Construct a new matrix with parameter `w`
-    fn new(w: usize) -> Self {
+    ///
+    /// Preallocates memory to fit `capacity` amount of scalars
+    fn new(w: usize, capacity: usize) -> Self {
         assert!((2..=8).contains(&w));
+        let naf_size = Scalar::<E>::serialized_len() * 8 + 1;
+        let width = 1 << w;
+
         Self {
-            naf_size: Scalar::<E>::serialized_len() * 8 + 1,
+            naf_size,
             w,
-            width: 1 << w,
+            width,
             width_half: 1 << (w - 1),
-            matrix: Vec::new(),
-            window_mask: (1 << w) - 1,
+            matrix: Vec::with_capacity(naf_size * capacity),
+            window_mask: width - 1,
             _curve: Default::default(),
         }
     }
@@ -124,6 +189,10 @@ impl<E: Curve> NafMatrix<E> {
         read_le_u64_into(&scalar_bytes, &mut x_u64[0..4]);
 
         let offset = self.matrix.len();
+        debug_assert!(
+            offset + self.naf_size <= self.matrix.capacity(),
+            "unnecessary allocations detected"
+        );
         self.matrix.resize(offset + self.naf_size, 0i8);
         let naf = &mut self.matrix[offset..];
 
@@ -214,7 +283,7 @@ mod tests {
             .collect::<Vec<_>>();
 
         for w in 2..=8 {
-            let mut nafs = super::NafMatrix::new(w);
+            let mut nafs = super::NafMatrix::new(w, scalars.len());
             scalars.iter().for_each(|scalar| nafs.add_scalar(scalar));
 
             for (scalar, naf) in scalars.iter().zip(nafs.iter()) {

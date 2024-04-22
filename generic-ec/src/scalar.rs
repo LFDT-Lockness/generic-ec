@@ -215,7 +215,9 @@ impl<E: Curve> Scalar<E> {
     /// [`Default`](crate::multiscalar::Default) algorithm.
     ///
     /// See [multiscalar module](crate::multiscalar) docs for more info.
-    pub fn multiscalar_mul<S, P>(scalar_points: impl IntoIterator<Item = (S, P)>) -> crate::Point<E>
+    pub fn multiscalar_mul<S, P>(
+        scalar_points: impl ExactSizeIterator<Item = (S, P)>,
+    ) -> crate::Point<E>
     where
         S: AsRef<Scalar<E>>,
         P: AsRef<crate::Point<E>>,

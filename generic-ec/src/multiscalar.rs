@@ -6,40 +6,12 @@
 //! $$Q = s_1 P_1 + \dots + s_n P_n$$
 //!
 //! This module provides various algorithms for computing multiscalar multiplication
-//! efficiently
+//! efficiently.
 //!
-//! ## Motivation
+//! ## Performance
 //! Computing the sum naively, i.e. calculating each $s_i P_i$ separately and
-//! $\sum$-ing them, is inefficient even for small $n$.
-//!
-//! Recall an algorithm for computing $Q = s P$:
-//! 1. Let $Q \gets \O, A \gets P$
-//! 2. While $s \ne 0$ do the following:
-//!    1. If $s$ is odd, set $Q \gets Q + A$
-//!    2. Set $s \gets s \gg 1$ (bitwise shift to left by 1 bit)
-//!    3. If $s \ne 0$, set $A \gets A + A$
-//! 3. Return $Q$
-//!
-//! This algorithm does 1 point doubling per each bit in $s$ and one addition
-//! per each bit in $s$ that's set to `1`. For a random scalar, we can expect
-//! that, on average, half of its bits are set to `1`. Thus, cost of the
-//! multiplication is:
-//!
-//! $$\text{cost} = \log_2 s \cdot D + \frac{1}{2} \log_2 s \cdot A$$
-//!
-//! i.e. it does $\log_2 s$ doublings and $\frac{1}{2} \log_2 s$ additions. Naive
-//! multiscalar multiplication algorithm just computes $s_i P_i$ individually
-//! and then sums them. Total cost is:
-//!
-//! $$\text{cost} = n A + n (\log_2 s \cdot D + \frac{1}{2} \log_2 s \cdot A)$$
-//!
-//! Typically, we're working with scalars of 256 bits size. You can easily calculate
-//! that, for instance, even for $n = 3$, the total cost is $768 D + 387 A$. However,
-//! for the same $n$, Straus algorithm has $\text{cost} = 300 D + 192 A$ which
-//! is already significantly faster than naive algorithm.
-//!
-//! You can see the perfromance comparison for different algorithms on secp256k1 curve
-//! on the plot below:
+//! $\sum$-ing them, is inefficient even for small $n$. You can see that in the
+//! comparison below.
 //!
 #![doc = include_str!("../perf/multiscalar/secp256k1.svg")]
 //!
@@ -48,7 +20,10 @@
 //! to the most efficient available algorithm, similarly to [`struct@Default`].
 //!
 //! Alternatively, if you need to use a specific algorithm, this module provides
-//! [`Straus`] and [`Pippenger`].
+//! [`Straus`] and [`Dalek`].
+//!
+//! On [`Ed25519`](crate::curves::Ed25519) curve, consider using [`Dalek`] multiscalar
+//! implementation.
 
 #[cfg(feature = "alloc")]
 use alloc::vec::Vec;
@@ -67,8 +42,14 @@ pub use self::straus::Straus;
 pub trait MultiscalarMul<E: Curve> {
     /// Performs multiscalar multiplication
     ///
-    /// Takes iterator of pairs `(scalar, point)`. Returns sum of `scalar * point`.
-    fn multiscalar_mul<S, P>(scalar_points: impl IntoIterator<Item = (S, P)>) -> Point<E>
+    /// Takes iterator of pairs `(scalar, point)`. Returns sum of `scalar * point`. Iterator must have
+    /// exact size (i.e. it's [`ExactSizeIterator`]). Iterator size is used to determine the best
+    /// algorithm for multiscalar multiplication, preallocate memory, etc. If iterator size is not
+    /// correct, it may worsen performance or lead to runtime panic.
+    ///
+    /// Note that the multiscalar algorithm is not necessarily constant-time, thus is should not be
+    /// used with [`SecretScalar<E>`](crate::SecretScalar).
+    fn multiscalar_mul<S, P>(scalar_points: impl ExactSizeIterator<Item = (S, P)>) -> Point<E>
     where
         S: AsRef<Scalar<E>>,
         P: AsRef<Point<E>>;
@@ -78,9 +59,7 @@ pub trait MultiscalarMul<E: Curve> {
 ///
 /// When `alloc` feature is off, it always falls back to [`Naive`] implementation.
 ///
-/// When `alloc` feature is on, it chooses the algorithm based on size of input `n`:
-/// * [`Straus`] when `n < 50`
-/// * [`Pippenger`] otherwise
+/// When `alloc` feature is on, it uses [`Straus`] algorithm.
 ///
 /// It may be more convenient to use [`Scalar::multiscalar_mul`] which is an alias
 /// to `Default`.
@@ -88,7 +67,7 @@ pub struct Default;
 
 #[cfg(not(feature = "alloc"))]
 impl<E: Curve> MultiscalarMul<E> for Default {
-    fn multiscalar_mul<S, P>(scalar_points: impl IntoIterator<Item = (S, P)>) -> Point<E>
+    fn multiscalar_mul<S, P>(scalar_points: impl ExactSizeIterator<Item = (S, P)>) -> Point<E>
     where
         S: AsRef<Scalar<E>>,
         P: AsRef<Point<E>>,
@@ -99,7 +78,7 @@ impl<E: Curve> MultiscalarMul<E> for Default {
 
 #[cfg(feature = "alloc")]
 impl<E: Curve> MultiscalarMul<E> for Default {
-    fn multiscalar_mul<S, P>(scalar_points: impl IntoIterator<Item = (S, P)>) -> Point<E>
+    fn multiscalar_mul<S, P>(scalar_points: impl ExactSizeIterator<Item = (S, P)>) -> Point<E>
     where
         S: AsRef<Scalar<E>>,
         P: AsRef<Point<E>>,
@@ -131,9 +110,16 @@ impl<E: Curve> MultiscalarMul<E> for Naive {
     }
 }
 
-/// Multiscalar implementation taken from [`curve25519_dalek`] library
+/// Multiscalar implementation for [`Ed25519`] curve
 ///
-/// Only works with [`Ed25519`](crate::curves::Ed25519) curve.
+/// [`curve25519_dalek`] library provides multiscalar multiplication algorithm which only
+/// works with [`Ed25519`] curve. Due to the fact that it's specifically instantiated for
+/// the only one curve, this implementation is more efficient than generic [`struct@Default`]
+/// or [`Straus`].
+///
+#[doc = include_str!("../perf/multiscalar/ed25519.svg")]
+///
+/// [`Ed25519`]: crate::curves::Ed25519
 #[cfg(all(feature = "curve-ed25519", feature = "alloc"))]
 pub struct Dalek;
 
