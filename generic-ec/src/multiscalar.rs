@@ -137,10 +137,9 @@ impl MultiscalarMul<crate::curves::Ed25519> for Dalek {
 
         use crate::as_raw::AsRaw;
 
-        let (scalars, points): (Vec<_>, Vec<_>) = scalar_points
-            .into_iter()
-            .map(|(s, p)| (s.as_ref().as_raw().0, p.as_ref().as_raw().0))
-            .unzip();
+        let scalar_points = scalar_points.into_iter().collect::<Vec<_>>();
+        let scalars = scalar_points.iter().map(|(s, _)| &s.as_ref().as_raw().0);
+        let points = scalar_points.iter().map(|(_, p)| &p.as_ref().as_raw().0);
 
         let result = curve25519_dalek::EdwardsPoint::vartime_multiscalar_mul(scalars, points);
         let result = generic_ec_curves::ed25519::Point(result);
