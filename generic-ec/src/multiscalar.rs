@@ -25,9 +25,6 @@
 //! On [`Ed25519`](crate::curves::Ed25519) curve, consider using [`Dalek`] multiscalar
 //! implementation.
 
-#[cfg(feature = "alloc")]
-use alloc::vec::Vec;
-
 use crate::{Curve, Point, Scalar};
 
 #[cfg(feature = "alloc")]
@@ -132,6 +129,8 @@ impl MultiscalarMul<crate::curves::Ed25519> for Dalek {
         S: AsRef<Scalar<crate::curves::Ed25519>>,
         P: AsRef<Point<crate::curves::Ed25519>>,
     {
+        use alloc::vec::Vec;
+
         use curve25519_dalek::traits::VartimeMultiscalarMul;
         use generic_ec_core::{OnCurve, SmallFactor};
 
