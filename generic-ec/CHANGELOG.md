@@ -1,3 +1,9 @@
+## v0.3.0
+* Rework `generic_ec::multiscalar` API, optimize Straus algorithm, add Dalek, remove
+  Pippenger [#30]
+
+[#30]: https://github.com/dfns/generic-ec/pull/30
+
 ## v0.2.4
 * Add `generic_ec::multiscalar` which helps optimizing multiscalar multiplication [#29]
 
