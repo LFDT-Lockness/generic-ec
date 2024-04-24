@@ -103,10 +103,10 @@ impl<E: Curve> super::MultiscalarMul<E> for Straus {
                 let naf_i = naf[i];
                 match naf_i.cmp(&0) {
                     core::cmp::Ordering::Greater => {
-                        r += lookup_table.get(naf_i as usize);
+                        r += lookup_table.get(naf_i.unsigned_abs().into());
                     }
                     core::cmp::Ordering::Less => {
-                        r -= lookup_table.get(-naf_i as usize);
+                        r -= lookup_table.get(naf_i.unsigned_abs().into());
                     }
                     core::cmp::Ordering::Equal => {}
                 }
