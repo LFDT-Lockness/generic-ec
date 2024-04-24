@@ -30,7 +30,7 @@ mod requires_alloc {
         /// Constructs a polynomial from its coefficients
         ///
         /// `coefs[i]` is coefficient of `x^i` term. Resulting polynomial will be
-        /// $f(x) = \sum_i \\text{coefs}_i \cdot x^i$
+        /// $f(x) = \sum_i \text{coefs}_i \cdot x^i$
         ///
         /// ## Example
         /// ```rust
@@ -73,7 +73,7 @@ mod requires_alloc {
         ///
         /// $$
         /// \begin{dcases}
-        /// deg(f(x) = \sum_i a_i \cdot x^i) &= n \\text{, where } a_n \ne 0 \land n \to max \\\\
+        /// deg(f(x) = \sum_i a_i \cdot x^i) &= n \text{, where } a_n \ne 0 \land n \to max \\\\
         /// deg(f(x) = 0) &= 0
         /// \end{dcases}
         /// $$
@@ -108,7 +108,7 @@ mod requires_alloc {
 
         /// Samples a random polynomial with specified degree and constant term
         ///
-        /// Constant term determines value of polynomial at point zero: $f(0) = \\text{const\\_term}$
+        /// Constant term determines value of polynomial at point zero: $f(0) = \text{const\_term}$
         ///
         /// ## Example
         /// ```rust
@@ -134,7 +134,7 @@ mod requires_alloc {
     }
 
     impl<C> Polynomial<C> {
-        /// Evaluates polynomial value at given point: $f(\\text{point})$
+        /// Evaluates polynomial value at given point: $f(\text{point})$
         ///
         /// Polynomial coefficients, point, and output can all be differently typed.
         ///
