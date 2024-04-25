@@ -23,6 +23,7 @@ where
             S::from_le_array_mod_order(&padded)
         }
         32 => {
+            #[allow(clippy::expect_used)]
             let bytes: &[u8; 32] = bytes.try_into().expect("we checked that bytes len == 32");
             S::from_le_array_mod_order(bytes)
         }
@@ -32,6 +33,7 @@ where
             S::from_le_array_mod_order(&padded)
         }
         64 => {
+            #[allow(clippy::expect_used)]
             let bytes: &[u8; 64] = bytes.try_into().expect("we checked that bytes len == 64");
             S::from_le_array_mod_order(bytes)
         }
@@ -49,6 +51,7 @@ where
             };
 
             let chunks = chunks.rev().map(|chunk| {
+                #[allow(clippy::expect_used)]
                 let chunk: &[u8; 64] = chunk.try_into().expect("wrong chunk size");
                 S::from_le_array_mod_order(chunk)
             });
@@ -85,6 +88,7 @@ where
             S::from_be_array_mod_order(&padded)
         }
         32 => {
+            #[allow(clippy::expect_used)]
             let bytes: &[u8; 32] = bytes.try_into().expect("we checked that bytes len == 32");
             S::from_be_array_mod_order(bytes)
         }
@@ -94,6 +98,7 @@ where
             S::from_be_array_mod_order(&padded)
         }
         64 => {
+            #[allow(clippy::expect_used)]
             let bytes: &[u8; 64] = bytes.try_into().expect("we checked that bytes len == 64");
             S::from_be_array_mod_order(bytes)
         }
@@ -111,6 +116,7 @@ where
             };
 
             let chunks = chunks.rev().map(|chunk| {
+                #[allow(clippy::expect_used)]
                 let chunk: &[u8; 64] = chunk.try_into().expect("wrong chunk size");
                 S::from_be_array_mod_order(chunk)
             });
@@ -146,6 +152,7 @@ where
             S::from_le_array_mod_order(&padded)
         }
         32 => {
+            #[allow(clippy::expect_used)]
             let bytes: &[u8; 32] = bytes.try_into().expect("we checked that bytes len == 32");
             S::from_le_array_mod_order(bytes)
         }
@@ -163,6 +170,7 @@ where
             };
 
             let chunks = chunks.rev().map(|chunk| {
+                #[allow(clippy::expect_used)]
                 let chunk: &[u8; 32] = chunk.try_into().expect("wrong chunk size");
                 S::from_le_array_mod_order(chunk)
             });
@@ -198,6 +206,7 @@ where
             S::from_be_array_mod_order(&padded)
         }
         32 => {
+            #[allow(clippy::expect_used)]
             let bytes: &[u8; 32] = bytes.try_into().expect("we checked that bytes len == 32");
             S::from_be_array_mod_order(bytes)
         }
@@ -215,6 +224,7 @@ where
             };
 
             let chunks = chunks.rev().map(|chunk| {
+                #[allow(clippy::expect_used)]
                 let chunk: &[u8; 32] = chunk.try_into().expect("wrong chunk size");
                 S::from_be_array_mod_order(chunk)
             });
