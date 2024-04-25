@@ -12,7 +12,7 @@ keywords = ["elliptic-curves", "zk-proof"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-generic-ec = { version = "0.2", path = "../generic-ec", default-features = false }
+generic-ec = { version = "0.3", path = "../generic-ec", default-features = false }
 udigest = { version = "0.1", features = ["derive"], optional = true }
 
 subtle = { version = "2.4", default-features = false }
@@ -30,7 +30,7 @@ sha2 = "0.10"
 
 generic-tests = "0.1"
 
-generic-ec = { version = "0.2", path = "../generic-ec", default-features = false, features = ["all-curves"] }
+generic-ec = { version = "0.3", path = "../generic-ec", default-features = false, features = ["all-curves"] }
 
 [features]
 default = ["std"]
