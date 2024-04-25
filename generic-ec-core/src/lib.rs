@@ -153,11 +153,13 @@ where
     fn to_be_bytes(&self) -> Self::Bytes;
     fn to_le_bytes(&self) -> Self::Bytes;
 
-    fn from_be_bytes(bytes: &Self::Bytes) -> Self;
-    fn from_le_bytes(bytes: &Self::Bytes) -> Self;
-
     fn from_be_bytes_exact(bytes: &Self::Bytes) -> Option<Self>;
     fn from_le_bytes_exact(bytes: &Self::Bytes) -> Option<Self>;
+
+    /// Interprets `bytes` as big-endian encoding of an integer. Returns integer mod curve (prime) order.
+    fn from_be_bytes_mod_order(bytes: &[u8]) -> Self;
+    /// Interprets `bytes` as little-endian encoding of an integer. Returns integer mod curve (prime) order.
+    fn from_le_bytes_mod_order(bytes: &[u8]) -> Self;
 }
 
 pub trait Decode: Sized {
@@ -184,4 +186,14 @@ impl<N: ArrayLength<u8>> ByteArray for GenericArray<u8, N> {
     fn zeroes() -> Self {
         GenericArray::default()
     }
+}
+
+/// Reduces an integer represented as array of `N` bytes modulo curve (prime) order
+pub trait Reduce<const N: usize> {
+    /// Interprets `bytes` as big-endian encoding of an integer, returns this
+    /// integer modulo curve (prime) order
+    fn from_be_array_mod_order(bytes: &[u8; N]) -> Self;
+    /// Interprets `bytes` as little-endian encoding of an integer, returns this
+    /// integer modulo curve (prime) order
+    fn from_le_array_mod_order(bytes: &[u8; N]) -> Self;
 }

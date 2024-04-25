@@ -30,11 +30,9 @@ fn multiscalar_for_curve<E: Curve>(
 ) where
     multiscalar::Naive: MultiscalarMul<E>,
     multiscalar::Straus: MultiscalarMul<E>,
-    multiscalar::Pippenger: MultiscalarMul<E>,
 {
     multiscalar_for_curve_and_algo::<E, multiscalar::Naive>(c, rng, curve_name, "naive");
     multiscalar_for_curve_and_algo::<E, multiscalar::Straus>(c, rng, curve_name, "straus");
-    multiscalar_for_curve_and_algo::<E, multiscalar::Pippenger>(c, rng, curve_name, "pippenger");
 }
 
 fn multiscalar_for_curve_and_algo<E: Curve, M: MultiscalarMul<E>>(
@@ -58,7 +56,7 @@ fn multiscalar_for_curve_and_algo<E: Curve, M: MultiscalarMul<E>>(
                         .take(n)
                         .collect::<Vec<_>>()
                     },
-                    |scalar_points| M::multiscalar_mul(scalar_points),
+                    |scalar_points| M::multiscalar_mul(scalar_points.into_iter()),
                     criterion::BatchSize::SmallInput,
                 )
             },

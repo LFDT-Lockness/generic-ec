@@ -213,7 +213,7 @@ mod _unused_deps {
 /// Common traits for points and scalars
 pub mod traits {
     #[doc(inline)]
-    pub use crate::core::{One, Samplable, Zero};
+    pub use crate::core::{One, Reduce, Samplable, Zero};
 
     /// Trait that allows you to check whether value is zero
     pub trait IsZero {
