@@ -153,7 +153,6 @@ impl<C, X> Default for RustCryptoCurve<C, X> {
 mod tests {
     use generic_ec_core::{
         coords::{HasAffineX, HasAffineXAndParity, HasAffineXY},
-        hash_to_curve::HashToCurve,
         Curve,
     };
 
@@ -162,7 +161,6 @@ mod tests {
     /// Asserts that `E` implements `Curve`
     fn _impls_curve<E: Curve>() {}
     fn _exposes_affine_coords<E: HasAffineX + HasAffineXAndParity + HasAffineXY>() {}
-    fn _impls_hash_to_curve<E: HashToCurve>() {}
 
     fn _curves_impl_trait() {
         _impls_curve::<Secp256k1>();
@@ -172,8 +170,5 @@ mod tests {
         _exposes_affine_coords::<Secp256k1>();
         _exposes_affine_coords::<Secp256r1>();
         _exposes_affine_coords::<Stark>();
-
-        _impls_hash_to_curve::<Secp256k1>();
-        _impls_hash_to_curve::<Secp256r1>();
     }
 }

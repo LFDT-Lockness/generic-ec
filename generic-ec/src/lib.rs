@@ -194,7 +194,6 @@ pub mod coords;
 mod encoded;
 pub mod errors;
 mod generator;
-pub mod hash_to_curve;
 pub mod multiscalar;
 mod non_zero;
 mod point;
