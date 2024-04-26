@@ -237,3 +237,34 @@ where
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    // Tests that the algorithms that take `bytes` mod curve order work on ed25519.
+    // Note, that `generic-ec-tests` has more extensive tests. A smaller test here
+    // is supposed to detect an issue earlier and more precisely if it ever arises.
+    #[test]
+    fn works_on_ed25519() {
+        let x = 0x11223344_u32;
+        let expected = curve25519::Scalar::from(x);
+        let one = &crate::ed25519::Scalar::ONE;
+
+        assert_eq!(
+            expected,
+            super::scalar_from_be_bytes_mod_order_reducing_32_64(&x.to_be_bytes(), one).0
+        );
+        assert_eq!(
+            expected,
+            super::scalar_from_be_bytes_mod_order_reducing_32(&x.to_be_bytes(), one).0
+        );
+
+        assert_eq!(
+            expected,
+            super::scalar_from_le_bytes_mod_order_reducing_32_64(&x.to_le_bytes(), one).0
+        );
+        assert_eq!(
+            expected,
+            super::scalar_from_le_bytes_mod_order_reducing_32(&x.to_le_bytes(), one).0
+        );
+    }
+}
