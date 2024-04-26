@@ -28,7 +28,7 @@ pub trait HasAffineXAndParity: Curve + HasAffineX {
     ///
     /// Returns `None` if input does not correspond to a valid point (but you
     /// still need to check that the point is [on curve](super::OnCurve) and
-    /// has [no small component](SmallFactor))
+    /// has [no small component](super::SmallFactor))
     fn from_x_and_parity(x: &Self::CoordinateArray, y_parity: Parity) -> Option<Self::Point>;
 }
 
@@ -50,7 +50,7 @@ pub trait HasAffineXY: Curve + HasAffineX + HasAffineY {
     ///
     /// Returns `None` if input does not correspond to a valid point (but you
     /// still need to check that the point is [on curve](super::OnCurve) and
-    /// has [no small component](SmallFactor))
+    /// has [no small component](super::SmallFactor))
     fn from_x_and_y(x: &Self::CoordinateArray, y: &Self::CoordinateArray) -> Option<Self::Point>;
 }
 
@@ -68,7 +68,7 @@ pub trait AlwaysHasAffineYAndSign: Curve + AlwaysHasAffineY {
     ///
     /// Returns `None` if input does not correspond to a valid point (but you
     /// still need to check that the point is [on curve](super::OnCurve) and
-    /// has [no small component](SmallFactor))
+    /// has [no small component](super::SmallFactor))
     fn from_y_and_sign(x_sign: Sign, y: &Self::CoordinateArray) -> Option<Self::Point>;
 }
 
