@@ -34,6 +34,8 @@ optional = true
 rand = "0.8"
 rand_dev = "0.1"
 
+criterion = { version = "0.5", features = ["html_reports"] }
+
 [features]
 default = []
 rust-crypto = ["elliptic-curve"]
@@ -45,3 +47,7 @@ ed25519 = ["dep:curve25519", "dep:group"]
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs", "--html-in-header", "katex-header.html"]
+
+[[bench]]
+name = "curves"
+harness = false
