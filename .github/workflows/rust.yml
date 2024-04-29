@@ -9,33 +9,42 @@ env:
   CARGO_NET_GIT_FETCH_WITH_CLI: true
 
 jobs:
-  build-nostd:
+  check-nostd:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
       with:
         cache-on-failure: "true"
-    - name: Build no-std
-      run: cargo build -p generic-ec --no-default-features
-  build-alloc:
+    - name: Check no-std
+      run: cargo check -p generic-ec --no-default-features
+  check-alloc:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
       with:
         cache-on-failure: "true"
-    - name: Build with `alloc` only
-      run: cargo build -p generic-ec --no-default-features --features alloc
-  build:
+    - name: Check with `alloc` only
+      run: cargo check -p generic-ec --no-default-features --features alloc
+  check:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
       with:
         cache-on-failure: "true"
-    - name: Build all-features
-      run: cargo build -p generic-ec --all-features
+    - name: Check all-features
+      run: cargo check -p generic-ec --all-features
+  check-all:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: Swatinem/rust-cache@v2
+      with:
+        cache-on-failure: "true"
+    - name: Check everything
+      run: cargo check --all-targets
   test:
     runs-on: ubuntu-latest
     steps:
