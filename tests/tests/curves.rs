@@ -162,7 +162,7 @@ mod tests {
     fn scalar_from_bytes_mod_order<E: Curve>() {
         let mut rng = DevRng::new();
 
-        let fixed_len = [8, 16, 32, 48, 64, 80, 96, 128, 256, 512];
+        let fixed_len = [8, 16, 32, 48, 64, 80, 96, 128, 256, 512, 513];
         let random_len = core::iter::repeat_with(|| rng.gen_range(1..=200)).take(20);
         let lenghts = fixed_len.into_iter().chain(random_len).collect::<Vec<_>>();
 
