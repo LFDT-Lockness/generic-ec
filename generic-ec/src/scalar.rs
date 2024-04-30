@@ -142,25 +142,14 @@ impl<E: Curve> Scalar<E> {
 
     /// Interprets provided bytes as integer $i$ in big-endian order, returns scalar $s = i \mod q$
     pub fn from_be_bytes_mod_order(bytes: impl AsRef<[u8]>) -> Self {
-        let scalar_0x100 = Scalar::from(0x100_u16);
-        bytes
-            .as_ref()
-            .iter()
-            .fold(Scalar::<E>::zero(), |acc, byte| {
-                acc * scalar_0x100 + Scalar::from(*byte)
-            })
+        let scalar = E::Scalar::from_be_bytes_mod_order(bytes.as_ref());
+        Self::from_raw(scalar)
     }
 
     /// Interprets provided bytes as integer $i$ in little-endian order, returns scalar $s = i \mod q$
     pub fn from_le_bytes_mod_order(bytes: impl AsRef<[u8]>) -> Self {
-        let scalar_0x100 = Scalar::from(0x100_u16);
-        bytes
-            .as_ref()
-            .iter()
-            .rev()
-            .fold(Scalar::<E>::zero(), |acc, byte| {
-                acc * scalar_0x100 + Scalar::from(*byte)
-            })
+        let scalar = E::Scalar::from_le_bytes_mod_order(bytes.as_ref());
+        Self::from_raw(scalar)
     }
 
     /// Generates random non-zero scalar
@@ -485,5 +474,17 @@ impl<E: Curve> ExactSizeIterator for Radix16Iter<E> {
     fn len(&self) -> usize {
         self.encoded_scalar[self.next_index..].len() * 2
             + if self.next_radix16.is_some() { 1 } else { 0 }
+    }
+}
+
+impl<E: Curve, const N: usize> crate::traits::Reduce<N> for Scalar<E>
+where
+    E::Scalar: crate::traits::Reduce<N>,
+{
+    fn from_be_array_mod_order(bytes: &[u8; N]) -> Self {
+        Self::from_raw(Reduce::from_be_array_mod_order(bytes))
+    }
+    fn from_le_array_mod_order(bytes: &[u8; N]) -> Self {
+        Self::from_raw(Reduce::from_le_array_mod_order(bytes))
     }
 }

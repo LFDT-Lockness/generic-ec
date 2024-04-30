@@ -1,3 +1,8 @@
+//! Adapter for curves implemented on top of [`elliptic_curve`] package
+//!
+//! This module provide generic wrappers that can port any curve implemented on top of
+//! [`elliptic_curve`] package to `generic-ec`.
+
 use core::fmt;
 use core::hash::{self, Hash};
 use core::marker::PhantomData;
@@ -23,6 +28,7 @@ mod hash_to_curve;
 mod point;
 mod scalar;
 
+/// Curve ported from [`elliptic_curve`] crate
 pub struct RustCryptoCurve<C, X> {
     _ph: PhantomData<fn() -> (C, X)>,
 }
@@ -41,7 +47,7 @@ impl<C, X> RustCryptoCurve<C, X>
 where
     C: CurveArithmetic,
 {
-    /// Constructs a point on the curve
+    /// Constructs a scalar
     pub fn scalar(scalar: C::Scalar) -> RustCryptoScalar<C> {
         RustCryptoScalar(scalar)
     }
@@ -58,6 +64,9 @@ pub type Secp256k1 = RustCryptoCurve<k256::Secp256k1, ExpandMsgXmd<Sha256>>;
 #[cfg(feature = "secp256r1")]
 pub type Secp256r1 = RustCryptoCurve<p256::NistP256, ExpandMsgXmd<Sha256>>;
 
+/// Stark curve
+///
+/// Based on [stark_curve] crate
 #[cfg(feature = "stark")]
 pub type Stark = RustCryptoCurve<stark_curve::StarkCurve, ExpandMsgXmd<Sha256>>;
 
@@ -77,6 +86,7 @@ where
     for<'a> &'a C::ProjectivePoint: Mul<&'a C::Scalar, Output = C::ProjectivePoint>,
     C::Scalar:
         Reduce<C::Uint> + Eq + ConstantTimeEq + ConditionallySelectable + DefaultIsZeroes + Unpin,
+    RustCryptoScalar<C>: scalar::BytesModOrder,
     for<'a> ScalarPrimitive<C>: From<&'a C::Scalar>,
     FieldBytesSize<C>: ModulusSize,
     X: 'static,
@@ -149,25 +159,22 @@ impl<C, X> Default for RustCryptoCurve<C, X> {
 mod tests {
     use generic_ec_core::{
         coords::{HasAffineX, HasAffineXAndParity, HasAffineXY},
-        hash_to_curve::HashToCurve,
         Curve,
     };
 
-    use super::{Secp256k1, Secp256r1};
+    use super::{Secp256k1, Secp256r1, Stark};
 
     /// Asserts that `E` implements `Curve`
     fn _impls_curve<E: Curve>() {}
     fn _exposes_affine_coords<E: HasAffineX + HasAffineXAndParity + HasAffineXY>() {}
-    fn _impls_hash_to_curve<E: HashToCurve>() {}
 
     fn _curves_impl_trait() {
         _impls_curve::<Secp256k1>();
         _impls_curve::<Secp256r1>();
+        _impls_curve::<Stark>();
 
         _exposes_affine_coords::<Secp256k1>();
         _exposes_affine_coords::<Secp256r1>();
-
-        _impls_hash_to_curve::<Secp256k1>();
-        _impls_hash_to_curve::<Secp256r1>();
+        _exposes_affine_coords::<Stark>();
     }
 }

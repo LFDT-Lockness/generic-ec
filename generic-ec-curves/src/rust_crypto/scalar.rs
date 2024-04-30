@@ -1,15 +1,15 @@
 use core::ops::Mul;
 
-use crypto_bigint::prelude::ArrayEncoding;
-use crypto_bigint::ByteArray;
-use elliptic_curve::ops::Reduce;
+use elliptic_curve::bigint::{ArrayEncoding, ByteArray, U256, U512};
 use elliptic_curve::{Curve, CurveArithmetic, Field, Group, PrimeField, ScalarPrimitive};
 use generic_ec_core::{
-    Additive, CurveGenerator, IntegerEncoding, Invertible, Multiplicative, One, Samplable, Zero,
+    Additive, CurveGenerator, IntegerEncoding, Invertible, Multiplicative, One, Reduce, Samplable,
+    Zero,
 };
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::DefaultIsZeroes;
 
+/// Scalar wrapper
 pub struct RustCryptoScalar<E: CurveArithmetic>(pub E::Scalar);
 
 impl<E: CurveArithmetic> Additive for RustCryptoScalar<E> {
@@ -159,7 +159,8 @@ where
 impl<E: CurveArithmetic + Curve> IntegerEncoding for RustCryptoScalar<E>
 where
     for<'s> ScalarPrimitive<E>: From<&'s E::Scalar>,
-    E::Scalar: Reduce<E::Uint>,
+    E::Scalar: elliptic_curve::ops::Reduce<E::Uint>,
+    Self: BytesModOrder,
 {
     type Bytes = ByteArray<E::Uint>;
 
@@ -175,16 +176,6 @@ where
         uint.to_le_byte_array()
     }
 
-    fn from_be_bytes(bytes: &Self::Bytes) -> Self {
-        let uint = E::Uint::from_be_byte_array(bytes.clone());
-        Self(Reduce::reduce(uint))
-    }
-
-    fn from_le_bytes(bytes: &Self::Bytes) -> Self {
-        let uint = E::Uint::from_le_byte_array(bytes.clone());
-        Self(Reduce::reduce(uint))
-    }
-
     fn from_be_bytes_exact(bytes: &Self::Bytes) -> Option<Self> {
         let uint = E::Uint::from_be_byte_array(bytes.clone());
         let scalar_core: Option<ScalarPrimitive<E>> = ScalarPrimitive::<E>::new(uint).into();
@@ -195,5 +186,85 @@ where
         let uint = E::Uint::from_le_byte_array(bytes.clone());
         let scalar_core: Option<ScalarPrimitive<E>> = ScalarPrimitive::<E>::new(uint).into();
         Some(Self(E::Scalar::from(scalar_core?)))
+    }
+
+    fn from_be_bytes_mod_order(bytes: &[u8]) -> Self {
+        <Self as BytesModOrder>::from_be_bytes_mod_order(bytes)
+    }
+    fn from_le_bytes_mod_order(bytes: &[u8]) -> Self {
+        <Self as BytesModOrder>::from_le_bytes_mod_order(bytes)
+    }
+}
+
+impl<E: CurveArithmetic + Curve> Reduce<32> for RustCryptoScalar<E>
+where
+    E::Scalar: elliptic_curve::ops::Reduce<U256>,
+{
+    fn from_be_array_mod_order(bytes: &[u8; 32]) -> Self {
+        Self(elliptic_curve::ops::Reduce::<U256>::reduce(
+            U256::from_be_byte_array((*bytes).into()),
+        ))
+    }
+    fn from_le_array_mod_order(bytes: &[u8; 32]) -> Self {
+        Self(elliptic_curve::ops::Reduce::<U256>::reduce(
+            U256::from_le_byte_array((*bytes).into()),
+        ))
+    }
+}
+
+impl<E: CurveArithmetic + Curve> Reduce<64> for RustCryptoScalar<E>
+where
+    E::Scalar: elliptic_curve::ops::Reduce<U512>,
+{
+    fn from_be_array_mod_order(bytes: &[u8; 64]) -> Self {
+        Self(elliptic_curve::ops::Reduce::<U512>::reduce(
+            U512::from_be_byte_array((*bytes).into()),
+        ))
+    }
+    fn from_le_array_mod_order(bytes: &[u8; 64]) -> Self {
+        Self(elliptic_curve::ops::Reduce::<U512>::reduce(
+            U512::from_le_byte_array((*bytes).into()),
+        ))
+    }
+}
+
+/// Choice of algorithm for computing bytes mod curve order. Efficient algorithm
+/// is different for different curves.
+pub(super) trait BytesModOrder {
+    fn from_be_bytes_mod_order(bytes: &[u8]) -> Self;
+    fn from_le_bytes_mod_order(bytes: &[u8]) -> Self;
+}
+
+#[cfg(feature = "secp256k1")]
+impl BytesModOrder for RustCryptoScalar<k256::Secp256k1> {
+    fn from_be_bytes_mod_order(bytes: &[u8]) -> Self {
+        crate::utils::scalar_from_be_bytes_mod_order_reducing_32_64(bytes, &Self(k256::Scalar::ONE))
+    }
+    fn from_le_bytes_mod_order(bytes: &[u8]) -> Self {
+        crate::utils::scalar_from_le_bytes_mod_order_reducing_32_64(bytes, &Self(k256::Scalar::ONE))
+    }
+}
+#[cfg(feature = "secp256k1")]
+impl BytesModOrder for RustCryptoScalar<p256::NistP256> {
+    fn from_be_bytes_mod_order(bytes: &[u8]) -> Self {
+        crate::utils::scalar_from_be_bytes_mod_order_reducing_32(bytes, &Self(p256::Scalar::ONE))
+    }
+    fn from_le_bytes_mod_order(bytes: &[u8]) -> Self {
+        crate::utils::scalar_from_le_bytes_mod_order_reducing_32(bytes, &Self(p256::Scalar::ONE))
+    }
+}
+#[cfg(feature = "stark")]
+impl BytesModOrder for RustCryptoScalar<stark_curve::StarkCurve> {
+    fn from_be_bytes_mod_order(bytes: &[u8]) -> Self {
+        crate::utils::scalar_from_be_bytes_mod_order_reducing_32(
+            bytes,
+            &Self(stark_curve::Scalar::ONE),
+        )
+    }
+    fn from_le_bytes_mod_order(bytes: &[u8]) -> Self {
+        crate::utils::scalar_from_le_bytes_mod_order_reducing_32(
+            bytes,
+            &Self(stark_curve::Scalar::ONE),
+        )
     }
 }

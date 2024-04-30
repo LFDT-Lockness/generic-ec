@@ -1,8 +1,11 @@
 ## v0.3.0
 * Rework `generic_ec::multiscalar` API, optimize Straus algorithm, add Dalek, remove
   Pippenger [#30]
+* Optimize `Scalar::from_{be|le}_bytes_mod_order` [#34]
+* Remove `hash_to_curve` primitive from library API [#34]
 
 [#30]: https://github.com/dfns/generic-ec/pull/30
+[#34]: https://github.com/dfns/generic-ec/pull/34
 
 ## v0.2.4
 * Add `generic_ec::multiscalar` which helps optimizing multiscalar multiplication [#29]

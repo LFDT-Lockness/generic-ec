@@ -3,7 +3,7 @@
 #[generic_tests::define]
 mod tests {
     use generic_ec::{curves::*, Curve, EncodedScalar, Point, Scalar};
-    use rand::Rng;
+    use rand::{Rng, RngCore};
     use rand_dev::DevRng;
 
     #[test]
@@ -162,16 +162,24 @@ mod tests {
     fn scalar_from_bytes_mod_order<E: Curve>() {
         let mut rng = DevRng::new();
 
-        let random_scalar = Scalar::<E>::random(&mut rng);
-        for s in [Scalar::zero(), random_scalar] {
-            let s_be = s.to_be_bytes();
-            let s_le = s.to_le_bytes();
+        let fixed_len = [8, 16, 32, 48, 64, 80, 96, 128, 256, 512, 513];
+        let random_len = core::iter::repeat_with(|| rng.gen_range(1..=200)).take(20);
+        let lenghts = fixed_len.into_iter().chain(random_len).collect::<Vec<_>>();
 
-            let s1 = Scalar::<E>::from_be_bytes_mod_order(&s_be);
-            let s2 = Scalar::<E>::from_le_bytes_mod_order(&s_le);
+        for len in lenghts {
+            let mut bytes = vec![0u8; len];
+            rng.fill_bytes(&mut bytes);
 
-            assert_eq!(s, s1);
-            assert_eq!(s, s2);
+            eprintln!("len = {len}");
+            eprintln!("bytes = {}", hex::encode(&bytes));
+
+            let expected = super::naive_scalar_from_be_bytes_mod_order::<E>(&bytes);
+            let actual = Scalar::from_be_bytes_mod_order(&bytes);
+            assert_eq!(expected, actual);
+
+            let expected = super::naive_scalar_from_le_bytes_mod_order::<E>(&bytes);
+            let actual = Scalar::from_le_bytes_mod_order(bytes);
+            assert_eq!(expected, actual);
         }
     }
 
@@ -246,6 +254,47 @@ mod tests {
 }
 
 #[generic_tests::define]
+mod scalar_reduce {
+    use generic_ec::{traits::Reduce, Curve, Scalar};
+    use rand::RngCore;
+
+    #[test]
+    fn reduce<E: Curve, const N: usize>()
+    where
+        Scalar<E>: Reduce<N>,
+    {
+        let mut rng = rand_dev::DevRng::new();
+
+        let mut bytes = [0u8; N];
+        rng.fill_bytes(&mut bytes);
+
+        let expected = super::naive_scalar_from_be_bytes_mod_order::<E>(&bytes);
+        let actual = Scalar::from_be_array_mod_order(&bytes);
+        assert_eq!(expected, actual);
+
+        let expected = super::naive_scalar_from_le_bytes_mod_order::<E>(&bytes);
+        let actual = Scalar::from_le_array_mod_order(&bytes);
+        assert_eq!(expected, actual);
+    }
+
+    #[instantiate_tests(<generic_ec::curves::Secp256k1, 32>)]
+    mod secp256k1_32 {}
+    #[instantiate_tests(<generic_ec::curves::Secp256k1, 64>)]
+    mod secp256k1_64 {}
+
+    #[instantiate_tests(<generic_ec::curves::Secp256r1, 32>)]
+    mod secp256r1_32 {}
+
+    #[instantiate_tests(<generic_ec::curves::Stark, 32>)]
+    mod stark_32 {}
+
+    #[instantiate_tests(<generic_ec::curves::Ed25519, 32>)]
+    mod ed25519_32 {}
+    #[instantiate_tests(<generic_ec::curves::Ed25519, 64>)]
+    mod ed25519_64 {}
+}
+
+#[generic_tests::define]
 mod coordinates {
     use generic_ec::coords::{HasAffineX, HasAffineXAndParity, HasAffineXY, HasAffineY};
     use generic_ec::curves::{Secp256k1, Secp256r1, Stark};
@@ -304,4 +353,28 @@ mod coordinates {
 
     #[instantiate_tests(<Stark>)]
     mod stark {}
+}
+
+fn naive_scalar_from_be_bytes_mod_order<E: generic_ec::Curve>(
+    bytes: &[u8],
+) -> generic_ec::Scalar<E> {
+    let scalar_0x100 = generic_ec::Scalar::from(0x100);
+
+    bytes
+        .iter()
+        .fold(generic_ec::Scalar::<E>::zero(), |acc, s_i| {
+            acc * scalar_0x100 + generic_ec::Scalar::from(*s_i)
+        })
+}
+fn naive_scalar_from_le_bytes_mod_order<E: generic_ec::Curve>(
+    bytes: &[u8],
+) -> generic_ec::Scalar<E> {
+    let scalar_0x100 = generic_ec::Scalar::from(0x100);
+
+    bytes
+        .iter()
+        .rev()
+        .fold(generic_ec::Scalar::<E>::zero(), |acc, s_i| {
+            acc * scalar_0x100 + generic_ec::Scalar::from(*s_i)
+        })
 }

@@ -1,3 +1,6 @@
+//! Ed25519 curve
+
+/// Ed25519 curve
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Default, zeroize::Zeroize)]
 pub struct Ed25519 {
     _private: (),
@@ -18,6 +21,7 @@ impl generic_ec_core::Curve for Ed25519 {
     type CoordinateArray = [u8; 0];
 }
 
+/// Ed25519 point
 #[derive(Clone, Copy, PartialEq, Eq, zeroize::Zeroize)]
 #[repr(transparent)]
 pub struct Point(pub curve25519::EdwardsPoint);
@@ -135,8 +139,16 @@ impl Default for Point {
     }
 }
 
+/// Ed25519 scalar
 #[derive(Default, Clone, Copy, PartialEq, Eq, zeroize::Zeroize)]
 pub struct Scalar(pub curve25519::Scalar);
+
+impl Scalar {
+    /// Scalar equal to 1
+    pub const ONE: Self = Self(curve25519::Scalar::ONE);
+    /// Scalar equal to 0
+    pub const ZERO: Self = Self(curve25519::Scalar::ZERO);
+}
 
 impl generic_ec_core::Additive for Scalar {
     #[inline]
@@ -261,16 +273,6 @@ impl generic_ec_core::IntegerEncoding for Scalar {
         self.0.to_bytes()
     }
 
-    fn from_be_bytes(bytes: &Self::Bytes) -> Self {
-        let mut bytes = *bytes;
-        bytes.reverse();
-        Self::from_le_bytes(&bytes)
-    }
-
-    fn from_le_bytes(bytes: &Self::Bytes) -> Self {
-        Self(curve25519::Scalar::from_bytes_mod_order(*bytes))
-    }
-
     fn from_be_bytes_exact(bytes: &Self::Bytes) -> Option<Self> {
         let mut bytes = *bytes;
         bytes.reverse();
@@ -279,6 +281,14 @@ impl generic_ec_core::IntegerEncoding for Scalar {
 
     fn from_le_bytes_exact(bytes: &Self::Bytes) -> Option<Self> {
         Option::from(curve25519::Scalar::from_canonical_bytes(*bytes)).map(Self)
+    }
+
+    fn from_be_bytes_mod_order(bytes: &[u8]) -> Self {
+        crate::utils::scalar_from_be_bytes_mod_order_reducing_32_64(bytes, &Self::ONE)
+    }
+
+    fn from_le_bytes_mod_order(bytes: &[u8]) -> Self {
+        crate::utils::scalar_from_le_bytes_mod_order_reducing_32_64(bytes, &Self::ONE)
     }
 }
 
@@ -291,5 +301,26 @@ impl core::cmp::PartialOrd for Scalar {
 impl core::cmp::Ord for Scalar {
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
         self.0.as_bytes().cmp(other.0.as_bytes())
+    }
+}
+
+impl generic_ec_core::Reduce<32> for Scalar {
+    fn from_be_array_mod_order(bytes: &[u8; 32]) -> Self {
+        let mut bytes = *bytes;
+        bytes.reverse();
+        Self(curve25519::Scalar::from_bytes_mod_order(bytes))
+    }
+    fn from_le_array_mod_order(bytes: &[u8; 32]) -> Self {
+        Self(curve25519::Scalar::from_bytes_mod_order(*bytes))
+    }
+}
+impl generic_ec_core::Reduce<64> for Scalar {
+    fn from_be_array_mod_order(bytes: &[u8; 64]) -> Self {
+        let mut bytes = *bytes;
+        bytes.reverse();
+        Self(curve25519::Scalar::from_bytes_mod_order_wide(&bytes))
+    }
+    fn from_le_array_mod_order(bytes: &[u8; 64]) -> Self {
+        Self(curve25519::Scalar::from_bytes_mod_order_wide(bytes))
     }
 }

@@ -194,7 +194,6 @@ pub mod coords;
 mod encoded;
 pub mod errors;
 mod generator;
-pub mod hash_to_curve;
 pub mod multiscalar;
 mod non_zero;
 mod point;
@@ -213,7 +212,7 @@ mod _unused_deps {
 /// Common traits for points and scalars
 pub mod traits {
     #[doc(inline)]
-    pub use crate::core::{One, Samplable, Zero};
+    pub use crate::core::{One, Reduce, Samplable, Zero};
 
     /// Trait that allows you to check whether value is zero
     pub trait IsZero {

@@ -1,6 +1,6 @@
 [package]
 name = "generic-ec-curves"
-version = "0.1.5"
+version = "0.2.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Elliptic curves for `generic-ec` crate"
@@ -9,13 +9,12 @@ repository = "https://github.com/dfns/generic-ec"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-generic-ec-core = { version = "0.1.4", path = "../generic-ec-core", default-features = false }
+generic-ec-core = { version = "0.2", path = "../generic-ec-core", default-features = false }
 
 subtle = { version = "2.4", default-features = false }
 rand_core = { version = "0.6", default-features = false }
 zeroize = { version = "1", default-features = false, features = ["zeroize_derive"] }
 
-crypto-bigint = { version = "0.5", default-features = false, optional = true }
 elliptic-curve = { version = "0.13", default-features = false, features = ["sec1", "hash2curve"], optional = true }
 k256 = { version = "0.13", optional = true, default-features = false, features = ["hash2curve"] }
 p256 = { version = "0.13", optional = true, default-features = false, features = ["hash2curve"] }
@@ -31,9 +30,15 @@ default-features = false
 features = ["group", "zeroize", "rand_core", "precomputed-tables"]
 optional = true
 
+[dev-dependencies]
+rand = "0.8"
+rand_dev = "0.1"
+
+criterion = { version = "0.5", features = ["html_reports"] }
+
 [features]
 default = []
-rust-crypto = ["elliptic-curve", "crypto-bigint"]
+rust-crypto = ["elliptic-curve"]
 secp256k1 = ["rust-crypto", "k256", "sha2"]
 secp256r1 = ["rust-crypto", "p256", "sha2"]
 stark = ["rust-crypto", "stark-curve", "sha2"]
@@ -42,3 +47,7 @@ ed25519 = ["dep:curve25519", "dep:group"]
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs", "--html-in-header", "katex-header.html"]
+
+[[bench]]
+name = "curves"
+harness = false

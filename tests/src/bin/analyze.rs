@@ -1,11 +1,19 @@
-use std::collections::BTreeSet;
+use std::{collections::BTreeSet, iter};
 
 use anyhow::{bail, Context, Result};
 
 use plotters::prelude::*;
 
 fn main() -> Result<()> {
-    draw_multiscalar_perf()
+    let cmd = std::env::args().nth(1);
+
+    let expected = "`multiscalar` or `curves`";
+    match cmd.as_deref() {
+        Some("multiscalar") => draw_multiscalar_perf(),
+        Some("curves") => analyze_curves_perf(),
+        Some(unknown) => bail!("unknown command `{unknown}`, expected {expected}"),
+        None => bail!("missing command, expected {expected}"),
+    }
 }
 
 #[derive(serde::Deserialize, Clone, Debug)]
@@ -47,7 +55,7 @@ fn parse_completed_benchmarks<'a>(
 }
 
 #[derive(Debug, Clone)]
-pub struct MultiscalarId {
+struct MultiscalarId {
     algo: String,
     curve: String,
     n: usize,
@@ -55,29 +63,20 @@ pub struct MultiscalarId {
 impl std::str::FromStr for MultiscalarId {
     type Err = anyhow::Error;
     fn from_str(id: &str) -> Result<Self, Self::Err> {
-        let mut id = id.split('/');
+        let regex = regex::Regex::new(r"^([^/]+?)/([^/]+?)/([^/]+?)/n(\d+?)$")
+            .context("construct regex")?;
+        let captures = regex.captures(id).context("id doesn't match regex")?;
+        let (_, [operation, algo, curve, n]) = captures.extract();
 
-        let operation = id.next().context("`id` doesn't have enough parts")?;
         if operation != "multiscalar_mul" {
             bail!("unexpected operation {operation}, expected `multiscalar_mul`")
         }
 
-        let algo = id
-            .next()
-            .context("`id` doesn't have enough parts")?
-            .to_owned();
-        let curve = id
-            .next()
-            .context("`id` doesn't have enough parts")?
-            .to_owned();
-
-        let n = id.next().context("`id` doesn't have enough parts")?;
-        if !n.starts_with('n') {
-            bail!("malformed `n`")
-        }
-        let n = n[1..].parse().context("n is not an integer")?;
-
-        Ok(Self { algo, curve, n })
+        Ok(Self {
+            algo: algo.to_owned(),
+            curve: curve.to_owned(),
+            n: n.parse().context("invalid n")?,
+        })
     }
 }
 
@@ -217,4 +216,126 @@ fn fmt_and_write_svg(path: impl AsRef<std::path::Path>, svg: &str) -> Result<()>
     let out = r.replace_all(svg, "<svg");
     std::fs::write(&path, out.as_ref())?;
     Ok(())
+}
+
+struct CurveId {
+    curve: String,
+    operation: String,
+}
+impl std::str::FromStr for CurveId {
+    type Err = anyhow::Error;
+    fn from_str(id: &str) -> std::prelude::v1::Result<Self, Self::Err> {
+        let regex = regex::Regex::new(r"^([^/]+?)/(.+?)$").context("construct regex")?;
+        let captures = regex.captures(id).context("id doesn't match regex")?;
+        let (_, [curve, operation]) = captures.extract();
+
+        Ok(Self {
+            curve: curve.to_owned(),
+            operation: operation.to_owned(),
+        })
+    }
+}
+
+fn analyze_curves_perf() -> Result<()> {
+    let stdin = std::io::stdin().lock();
+    let stdin = serde_json::de::IoRead::new(stdin);
+
+    let results = parse_completed_benchmarks(stdin).context("parse results")?;
+    let results = results
+        .into_iter()
+        .map(|res| {
+            Ok(BenchmarkComplete {
+                id: res.id.parse::<CurveId>()?,
+                mean: res.mean,
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
+
+    let mut grouped_results: Vec<(String, Vec<(String, Measurement)>)> = vec![];
+    for res in results {
+        let out = match grouped_results.iter_mut().find(|r| r.0 == res.id.operation) {
+            Some(o) => o,
+            None => {
+                grouped_results.push((res.id.operation.clone(), vec![]));
+                grouped_results.last_mut().unwrap()
+            }
+        };
+        out.1.push((res.id.curve.clone(), res.mean.clone()))
+    }
+
+    let curves = grouped_results[0]
+        .1
+        .iter()
+        .map(|(curve, _mean)| curve.clone())
+        .collect::<Vec<_>>();
+
+    let mut table = tabled::builder::Builder::new();
+    table.push_record(iter::once("").chain(curves.iter().map(String::as_str)));
+
+    for res in &grouped_results {
+        let operation = res.0.clone().replace('[', "\\[").replace(']', "\\]");
+        let mut row = vec![operation];
+        row.extend(iter::repeat_with(|| String::new()).take(curves.len()));
+
+        let (means, unit) = choose_uniform_unit(res.1.iter().map(|(_, m)| m));
+        for (curve, mean) in res.1.iter().map(|(curve, _)| curve).zip(means) {
+            let pos = curves.iter().position(|c| c == curve).unwrap();
+            row[1 + pos] = if unit == "ns" {
+                format!("{mean:.0}{unit}")
+            } else {
+                format!("{mean:.1}{unit}")
+            };
+        }
+
+        table.push_record(row);
+    }
+
+    println!(
+        "{}",
+        table
+            .build()
+            .with(tabled::settings::style::Style::markdown())
+    );
+
+    Ok(())
+}
+
+fn choose_uniform_unit<'a>(
+    measurements: impl Iterator<Item = &'a Measurement> + Clone,
+) -> (Vec<f64>, &'static str) {
+    assert!(measurements.clone().all(|m| m.unit == "ns"));
+
+    #[derive(Ord, Eq, PartialEq, PartialOrd)]
+    enum Unit {
+        Nano,
+        Micro,
+        Mili,
+    }
+    debug_assert!(Unit::Nano < Unit::Micro);
+
+    let suggested_units = measurements.clone().map(|m| {
+        if m.estimate >= 1_000_000. {
+            Unit::Mili
+        } else if m.estimate >= 1000. {
+            Unit::Micro
+        } else {
+            Unit::Nano
+        }
+    });
+    let chosen_unit = suggested_units.min().unwrap();
+    let unit_str = match &chosen_unit {
+        Unit::Nano => "ns",
+        Unit::Micro => "μs",
+        Unit::Mili => "ms",
+    };
+
+    let measurements = measurements
+        .map(|m| match chosen_unit {
+            Unit::Nano => m.estimate,
+            Unit::Micro => m.estimate / 1000.,
+            Unit::Mili => m.estimate / 1_000_000.,
+        })
+        .collect();
+
+    (measurements, unit_str)
 }
