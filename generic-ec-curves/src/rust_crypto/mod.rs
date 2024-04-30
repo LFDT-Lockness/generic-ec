@@ -1,3 +1,8 @@
+//! Adapter for curves implemented on top of [`elliptic_curve`] package
+//!
+//! This module provide generic wrappers that can port any curve implemented on top of
+//! [`elliptic_curve`] package to `generic-ec`.
+
 use core::fmt;
 use core::hash::{self, Hash};
 use core::marker::PhantomData;
@@ -23,6 +28,7 @@ mod hash_to_curve;
 mod point;
 mod scalar;
 
+/// Curve ported from [`elliptic_curve`] crate
 pub struct RustCryptoCurve<C, X> {
     _ph: PhantomData<fn() -> (C, X)>,
 }
@@ -41,7 +47,7 @@ impl<C, X> RustCryptoCurve<C, X>
 where
     C: CurveArithmetic,
 {
-    /// Constructs a point on the curve
+    /// Constructs a scalar
     pub fn scalar(scalar: C::Scalar) -> RustCryptoScalar<C> {
         RustCryptoScalar(scalar)
     }

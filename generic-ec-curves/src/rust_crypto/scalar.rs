@@ -9,6 +9,7 @@ use generic_ec_core::{
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::DefaultIsZeroes;
 
+/// Scalar wrapper
 pub struct RustCryptoScalar<E: CurveArithmetic>(pub E::Scalar);
 
 impl<E: CurveArithmetic> Additive for RustCryptoScalar<E> {

@@ -12,6 +12,7 @@ generic-ec = { path = "../generic-ec", default-features = false, features = ["al
 plotters = "0.3"
 anyhow = "1"
 regex = "1.10"
+tabled = { version = "0.15", default-features = false, features = ["std"] }
 
 serde = { version = "1", features = ["derive"] }
 serde_with = "2"

@@ -1,3 +1,6 @@
+//! Ed25519 curve
+
+/// Ed25519 curve
 #[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Default, zeroize::Zeroize)]
 pub struct Ed25519 {
     _private: (),
@@ -18,6 +21,7 @@ impl generic_ec_core::Curve for Ed25519 {
     type CoordinateArray = [u8; 0];
 }
 
+/// Ed25519 point
 #[derive(Clone, Copy, PartialEq, Eq, zeroize::Zeroize)]
 #[repr(transparent)]
 pub struct Point(pub curve25519::EdwardsPoint);
@@ -135,6 +139,7 @@ impl Default for Point {
     }
 }
 
+/// Ed25519 scalar
 #[derive(Default, Clone, Copy, PartialEq, Eq, zeroize::Zeroize)]
 pub struct Scalar(pub curve25519::Scalar);
 

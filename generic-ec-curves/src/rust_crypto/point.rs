@@ -10,6 +10,7 @@ use generic_ec_core::*;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq};
 use zeroize::Zeroize;
 
+/// Point wrapper
 pub struct RustCryptoPoint<E: CurveArithmetic>(pub E::ProjectivePoint);
 
 impl<E: CurveArithmetic> Additive for RustCryptoPoint<E> {

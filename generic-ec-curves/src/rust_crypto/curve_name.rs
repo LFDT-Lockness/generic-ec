@@ -1,4 +1,6 @@
+/// Name of the curve
 pub trait CurveName {
+    /// Name of the curve
     const CURVE_NAME: &'static str;
 }
 

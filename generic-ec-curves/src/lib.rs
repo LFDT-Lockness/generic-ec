@@ -6,7 +6,12 @@
 //! [`generic-ec` crate]: https://docs.rs/generic-ec
 
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used))]
+#![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
+#![forbid(missing_docs)]
 #![no_std]
+
+#[cfg(docsrs)]
+pub mod __docs;
 
 #[cfg(any(feature = "ed25519", feature = "rust-crypto"))]
 mod utils;
