@@ -27,21 +27,6 @@ pub struct Measurement {
     estimate: f64,
     unit: String,
 }
-impl std::fmt::Display for Measurement {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        if self.unit != "ns" {
-            return write!(f, "{:.1}{}", self.estimate, self.unit);
-        }
-
-        if self.estimate >= 1000.0 {
-            write!(f, "{:.1}μs", self.estimate / 1000.0)
-        } else if self.estimate >= 1_000_000.0 {
-            write!(f, "{:.1}ms", self.estimate / 1_000_000.0)
-        } else {
-            write!(f, "{:.0}ns", self.estimate)
-        }
-    }
-}
 
 fn parse_completed_benchmarks<'a>(
     raw_json: impl serde_json::de::Read<'a>,
