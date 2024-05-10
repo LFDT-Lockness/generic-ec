@@ -309,10 +309,6 @@ use generic_ec::{Curve, NonZero, Scalar};
 /// of element in `xs` for which lagrange coefficient is calculated. `x` is a point at
 /// which the polynomial is interpolated.
 ///
-/// `xs` usually refer to "index of a party" of MPC protocol, and shared secret is assigned
-/// a coordinate `x=0`. For that reason, elements of `xs` are restricted to be non-zero to
-/// avoid an implementation flaw when one of the parties can occupy `xs[j] = 0`.
-///
 /// ## Returns
 /// Returns `None` if `j >= xs.len()` or if there's `m` such that `xs[j] == xs[m]` or
 /// `x == xs[m]`. Note that, generally, lagrange interpolation is only defined when
@@ -329,11 +325,7 @@ use generic_ec::{Curve, NonZero, Scalar};
 /// let f = Polynomial::sample_with_const_term(&mut OsRng, 2, secret.clone());
 ///
 /// // Publicly-known shares indexes
-/// let I = [
-///     NonZero::from_scalar(Scalar::from(1)).unwrap(),
-///     NonZero::from_scalar(Scalar::from(2)).unwrap(),
-///     NonZero::from_scalar(Scalar::from(3)).unwrap(),
-/// ];
+/// let I = [Scalar::from(1), Scalar::from(2), Scalar::from(3)];
 /// // Secret shares
 /// let shares: [Scalar<_>; 3] = I.map(|i| f.value(&i));
 ///
@@ -349,7 +341,7 @@ use generic_ec::{Curve, NonZero, Scalar};
 pub fn lagrange_coefficient<E: Curve>(
     x: Scalar<E>,
     j: usize,
-    xs: &[NonZero<Scalar<E>>],
+    xs: &[impl AsRef<Scalar<E>>],
 ) -> Option<NonZero<Scalar<E>>> {
     let xs_without_j = xs
         .iter()
@@ -358,11 +350,35 @@ pub fn lagrange_coefficient<E: Curve>(
         .map(|(_, x_i)| x_i);
     let nom = xs_without_j
         .clone()
-        .map(|x_m| x - x_m)
+        .map(|x_m| x - x_m.as_ref())
         .product::<Scalar<E>>();
 
-    let x_j = xs.get(j)?;
-    let denom = xs_without_j.map(|x_m| x_j - x_m).product::<Scalar<E>>();
+    let x_j = xs.get(j)?.as_ref();
+    let denom = xs_without_j
+        .map(|x_m| x_j - x_m.as_ref())
+        .product::<Scalar<E>>();
+    let denom_inv = denom.invert()?;
+
+    NonZero::from_scalar(nom * denom_inv)
+}
+
+/// Calculates lagrange coefficient $\lambda_j$ to interpolate a polynomial at point $0$
+///
+/// Functionally the same as calling [`lagrange_coefficient(Scalar::zero(), j, xs)`](lagrange_coefficient),
+/// but a bit faster.
+pub fn lagrange_coefficient_at_zero<E: Curve>(
+    j: usize,
+    xs: &[impl AsRef<Scalar<E>>],
+) -> Option<NonZero<Scalar<E>>> {
+    let xs_without_j = xs
+        .iter()
+        .enumerate()
+        .filter(|(i, _x_i)| *i != j)
+        .map(|(_, x_i)| x_i.as_ref());
+    let nom = xs_without_j.clone().product::<Scalar<E>>();
+
+    let x_j = xs.get(j)?.as_ref();
+    let denom = xs_without_j.map(|x_m| x_m - x_j).product::<Scalar<E>>();
     let denom_inv = denom.invert()?;
 
     NonZero::from_scalar(nom * denom_inv)
@@ -375,7 +391,7 @@ mod tests {
     use alloc::vec::Vec;
     use core::iter;
 
-    use generic_ec::{Curve, NonZero, Point, Scalar, SecretScalar};
+    use generic_ec::{Curve, Point, Scalar, SecretScalar};
     use rand::Rng;
     use rand_dev::DevRng;
 
@@ -406,11 +422,11 @@ mod tests {
         );
 
         // 3. Derive 4 secret and public shares
-        let shares_indexes: [NonZero<Scalar<E>>; 4] = [
-            NonZero::from_scalar(Scalar::from(1)).unwrap(),
-            NonZero::from_scalar(Scalar::from(2)).unwrap(),
-            NonZero::from_scalar(Scalar::from(3)).unwrap(),
-            NonZero::from_scalar(Scalar::from(4)).unwrap(),
+        let shares_indexes: [Scalar<E>; 4] = [
+            Scalar::from(1),
+            Scalar::from(2),
+            Scalar::from(3),
+            Scalar::from(4),
         ];
         let shares: [Scalar<_>; 4] = shares_indexes.map(|i| f.value(&i));
         let public_shares = shares.map(|secret_share| Point::generator() * secret_share);
@@ -431,6 +447,11 @@ mod tests {
             .map(|(lambda_i, x_i)| lambda_i * x_i)
             .sum();
         assert_eq!(secret.as_ref(), &reconstructed_secret);
+
+        assert_eq!(
+            lambdas,
+            [0, 1, 2, 3].map(|j| super::lagrange_coefficient_at_zero(j, &shares_indexes).unwrap())
+        );
     }
 
     #[test]
