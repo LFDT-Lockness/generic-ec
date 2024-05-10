@@ -275,7 +275,7 @@ fn analyze_curves_perf() -> Result<()> {
     for res in &grouped_results {
         let operation = res.0.clone().replace('[', "\\[").replace(']', "\\]");
         let mut row = vec![operation];
-        row.extend(iter::repeat_with(|| String::new()).take(curves.len()));
+        row.extend(iter::repeat_with(String::new).take(curves.len()));
 
         let (means, unit) = choose_uniform_unit(res.1.iter().map(|(_, m)| m));
         for (curve, mean) in res.1.iter().map(|(curve, _)| curve).zip(means) {

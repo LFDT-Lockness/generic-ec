@@ -30,6 +30,8 @@ sha2 = "0.10"
 
 generic-tests = "0.1"
 
+criterion = { version = "0.5", features = ["html_reports"] }
+
 generic-ec = { version = "0.3", path = "../generic-ec", default-features = false, features = ["all-curves"] }
 
 [features]
@@ -42,3 +44,7 @@ udigest = ["dep:udigest", "generic-ec/udigest"]
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs", "--html-in-header", "katex-header.html"]
+
+[[bench]]
+name = "zkp"
+harness = false

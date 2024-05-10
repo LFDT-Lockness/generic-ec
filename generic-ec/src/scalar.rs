@@ -34,6 +34,11 @@ impl<E: Curve> Scalar<E> {
         Self::from_raw(E::Scalar::zero())
     }
 
+    /// Checks whether the scalar is zero
+    pub fn is_zero(&self) -> bool {
+        Zero::is_zero(self.as_raw()).into()
+    }
+
     /// Returns scalar $S = 1$
     ///
     /// ```rust
@@ -262,7 +267,7 @@ impl<E: Curve> AsRef<Scalar<E>> for Scalar<E> {
 
 impl<E: Curve> crate::traits::IsZero for Scalar<E> {
     fn is_zero(&self) -> bool {
-        *self == Scalar::zero()
+        self.is_zero()
     }
 }
 
@@ -272,7 +277,7 @@ impl<E: Curve> crate::traits::Zero for Scalar<E> {
     }
 
     fn is_zero(x: &Self) -> Choice {
-        x.ct_eq(&Self::zero())
+        Zero::is_zero(x.as_raw())
     }
 }
 
@@ -282,7 +287,7 @@ impl<E: Curve> crate::traits::One for Scalar<E> {
     }
 
     fn is_one(x: &Self) -> Choice {
-        x.ct_eq(&Self::one())
+        One::is_one(x.as_raw())
     }
 }
 

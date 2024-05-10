@@ -3,9 +3,11 @@
   Pippenger [#30]
 * Optimize `Scalar::from_{be|le}_bytes_mod_order` [#34]
 * Remove `hash_to_curve` primitive from library API [#34]
+* Add `Scalar::is_zero` method [#35]
 
 [#30]: https://github.com/dfns/generic-ec/pull/30
 [#34]: https://github.com/dfns/generic-ec/pull/34
+[#35]: https://github.com/dfns/generic-ec/pull/35
 
 ## v0.2.4
 * Add `generic_ec::multiscalar` which helps optimizing multiscalar multiplication [#29]
