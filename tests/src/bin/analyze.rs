@@ -112,7 +112,7 @@ fn draw_multiscalar_perf() -> Result<()> {
         assert!(results.iter().all(|res| res.mean.unit == "ns"));
         results.iter_mut().for_each(|res| {
             res.mean.estimate /= 1000000.;
-            res.mean.unit = "ms".to_owned();
+            "ms".clone_into(&mut res.mean.unit);
         });
     }
 
