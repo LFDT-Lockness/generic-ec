@@ -1,3 +1,8 @@
+## v0.2.1
+* Fix using wrong feature in conditional compilation that could cause compilation error [#36]
+
+[#36]: https://github.com/dfns/generic-ec/pull/36
+
 ## v0.2.0
 * Optimize `Scalar::from_{be|le}_bytes_mod_order` [#34]
 

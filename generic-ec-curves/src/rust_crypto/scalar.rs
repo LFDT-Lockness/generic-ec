@@ -244,7 +244,7 @@ impl BytesModOrder for RustCryptoScalar<k256::Secp256k1> {
         crate::utils::scalar_from_le_bytes_mod_order_reducing_32_64(bytes, &Self(k256::Scalar::ONE))
     }
 }
-#[cfg(feature = "secp256k1")]
+#[cfg(feature = "secp256r1")]
 impl BytesModOrder for RustCryptoScalar<p256::NistP256> {
     fn from_be_bytes_mod_order(bytes: &[u8]) -> Self {
         crate::utils::scalar_from_be_bytes_mod_order_reducing_32(bytes, &Self(p256::Scalar::ONE))
