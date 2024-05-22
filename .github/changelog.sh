@@ -3,6 +3,9 @@
 m_branch=m;
 changelog_file=CHANGELOG.md;
 
+# fetch master since we might be in a shallow clone
+git fetch origin "$m_branch:$m_branch" --depth=1
+
 changed=0;
 for log in */"$changelog_file"; do
     dir=$(dirname "$log");
