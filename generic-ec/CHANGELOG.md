@@ -1,3 +1,9 @@
+## v0.4.0
+* Update `udigest` to v0.2 [#40]
+* Add hash to scalar primitive [#40]
+
+[#40]: https://github.com/dfns/generic-ec/pull/40
+
 ## v0.3.0
 * Rework `generic_ec::multiscalar` API, optimize Straus algorithm, add Dalek, remove
   Pippenger [#30]
