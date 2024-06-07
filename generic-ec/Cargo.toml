@@ -28,7 +28,7 @@ hex = { version = "0.4", default-features = false, optional = true }
 phantom-type = { version = "0.4", default-features = false }
 
 digest = { version = "0.10", default-features = false, optional = true }
-rand_hash = { git = "https://github.com/dfns/rand_hash", branch = "first-version", optional = true }
+rand_hash = { version = "0.1.0-rc1", optional = true }
 
 # We use this dependency when both `curve-ed25519` and `alloc` features are enabled,
 # to provide `generic_ec::multiscalar::Dalek`
