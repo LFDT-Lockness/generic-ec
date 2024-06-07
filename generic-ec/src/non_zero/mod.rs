@@ -61,6 +61,34 @@ impl<E: Curve> NonZero<Scalar<E>> {
         }
     }
 
+    #[doc = include_str!("../../docs/hash_to_scalar.md")]
+    ///
+    /// ## Example
+    /// ```rust
+    /// use generic_ec::{Scalar, NonZero, curves::Secp256k1};
+    /// use sha2::Sha256;
+    ///
+    /// #[derive(udigest::Digestable)]
+    /// struct Data<'a> {
+    ///     nonce: &'a [u8],
+    ///     param_a: &'a str,
+    ///     param_b: u128,
+    ///     // ...
+    /// }
+    ///
+    /// let scalar = NonZero::<Scalar<Secp256k1>>::from_hash::<Sha256>(&Data {
+    ///     nonce: b"some data",
+    ///     param_a: "some other data",
+    ///     param_b: 12345,
+    ///     // ...
+    /// });
+    /// ```
+    #[cfg(feature = "hash-to-scalar")]
+    pub fn from_hash<D: digest::Digest>(data: &impl udigest::Digestable) -> Self {
+        let mut rng = rand_hash::HashRng::<D, _>::from_seed(data);
+        Self::random(&mut rng)
+    }
+
     /// Constructs $S = 1$
     pub fn one() -> Self {
         // Correctness: constructed scalar = 1, so it's non-zero

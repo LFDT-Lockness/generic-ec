@@ -170,6 +170,34 @@ impl<E: Curve> Scalar<E> {
         NonZero::<Scalar<E>>::random(rng).into()
     }
 
+    #[doc = include_str!("../docs/hash_to_scalar.md")]
+    ///
+    /// ## Example
+    /// ```rust
+    /// use generic_ec::{Scalar, curves::Secp256k1};
+    /// use sha2::Sha256;
+    ///
+    /// #[derive(udigest::Digestable)]
+    /// struct Data<'a> {
+    ///     nonce: &'a [u8],
+    ///     param_a: &'a str,
+    ///     param_b: u128,
+    ///     // ...
+    /// }
+    ///
+    /// let scalar = Scalar::<Secp256k1>::from_hash::<Sha256>(&Data {
+    ///     nonce: b"some data",
+    ///     param_a: "some other data",
+    ///     param_b: 12345,
+    ///     // ...
+    /// });
+    /// ```
+    #[cfg(feature = "hash-to-scalar")]
+    pub fn from_hash<D: digest::Digest>(data: &impl udigest::Digestable) -> Self {
+        let mut rng = rand_hash::HashRng::<D, _>::from_seed(data);
+        Self::random(&mut rng)
+    }
+
     /// Returns size of bytes buffer that can fit serialized scalar
     pub fn serialized_len() -> usize {
         E::ScalarArray::zeroes().as_ref().len()
