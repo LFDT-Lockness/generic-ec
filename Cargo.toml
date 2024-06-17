@@ -11,3 +11,7 @@ members = [
 exclude = [
   "wasm/nostd",
 ]
+
+[patch.crates-io.udigest]
+git = "https://github.com/dfns/udigest"
+branch = "small-improvements"
