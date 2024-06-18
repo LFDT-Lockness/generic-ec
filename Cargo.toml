@@ -11,3 +11,7 @@ members = [
 exclude = [
   "wasm/nostd",
 ]
+
+[patch.crates-io.rand_hash]
+git = "https://github.com/dfns/rand_hash"
+branch = "udigest-rc3"
