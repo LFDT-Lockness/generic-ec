@@ -15,3 +15,7 @@ exclude = [
 [patch.crates-io.rand_hash]
 git = "https://github.com/dfns/rand_hash"
 branch = "udigest-rc3"
+
+[patch.crates-io.udigest]
+git = "https://github.com/dfns/udigest"
+branch = "inline-struct-clone"
