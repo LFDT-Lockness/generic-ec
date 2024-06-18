@@ -1,6 +1,6 @@
 [package]
 name = "generic-ec-zkp"
-version = "0.4.0-rc2"
+version = "0.4.0-rc3"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dfns/generic-ec"
@@ -32,7 +32,7 @@ generic-tests = "0.1"
 
 criterion = { version = "0.5", features = ["html_reports"] }
 
-generic-ec = { version = "0.4.0-rc2", path = "../generic-ec", default-features = false, features = ["all-curves"] }
+generic-ec = { version = "0.4.0-rc3", path = "../generic-ec", default-features = false, features = ["all-curves"] }
 
 [features]
 default = ["std"]
