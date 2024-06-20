@@ -1,6 +1,6 @@
 [package]
 name = "generic-ec-zkp"
-version = "0.4.0-rc1"
+version = "0.4.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dfns/generic-ec"
@@ -12,8 +12,8 @@ keywords = ["elliptic-curves", "zk-proof"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-generic-ec = { version = "0.4.0-rc1", path = "../generic-ec", default-features = false }
-udigest = { version = "0.2.0-rc1", features = ["derive"], optional = true }
+generic-ec = { version = "0.4.0", path = "../generic-ec", default-features = false }
+udigest = { version = "0.2.0", features = ["derive"], optional = true }
 
 subtle = { version = "2.4", default-features = false }
 rand_core = { version = "0.6", default-features = false }
@@ -32,7 +32,7 @@ generic-tests = "0.1"
 
 criterion = { version = "0.5", features = ["html_reports"] }
 
-generic-ec = { version = "0.4.0-rc1", path = "../generic-ec", default-features = false, features = ["all-curves"] }
+generic-ec = { version = "0.4.0", path = "../generic-ec", default-features = false, features = ["all-curves"] }
 
 [features]
 default = ["std"]
