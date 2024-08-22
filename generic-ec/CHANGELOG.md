@@ -1,3 +1,8 @@
+## v0.4.1
+* Fix `no_std` support [#43]
+
+[#43]: https://github.com/dfns/generic-ec/pull/43
+
 ## v0.4.0
 * Update `udigest` to v0.2 [#40]
 * Add hash to scalar primitive [#40]
