@@ -109,7 +109,7 @@ impl<E: Curve> MultiscalarMul<E> for Naive {
 
 /// Multiscalar implementation for [`Ed25519`] curve
 ///
-/// [`curve25519_dalek`] library provides multiscalar multiplication algorithm which only
+/// [`curve25519_dalek`](curve25519) library provides multiscalar multiplication algorithm which only
 /// works with [`Ed25519`] curve. Due to the fact that it's specifically instantiated for
 /// the only one curve, this implementation is more efficient than generic [`struct@Default`]
 /// or [`Straus`].
