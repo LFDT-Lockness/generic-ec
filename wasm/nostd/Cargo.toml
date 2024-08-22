@@ -8,3 +8,11 @@ publish = false
 generic-ec = { path = "../../generic-ec", default-features = false, features = ["udigest", "all-curves"] }
 generic-ec-curves = { path = "../../generic-ec-curves", default-features = false }
 generic-ec-zkp = { path = "../../generic-ec-zkp", default-features = false, features = ["udigest"] }
+
+[patch.crates-io.udigest]
+git = "https://github.com/dfns/udigest"
+branch = "udigest_as"
+
+[patch.crates-io.udigest-derive]
+git = "https://github.com/dfns/udigest"
+branch = "udigest_as"
