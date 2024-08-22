@@ -13,24 +13,24 @@ keywords = ["elliptic-curves", "zk-proof"]
 
 [dependencies]
 generic-ec = { version = "0.4.0", path = "../generic-ec", default-features = false }
-udigest = { version = "0.2.0", features = ["derive"], optional = true }
+udigest = { workspace = true, features = ["derive"], optional = true }
 
-subtle = { version = "2.4", default-features = false }
-rand_core = { version = "0.6", default-features = false }
+subtle.workspace = true
+rand_core.workspace = true
 
-serde = { version = "1", default-features = false, features = ["derive"], optional = true }
+serde = { workspace = true, features = ["derive"], optional = true }
 
 # We don't depend on this crates directly, but need to specify features to make it compile
-generic-array = "0.14"
+generic-array.workspace = true
 
 [dev-dependencies]
-rand = "0.8"
-rand_dev = "0.1"
-sha2 = "0.10"
+rand.workspace = true
+rand_dev.workspace = true
+sha2.workspace = true
 
-generic-tests = "0.1"
+generic-tests.workspace = true
 
-criterion = { version = "0.5", features = ["html_reports"] }
+criterion = { workspace = true, features = ["html_reports"] }
 
 generic-ec = { version = "0.4.0", path = "../generic-ec", default-features = false, features = ["all-curves"] }
 

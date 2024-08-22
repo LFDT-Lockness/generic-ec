@@ -11,30 +11,28 @@ repository = "https://github.com/dfns/generic-ec"
 [dependencies]
 generic-ec-core = { version = "0.2", path = "../generic-ec-core", default-features = false }
 
-subtle = { version = "2.4", default-features = false }
-rand_core = { version = "0.6", default-features = false }
-zeroize = { version = "1", default-features = false, features = ["zeroize_derive"] }
+subtle.workspace = true
+rand_core.workspace = true
+zeroize = { workspace = true, features = ["zeroize_derive"] }
 
 elliptic-curve = { version = "0.13", default-features = false, features = ["sec1", "hash2curve"], optional = true }
 k256 = { version = "0.13", optional = true, default-features = false, features = ["hash2curve"] }
 p256 = { version = "0.13", optional = true, default-features = false, features = ["hash2curve"] }
-sha2 = { version = "0.10", default-features = false, optional = true }
+sha2 = { workspace = true, optional = true }
 stark-curve = { version = "0.1", default-features = false, optional = true }
 
 group = { version = "0.13", default-features = false, optional = true }
 
 [dependencies.curve25519]
-package = "curve25519-dalek"
-version = "4"
-default-features = false
+workspace = true
 features = ["group", "zeroize", "rand_core", "precomputed-tables"]
 optional = true
 
 [dev-dependencies]
-rand = "0.8"
-rand_dev = "0.1"
+rand.workspace = true
+rand_dev.workspace = true
 
-criterion = { version = "0.5", features = ["html_reports"] }
+criterion = { workspace = true, features = ["html_reports"] }
 
 [features]
 default = []
