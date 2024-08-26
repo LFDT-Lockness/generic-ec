@@ -41,11 +41,3 @@ rand_dev = "0.1"
 package = "curve25519-dalek"
 version = "4"
 default-features = false
-
-[patch.crates-io.udigest]
-git = "https://github.com/dfns/udigest"
-branch = "udigest_as"
-
-[patch.crates-io.udigest-derive]
-git = "https://github.com/dfns/udigest"
-branch = "udigest_as"
