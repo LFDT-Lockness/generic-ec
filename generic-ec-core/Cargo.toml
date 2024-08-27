@@ -9,11 +9,11 @@ description = "Core traits of `generic-ec` crate"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-generic-array = "0.14"
-subtle = { version = "2.4", default-features = false }
-rand_core = { version = "0.6", default-features = false }
-zeroize = { version = "1", default-features = false }
-serde = { version = "1", default-features = false, features = ["derive"], optional = true }
+generic-array.workspace = true
+subtle.workspace = true
+rand_core.workspace = true
+zeroize.workspace = true
+serde = { workspace = true, features = ["derive"], optional = true }
 
 [features]
 default = []

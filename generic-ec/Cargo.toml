@@ -1,6 +1,6 @@
 [package]
 name = "generic-ec"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dfns/generic-ec"
@@ -15,38 +15,38 @@ keywords = ["elliptic-curves"]
 [dependencies]
 generic-ec-core = { version = "0.2", path = "../generic-ec-core" }
 generic-ec-curves = { version = "0.2", path = "../generic-ec-curves", optional = true }
-udigest = { version = "0.2.0", features = ["derive"], optional = true }
+udigest = { workspace = true, features = ["derive"], optional = true }
 
-subtle = { version = "2.4", default-features = false }
-rand_core = { version = "0.6", default-features = false }
-zeroize = { version = "1", default-features = false, features = ["zeroize_derive"] }
+subtle.workspace = true
+rand_core.workspace = true
+zeroize = { workspace = true, features = ["zeroize_derive"] }
 
-serde = { version = "1", features = ["derive"], default-features = false, optional = true }
-serde_with = { version = "2", features = ["macros"], default-features = false, optional = true }
-hex = { version = "0.4", default-features = false, optional = true }
+serde = { workspace = true, features = ["derive"], optional = true }
+serde_with = { workspace = true, features = ["macros"], optional = true }
+hex = { workspace = true, optional = true }
 
 phantom-type = { version = "0.4", default-features = false }
 
 digest = { version = "0.10", default-features = false, optional = true }
-rand_hash = { version = "0.1.0", optional = true }
+rand_hash = { version = "0.1", optional = true }
 
 # We use this dependency when both `curve-ed25519` and `alloc` features are enabled,
 # to provide `generic_ec::multiscalar::Dalek`
-curve25519-dalek = { version = "4", default-features = false, optional = true }
+curve25519 = { workspace = true, optional = true }
 
 [dev-dependencies]
-rand = "0.8"
-rand_dev = "0.1"
-sha2 = "0.10"
-serde_json = "1"
-serde_test = "1"
+rand.workspace = true
+rand_dev.workspace = true
+sha2.workspace = true
+serde_json.workspace = true
+serde_test.workspace = true
 
-generic-tests = "0.1"
+generic-tests.workspace = true
 
 [features]
 default = ["std", "serde"]
 std = ["alloc"]
-alloc = ["hex/alloc", "curve25519-dalek?/alloc"]
+alloc = ["hex/alloc", "curve25519?/alloc"]
 serde = ["dep:serde", "generic-ec-core/serde", "hex", "serde_with"]
 udigest = ["dep:udigest"]
 
@@ -54,7 +54,7 @@ curves = ["generic-ec-curves"]
 curve-secp256k1 = ["curves", "generic-ec-curves/secp256k1"]
 curve-secp256r1 = ["curves", "generic-ec-curves/secp256r1"]
 curve-stark = ["curves", "generic-ec-curves/stark"]
-curve-ed25519 = ["curves", "generic-ec-curves/ed25519", "curve25519-dalek"]
+curve-ed25519 = ["curves", "generic-ec-curves/ed25519", "curve25519"]
 all-curves = ["curve-secp256k1", "curve-secp256r1", "curve-stark", "curve-ed25519"]
 
 hash-to-scalar = ["dep:rand_hash", "dep:digest", "udigest"]

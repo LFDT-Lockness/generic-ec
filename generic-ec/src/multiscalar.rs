@@ -109,7 +109,7 @@ impl<E: Curve> MultiscalarMul<E> for Naive {
 
 /// Multiscalar implementation for [`Ed25519`] curve
 ///
-/// [`curve25519_dalek`] library provides multiscalar multiplication algorithm which only
+/// [`curve25519_dalek`](curve25519) library provides multiscalar multiplication algorithm which only
 /// works with [`Ed25519`] curve. Due to the fact that it's specifically instantiated for
 /// the only one curve, this implementation is more efficient than generic [`struct@Default`]
 /// or [`Straus`].
@@ -131,7 +131,7 @@ impl MultiscalarMul<crate::curves::Ed25519> for Dalek {
     {
         use alloc::vec::Vec;
 
-        use curve25519_dalek::traits::VartimeMultiscalarMul;
+        use curve25519::traits::VartimeMultiscalarMul;
         use generic_ec_core::{OnCurve, SmallFactor};
 
         use crate::as_raw::AsRaw;
@@ -140,7 +140,7 @@ impl MultiscalarMul<crate::curves::Ed25519> for Dalek {
         let scalars = scalar_points.iter().map(|(s, _)| &s.as_ref().as_raw().0);
         let points = scalar_points.iter().map(|(_, p)| &p.as_ref().as_raw().0);
 
-        let result = curve25519_dalek::EdwardsPoint::vartime_multiscalar_mul(scalars, points);
+        let result = curve25519::EdwardsPoint::vartime_multiscalar_mul(scalars, points);
         let result = generic_ec_curves::ed25519::Point(result);
 
         // Resulting point must be valid

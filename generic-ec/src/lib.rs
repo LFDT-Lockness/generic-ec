@@ -206,7 +206,7 @@ mod _unused_deps {
     // dependency tree as `curve-ed25519` feature is enabled, it's just not
     // used directly
     #[cfg(all(feature = "curve-ed25519", not(feature = "alloc")))]
-    use curve25519_dalek as _;
+    use curve25519 as _;
 }
 
 /// Common traits for points and scalars

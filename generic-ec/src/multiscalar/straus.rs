@@ -63,7 +63,7 @@ use crate::{Curve, Point, Scalar};
 /// $$
 ///
 /// ## Credits
-/// Algorithm was adopted from [`curve25519_dalek`] crate, with the modification that
+/// Algorithm was adopted from [`curve25519_dalek`](curve25519) crate, with the modification that
 /// it would work with any curve, not only with ed25519. You can find original implementation
 /// [here](https://github.com/dalek-cryptography/curve25519-dalek/blob/1efe6a93b176c4389b78e81e52b2cf85d728aac6/curve25519-dalek/src/backend/serial/scalar_mul/straus.rs#L147-L201).
 pub struct Straus;
