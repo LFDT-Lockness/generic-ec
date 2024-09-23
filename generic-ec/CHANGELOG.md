@@ -1,3 +1,8 @@
+## v0.4.2
+* Update links, add info about our discord [#44]
+
+[#44]: https://github.com/LFDT-Lockness/generic-ec/pull/44
+
 ## v0.4.1
 * Fix `no_std` support [#43]
 
