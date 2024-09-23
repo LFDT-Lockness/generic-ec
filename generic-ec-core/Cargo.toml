@@ -3,7 +3,7 @@ name = "generic-ec-core"
 version = "0.2.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/dfns/generic-ec"
+repository = "https://github.com/LFDT-Lockness/generic-ec"
 description = "Core traits of `generic-ec` crate"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

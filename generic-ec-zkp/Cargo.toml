@@ -3,7 +3,7 @@ name = "generic-ec-zkp"
 version = "0.4.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/dfns/generic-ec"
+repository = "https://github.com/LFDT-Lockness/generic-ec"
 description = "ZK-proofs and primitives built on top of `generic-ec` crate"
 
 categories = ["cryptography", "no-std", "no-std::no-alloc"]

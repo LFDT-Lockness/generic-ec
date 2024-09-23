@@ -3,12 +3,12 @@
 * Add `Reduce` trait [#34]
 * Remove hash to curve API [#34]
 
-[#34]: https://github.com/dfns/generic-ec/pull/34
+[#34]: https://github.com/LFDT-Lockness/generic-ec/pull/34
 
 ## v0.1.4
 * Add `Additive::double` [#29]
 
-[#29]: https://github.com/dfns/generic-ec/pull/29
+[#29]: https://github.com/LFDT-Lockness/generic-ec/pull/29
 
 ## v0.1.3
 
