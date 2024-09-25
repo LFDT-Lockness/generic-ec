@@ -1,10 +1,10 @@
 [package]
 name = "generic-ec-curves"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 description = "Elliptic curves for `generic-ec` crate"
-repository = "https://github.com/dfns/generic-ec"
+repository = "https://github.com/LFDT-Lockness/generic-ec"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

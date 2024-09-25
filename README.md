@@ -3,6 +3,7 @@
 ![License](https://img.shields.io/crates/l/generic-ec.svg)
 [![Docs](https://docs.rs/generic-ec/badge.svg)](https://docs.rs/generic-ec)
 [![Crates io](https://img.shields.io/crates/v/generic-ec.svg)](https://crates.io/crates/generic-ec)
+[![Discord](https://img.shields.io/discord/905194001349627914?logo=discord&logoColor=ffffff&label=Discord)][in Discord]
 
 # General elliptic curve cryptography
 
@@ -77,7 +78,7 @@ Crate provides support for following elliptic curves out of box:
 
 [RustCrypto/k256]: https://github.com/RustCrypto/elliptic-curves/tree/master/k256
 [RustCrypto/p256]: https://github.com/RustCrypto/elliptic-curves/tree/master/p256
-[Dfns/stark]: https://github.com/dfns/stark-curve/
+[Dfns/stark]: https://github.com/LFDT-Lockness/stark-curve/
 [curve25519-dalek]: https://docs.rs/curve25519-dalek/
 
 In order to use one of the supported curves, you need to turn on corresponding feature. E.g. if you want
@@ -166,6 +167,11 @@ let _ = some_generic_computation(&mut rng, point2);
 
 [examples]: #examples
 [supported curves]: #supported-curves
+
+## Join us in Discord!
+Feel free to reach out to us [in Discord]!
+
+[in Discord]: https://discordapp.com/channels/905194001349627914/1285268686147424388
 
 ## License
 
