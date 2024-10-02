@@ -1,3 +1,6 @@
+## v0.4.3
+* Add `Point::serialized_len`
+
 ## v0.4.2
 * Update links, add info about our discord [#44]
 
