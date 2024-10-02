@@ -97,6 +97,19 @@ impl<E: Curve> Point<E> {
             .and_then(Self::try_from_raw)
             .ok_or(InvalidPoint)
     }
+
+    /// Returns size of bytes buffer that can fit a serialized point
+    ///
+    /// `compressed` parameter has the same meaning as for [`Point::to_bytes`]; a
+    /// buffer created with length of `Point::serialized_len(compress)` would fit
+    /// exactly the serialization `p.to_bytes(compress)`.
+    pub fn serialized_len(compressed: bool) -> usize {
+        if compressed {
+            E::CompressedPointArray::zeroes().as_ref().len()
+        } else {
+            E::UncompressedPointArray::zeroes().as_ref().len()
+        }
+    }
 }
 
 impl<E: Curve> TryFromRaw for Point<E> {

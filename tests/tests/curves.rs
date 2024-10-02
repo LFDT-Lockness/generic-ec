@@ -110,6 +110,8 @@ mod tests {
             let bytes_compressed = point.to_bytes(true);
             let bytes_uncompressed = point.to_bytes(false);
             assert!(bytes_compressed.len() <= bytes_uncompressed.len());
+            assert_eq!(bytes_compressed.len(), Point::<E>::serialized_len(true));
+            assert_eq!(bytes_uncompressed.len(), Point::<E>::serialized_len(false));
 
             let p1 = Point::<E>::from_bytes(&bytes_compressed).unwrap();
             let p2 = Point::<E>::from_bytes(&bytes_uncompressed).unwrap();
