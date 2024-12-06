@@ -1,3 +1,8 @@
+## v0.2.2
+* Fix double header menu issue on docs.rs [#49]
+
+[#49]: https://github.com/LFDT-Lockness/generic-ec/pull/49
+
 ## v0.2.1
 * Update links, add info about our discord [#44]
 

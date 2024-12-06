@@ -1,3 +1,8 @@
+## v0.4.4
+* Fix double header menu issue on docs.rs [#49]
+
+[#49]: https://github.com/LFDT-Lockness/generic-ec/pull/49
+
 ## v0.4.3
 * Add `Point::serialized_len`
 
