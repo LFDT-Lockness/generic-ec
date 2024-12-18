@@ -162,18 +162,21 @@ impl<C, X> Default for RustCryptoCurve<C, X> {
 ///   generic-ec-curves/src/rust_crypto/point.rs:60
 /// - k256 is prime order and so is always torsion-free:
 ///   https://github.com/RustCrypto/elliptic-curves/blob/f06ae5b93f83c571ed7ef7031b99e24759b90f9e/k256/src/arithmetic/hash2curve.rs#L259-L273
+#[cfg(feature = "secp256k1")]
 unsafe impl NoInvalidPoints for Secp256k1 {}
 /// Safe because:
 /// - RustCrypto curves are always on curve:
 ///   generic-ec-curves/src/rust_crypto/point.rs:60
 /// - p256 is prime order and so is always torsion-free. This check isn't even
 ///   implemented in code.
+#[cfg(feature = "secp256r1")]
 unsafe impl NoInvalidPoints for Secp256r1 {}
 /// Safe because:
 /// - RustCrypto curves are always on curve:
 ///   generic-ec-curves/src/rust_crypto/point.rs:60
 /// - stark is prime order and so is always torsion-free:
 ///   https://github.com/RustCrypto/elliptic-curves/blob/7a71e403e49fbe92d6b2ae8fe3eabbfdef124975/primeorder/src/projective.rs#L172-L174
+#[cfg(feature = "stark")]
 unsafe impl NoInvalidPoints for Stark {}
 
 #[cfg(test)]
