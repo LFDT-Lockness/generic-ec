@@ -4,6 +4,7 @@ use core::iter::Sum;
 
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 
+use crate::as_raw::FromRaw;
 use crate::{
     as_raw::{AsRaw, TryFromRaw},
     core::*,
@@ -109,6 +110,12 @@ impl<E: Curve> Point<E> {
         } else {
             E::UncompressedPointArray::zeroes().as_ref().len()
         }
+    }
+}
+
+impl<E: Curve + NoInvalidPoints> FromRaw for Point<E> {
+    fn from_raw(raw: Self::Raw) -> Self {
+        Point::from_raw_unchecked(raw)
     }
 }
 

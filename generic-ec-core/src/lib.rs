@@ -248,3 +248,12 @@ pub trait Reduce<const N: usize> {
     /// integer modulo curve (prime) order
     fn from_le_array_mod_order(bytes: &[u8; N]) -> Self;
 }
+
+/// Marker trait for curves whose underlying implementation doesn't allow
+/// representing invalid points.
+/// # Safety
+/// Safe to implement when the checks in `generic_ec::TryFromRaw` would always
+/// return 1 for any point. Those checks are:
+/// - `point.is_on_curve()`
+/// - `point.is_torsion_free()`
+pub unsafe trait NoInvalidPoints {}
