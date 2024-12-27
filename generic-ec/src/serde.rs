@@ -139,7 +139,7 @@ impl<'de, E: Curve> serde::Deserialize<'de> for CurveName<E> {
         D: serde::Deserializer<'de>,
     {
         pub struct CurveNameVisitor<E: Curve>(PhantomType<E>);
-        impl<'de, E: Curve> serde::de::Visitor<'de> for CurveNameVisitor<E> {
+        impl<E: Curve> serde::de::Visitor<'_> for CurveNameVisitor<E> {
             type Value = CurveName<E>;
             fn expecting(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
                 write!(f, "curve {name}", name = E::CURVE_NAME)
@@ -734,7 +734,7 @@ mod optional {
             pub got: &'g str,
         }
 
-        impl<'g> fmt::Display for ExpectedCurve<'g> {
+        impl fmt::Display for ExpectedCurve<'_> {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 write!(
                     f,
