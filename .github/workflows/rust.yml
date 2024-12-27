@@ -11,7 +11,7 @@ env:
 
 jobs:
   check-nostd:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
@@ -20,7 +20,7 @@ jobs:
     - name: Check no-std
       run: cargo check -p generic-ec --no-default-features
   check-alloc:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
@@ -29,7 +29,7 @@ jobs:
     - name: Check with `alloc` only
       run: cargo check -p generic-ec --no-default-features --features alloc
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
@@ -38,7 +38,7 @@ jobs:
     - name: Check all-features
       run: cargo check -p generic-ec --all-features
   check-all:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
@@ -47,7 +47,7 @@ jobs:
     - name: Check everything
       run: cargo check --all-targets
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
@@ -56,13 +56,13 @@ jobs:
     - name: Run tests
       run: cargo test --all-features --workspace
   fmt:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - name: Check formatting
       run: cargo fmt --all -- --check
   clippy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
@@ -71,7 +71,7 @@ jobs:
     - name: Run clippy
       run: cargo clippy --all --lib --workspace --all-features --exclude generic-ec-tests -- --no-deps -D clippy::all -D clippy::unwrap_used -D clippy::expect_used
   clippy-nostd:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
@@ -80,7 +80,7 @@ jobs:
     - name: Run clippy no-std
       run: cargo clippy -p generic-ec --no-default-features -- -D clippy::all
   clippy-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
@@ -89,7 +89,7 @@ jobs:
     - name: Run clippy tests
       run: cargo clippy --workspace --tests --all-features -- -D clippy::all
   check-doc:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: dtolnay/rust-toolchain@nightly
     - uses: actions/checkout@v3
@@ -99,7 +99,7 @@ jobs:
     - name: Check docs
       run: RUSTDOCFLAGS="--cfg docsrs -D warnings" cargo +nightly doc --workspace --all-features --no-deps
   build-wasm:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
@@ -117,7 +117,7 @@ jobs:
     - name: wasm-pack an example project
       run: (cd wasm/wasm-example; wasm-pack build)
   build-wasm-nostd:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
@@ -129,7 +129,7 @@ jobs:
       run:
         (cd wasm/nostd && cargo build -p nostd-example --target wasm32-unknown-unknown)
   check-semver:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         package:
@@ -148,7 +148,7 @@ jobs:
         package: ${{ matrix.package }}
         feature-group: ${{ matrix.feature-group }}
   check-changelog:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - name: Check changelogs
