@@ -1,3 +1,6 @@
+# Run some workflows on ubuntu 22.04 because ubuntu-latest broke some system
+# libs in late 2024
+
 name: Rust
 
 on:
@@ -38,7 +41,7 @@ jobs:
     - name: Check all-features
       run: cargo check -p generic-ec --all-features
   check-all:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
@@ -47,7 +50,7 @@ jobs:
     - name: Check everything
       run: cargo check --all-targets
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
@@ -80,7 +83,7 @@ jobs:
     - name: Run clippy no-std
       run: cargo clippy -p generic-ec --no-default-features -- -D clippy::all
   clippy-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
@@ -89,7 +92,7 @@ jobs:
     - name: Run clippy tests
       run: cargo clippy --workspace --tests --all-features -- -D clippy::all
   check-doc:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: dtolnay/rust-toolchain@nightly
     - uses: actions/checkout@v3
