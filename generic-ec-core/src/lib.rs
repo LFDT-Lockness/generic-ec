@@ -252,8 +252,8 @@ pub trait Reduce<const N: usize> {
 /// Marker trait for curves whose underlying implementation doesn't allow
 /// representing invalid points.
 /// # Safety
-/// Safe to implement when the checks in `generic_ec::TryFromRaw` would always
-/// return 1 for any point. Those checks are:
-/// - `point.is_on_curve()`
-/// - `point.is_torsion_free()`
+/// Safe to implement when the checks for invalid points always return `true`.
+/// Those checks are:
+/// - [`OnCurve::is_on_curve`]
+/// - [`SmallFactor::is_torsion_free`]
 pub unsafe trait NoInvalidPoints {}
