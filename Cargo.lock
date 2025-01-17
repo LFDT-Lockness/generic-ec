@@ -704,7 +704,7 @@ dependencies = [
 
 [[package]]
 name = "generic-ec"
-version = "0.4.4"
+version = "0.4.5"
 dependencies = [
  "curve25519-dalek",
  "digest",

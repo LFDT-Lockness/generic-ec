@@ -1,3 +1,8 @@
+## v0.4.5
+* Add curve-specific aliases (see `generic_ec::curves::{secp256k1, secp256r1, stark, ed25519}::*`) [#52]
+
+[#52]: https://github.com/LFDT-Lockness/generic-ec/pull/52
+
 ## v0.4.4
 * Fix double header menu issue on docs.rs [#49]
 

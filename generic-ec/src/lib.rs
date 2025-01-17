@@ -253,4 +253,80 @@ pub mod curves {
     #[cfg(feature = "curve-stark")]
     #[cfg_attr(docsrs, doc(cfg(feature = "curve-stark")))]
     pub use generic_ec_curves::Stark;
+
+    macro_rules! create_aliases {
+        ($(#[$attr:meta] $mod:ident: $curve:ident),+$(,)?) => {$(
+            /// Aliases for [`
+            #[doc = stringify!($curve)]
+            /// `] curve
+            ///
+            /// This module provides type aliases to [`Point`](crate::Point), [`Scalar`](crate::Scalar), and other types
+            /// instantiated with [`
+            #[doc = stringify!($curve)]
+            /// `]. It might be convenient to use this module when you don't need your code to be generic over choice
+            /// of curve.
+            ///
+            /// ## Example
+            /// The code below only works with [`
+            #[doc = stringify!($curve)]
+            /// `] curve. By using type aliases from
+            #[doc = concat!("[`generic_ec::curves::", stringify!($mod), "`](", stringify!($mod), ")")]
+            /// , we never need to deal with generic parameters.
+            ///
+            /// ```rust
+            #[doc = concat!("use generic_ec::curves::", stringify!($mod), "::{Point, SecretScalar};")]
+            ///
+            /// let mut rng = rand::rngs::OsRng;
+            /// let secret_key = SecretScalar::random(&mut rng);
+            /// let public_key = Point::generator() * &secret_key;
+            /// // ...
+            /// ```
+            #[$attr]
+            pub mod $mod {
+                /// Alias for
+                #[doc = concat!("[", stringify!($curve), "](super::", stringify!($curve), ")")]
+                /// curve
+                pub type E = super::$curve;
+                /// Point on [`
+                #[doc = stringify!($curve)]
+                /// `](E) curve
+                pub type Point = crate::Point<super::$curve>;
+                /// Scalar in [`
+                #[doc = stringify!($curve)]
+                /// `](E) curve large prime subgroup
+                pub type Scalar = crate::Scalar<super::$curve>;
+                /// Secret scalar in [`
+                #[doc = stringify!($curve)]
+                /// `](E) curve large prime subgroup
+                pub type SecretScalar = crate::SecretScalar<super::$curve>;
+                /// Point on [`
+                #[doc = stringify!($curve)]
+                /// `](E) curve encoded as bytes
+                pub type EncodedPoint = crate::EncodedPoint<super::$curve>;
+                /// Scalar in [`
+                #[doc = stringify!($curve)]
+                /// `](E) curve large prime subgroup encoded as bytes
+                pub type EncodedScalar = crate::EncodedScalar<super::$curve>;
+                /// Iterator over scalar coefficients in radix 16 representation of [`
+                #[doc = stringify!($curve)]
+                /// `](E) curve
+                pub type Radix16Iter = crate::Radix16Iter<super::$curve>;
+                /// Generator of [`
+                #[doc = stringify!($curve)]
+                /// `](E) curve
+                pub type Generator = crate::Generator<super::$curve>;
+            }
+        )+};
+    }
+
+    create_aliases! {
+        #[cfg(feature = "curve-secp256k1")]
+        secp256k1: Secp256k1,
+        #[cfg(feature = "curve-secp256r1")]
+        secp256r1: Secp256r1,
+        #[cfg(feature = "curve-stark")]
+        stark: Stark,
+        #[cfg(feature = "curve-ed25519")]
+        ed25519: Ed25519,
+    }
 }
