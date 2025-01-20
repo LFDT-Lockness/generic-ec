@@ -1,3 +1,8 @@
+## v0.2.4
+* Implement `NoInvalidPoints` for prime order curves [#50]
+
+[#50]: https://github.com/LFDT-Lockness/generic-ec/pull/50
+
 ## v0.2.3
 * Fix double header menu issue on docs.rs [#49]
 
