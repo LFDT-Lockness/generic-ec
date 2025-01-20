@@ -1,7 +1,10 @@
 ## v0.4.5
 * Add curve-specific aliases (see `generic_ec::curves::{secp256k1, secp256r1, stark, ed25519}::*`) [#52]
+* Implement infallible `FromRaw` for `Point<E>` conversion for prime order curves
+  such as `secp256k1`, `secp256r1` and `stark` [#50]
 
 [#52]: https://github.com/LFDT-Lockness/generic-ec/pull/52
+[#50]: https://github.com/LFDT-Lockness/generic-ec/pull/50
 
 ## v0.4.4
 * Fix double header menu issue on docs.rs [#49]
