@@ -4,7 +4,7 @@
 //! verifier $\V$ that it knows the discrete logarithms of two values, and that
 //! those logarithms are equal. $\P$ knows the secret data $x$ - the discrete
 //! logarithm. $\P$ and $\V$ share common data:
-//! - $H$ - a point on an elliptic curve
+//! - $G$, $H$ - some generators of the elliptic curve
 //! - $X = x \cdot G$
 //! - $Z = x \cdot H$
 //!
@@ -210,7 +210,7 @@ pub mod interactive {
 pub mod non_interactive {
     use generic_ec::{Curve, Scalar, SecretScalar};
 
-    const TAG: &str = "bls-style-digest.zkp";
+    const TAG: &str = "generic-ec-zkp.dlog_eq.non_interactive";
 
     pub use super::Data;
     pub use super::InvalidProof;
