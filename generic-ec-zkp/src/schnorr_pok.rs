@@ -6,7 +6,7 @@
 //! ## Example
 //!
 //! 0. $\P$ knows a secret $x$ and wants to prove its knowledge.
-//!    ```rust
+//!    ```rust,no_run
 //!    # use generic_ec::{Curve, SecretScalar, Point};
 //!    # use rand::rngs::OsRng;
 //!    # fn doc_fn<E: Curve>() {
@@ -15,7 +15,7 @@
 //!    # }
 //!    ```
 //! 1. $\P$ generates and commits an ephemeral secret. Committed secret is sent to $\V$.
-//!    ```rust
+//!    ```rust,no_run
 //!    # use generic_ec::Curve;
 //!    # use generic_ec_zkp::schnorr_pok::*;
 //!    # use rand::rngs::OsRng;
@@ -26,7 +26,7 @@
 //!    # fn send<T>(_: T) {}
 //!    ```
 //! 2. $\V$ receives commitment, and responds with challenge.
-//!    ```rust
+//!    ```rust,no_run
 //!    # use generic_ec::Curve;
 //!    # use generic_ec_zkp::schnorr_pok::*;
 //!    # use rand::rngs::OsRng;
@@ -39,7 +39,7 @@
 //!    # fn receive<T>() -> T { unimplemented!() }
 //!    ```
 //! 3. $\P$ receives a challenge and responds with proof.
-//!    ```rust
+//!    ```rust,no_run
 //!    # use generic_ec::{Curve, SecretScalar};
 //!    # use generic_ec_zkp::schnorr_pok::*;
 //!    # use rand::rngs::OsRng;
@@ -54,7 +54,7 @@
 //!    # fn recall<T>() -> T { unimplemented!() }
 //!    ```
 //! 4. $\V$ receives a proof and verifies it.
-//!    ```rust
+//!    ```rust,no_run
 //!    # use generic_ec::{Curve, Point};
 //!    # use generic_ec_zkp::schnorr_pok::*;
 //!    # use rand::rngs::OsRng;
