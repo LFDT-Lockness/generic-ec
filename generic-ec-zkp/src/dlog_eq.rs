@@ -111,7 +111,7 @@ pub struct Data<E: Curve> {
 }
 
 /// Functions for interactive protocol for the proof. See usage example in
-/// [`generic_ec_zkp::dlog_eq`]
+/// [`dlog_eq`](crate::dlog_eq)
 ///
 /// Based on "Zero-Knowledge Proofs Notes", 2024 by Jorge L. Villar
 pub mod interactive {
@@ -184,11 +184,11 @@ pub mod interactive {
 }
 
 /// Functions for non interactive variant of the proof. See usage example in
-/// [`generic_ec_zkp::dlog_eq`]
+/// [`dlog_eq`](crate::dlog_eq)
 ///
 /// Compared to naive protocol produced by Fiat-Shamir heuristic, this is
 /// optimized to send less data in proof. It's based on `PrEq` functionality in
-/// this paper: https://eprint.iacr.org/2020/096
+/// this paper: <https://eprint.iacr.org/2020/096>
 #[cfg(feature = "udigest")]
 pub mod non_interactive {
     use generic_ec::{Curve, Point, Scalar, SecretScalar};
