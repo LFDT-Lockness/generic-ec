@@ -783,7 +783,7 @@ dependencies = [
 
 [[package]]
 name = "generic-ec-zkp"
-version = "0.4.3"
+version = "0.4.4"
 dependencies = [
  "criterion",
  "digest",
@@ -793,7 +793,6 @@ dependencies = [
  "rand",
  "rand_core",
  "rand_dev",
- "rand_hash",
  "serde",
  "sha2",
  "subtle",

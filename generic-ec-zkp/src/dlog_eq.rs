@@ -141,6 +141,12 @@ pub mod interactive {
         commit(data.base, r)
     }
 
+    /// First round of the protocol: verifier generates a challenge. A challenge
+    /// is simply a random scalar
+    pub fn challenge<E: Curve>(rng: &mut impl rand_core::RngCore) -> Challenge<E> {
+        Scalar::random(rng)
+    }
+
     /// Second round of the protocol: produce the proof for [`Data`] commited to
     /// with the given nonce `r`
     ///
@@ -234,8 +240,7 @@ pub mod non_interactive {
             com1,
             com2,
         });
-        let mut rng = rand_hash::HashRng::<D, _>::from_seed(seed);
-        let ch = Scalar::random(&mut rng);
+        let ch = Scalar::from_hash::<D>(&seed);
 
         let res = r + share * ch;
         Proof { ch, res }
@@ -262,8 +267,7 @@ pub mod non_interactive {
             com1,
             com2,
         });
-        let mut rng = rand_hash::HashRng::<D, _>::from_seed(seed);
-        let ch = Scalar::random(&mut rng);
+        let ch = Scalar::from_hash::<D>(&seed);
 
         if ch != proof.ch {
             Err(InvalidProof)

@@ -18,7 +18,6 @@ udigest = { workspace = true, features = ["derive"], optional = true }
 
 subtle.workspace = true
 rand_core.workspace = true
-rand_hash.workspace = true
 
 serde = { workspace = true, features = ["derive"], optional = true }
 
@@ -41,7 +40,7 @@ default = ["std"]
 std = ["alloc"]
 alloc = ["udigest?/alloc", "serde?/alloc"]
 serde = ["dep:serde", "generic-ec/serde", "generic-array/serde"]
-udigest = ["dep:udigest", "dep:digest", "generic-ec/udigest"]
+udigest = ["dep:udigest", "dep:digest", "generic-ec/udigest", "generic-ec/hash-to-scalar"]
 
 [package.metadata.docs.rs]
 all-features = true
