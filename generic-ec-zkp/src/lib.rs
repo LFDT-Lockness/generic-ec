@@ -13,5 +13,6 @@ extern crate alloc;
 // We don't want this dependency to trigger unused dep lint
 use generic_array as _;
 
+pub mod dlog_eq;
 pub mod polynomial;
 pub mod schnorr_pok;
