@@ -7,21 +7,15 @@ mod interactive {
         let mut rng = rand_dev::DevRng::new();
 
         let secret_share = generic_ec::SecretScalar::<E>::random(&mut rng);
-        let public_share = generic_ec::Point::generator() * &secret_share;
 
         let base = generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng);
-        let exp = base * &secret_share;
+        let data = dlog_eq::Data::from_secret_key(&secret_share, base);
 
         let r = generic_ec::Scalar::random(&mut rng);
 
-        let comm = dlog_eq::commit(base, r);
+        let comm = dlog_eq::commit_data(data, r);
         let challenge = generic_ec::Scalar::random(&mut rng);
         let proof = dlog_eq::prove(r, challenge, &secret_share);
-        let data = dlog_eq::Data {
-            pub_share: public_share,
-            base,
-            exp,
-        };
         dlog_eq::verify(data, comm, challenge, proof).unwrap()
     }
     #[test]
@@ -29,22 +23,17 @@ mod interactive {
         let mut rng = rand_dev::DevRng::new();
 
         let secret_share = generic_ec::SecretScalar::<E>::random(&mut rng);
-        let public_share = generic_ec::Point::generator() * &secret_share;
 
         let base = generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng);
+        let mut data = dlog_eq::Data::from_secret_key(&secret_share, base);
         // Replace the exponentiation with something wrong
-        let exp = base * &secret_share + generic_ec::Point::generator();
+        data.exp2 += generic_ec::Point::generator();
 
         let r = generic_ec::Scalar::random(&mut rng);
 
-        let comm = dlog_eq::commit(base, r);
+        let comm = dlog_eq::commit_data(data, r);
         let challenge = generic_ec::Scalar::random(&mut rng);
         let proof = dlog_eq::prove(r, challenge, &secret_share);
-        let data = dlog_eq::Data {
-            pub_share: public_share,
-            base,
-            exp,
-        };
         assert!(
             dlog_eq::verify(data, comm, challenge, proof).is_err(),
             "proof should fail"
@@ -71,17 +60,11 @@ mod non_interactive {
         let shared_state = "shared state";
 
         let secret_share = generic_ec::SecretScalar::random(&mut rng);
-        let public_share = generic_ec::Point::generator() * &secret_share;
 
         let base = generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng);
-        let exp = base * &secret_share;
+        let data = dlog_eq::Data::from_secret_key(&secret_share, base);
 
         let r = generic_ec::Scalar::random(&mut rng);
-        let data = dlog_eq::Data {
-            pub_share: public_share,
-            base,
-            exp,
-        };
         let proof = dlog_eq::prove::<D, E>(&shared_state, &secret_share, data, r);
         dlog_eq::verify::<D, E>(&shared_state, data, proof).unwrap();
     }
@@ -92,17 +75,14 @@ mod non_interactive {
         let shared_state = "shared state";
 
         let secret_share = generic_ec::SecretScalar::random(&mut rng);
-        let public_share = generic_ec::Point::generator() * &secret_share;
 
         let base = generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng);
-        let exp = base * &secret_share + generic_ec::Point::generator();
+        let mut data = dlog_eq::Data::from_secret_key(&secret_share, base);
+        // make exp2 wrong so that proof won't hold
+        data.exp2 += generic_ec::Point::generator();
 
         let r = generic_ec::Scalar::random(&mut rng);
-        let data = dlog_eq::Data {
-            pub_share: public_share,
-            base,
-            exp,
-        };
+
         let proof = dlog_eq::prove::<D, E>(&shared_state, &secret_share, data, r);
         assert!(dlog_eq::verify::<D, E>(&shared_state, data, proof).is_err());
     }

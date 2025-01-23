@@ -32,11 +32,8 @@
 //! // `Z` is the object of the proof
 //! let Z = H * &x;
 //!
-//! let data = non_interactive::Data {
-//!     pub_share: X,
-//!     base: H,
-//!     exp: Z,
-//! };
+//! let data = non_interactive::Data::from_secret_key(&x, H);
+//! assert_eq!(Z, data.exp2);
 //!
 //! // Prover chooses a private nonce
 //! let r = Scalar::random(&mut OsRng);
@@ -69,11 +66,8 @@
 //! // `Z` is the object of the proof
 //! let Z = H * &x;
 //!
-//! let data = interactive::Data {
-//!     pub_share: X,
-//!     base: H,
-//!     exp: Z,
-//! };
+//! let data = interactive::Data::from_secret_key(&x, H);
+//! assert_eq!(Z, data.exp2);
 //!
 //! // Prover chooses a nonce for itself
 //! let r = Scalar::random(&mut OsRng);
@@ -98,16 +92,33 @@
 
 use generic_ec::{Curve, Point};
 
-/// Object of the proof
+/// Object of the proof: `log_base1 exp1 == log_base2 exp2`
 #[derive(Debug, Clone, Copy)]
 #[cfg_attr(feature = "udigest", derive(udigest::Digestable), udigest(bound = ""))]
 pub struct Data<E: Curve> {
-    /// `X`, the value inside `log_G`
-    pub pub_share: Point<E>,
-    /// `H`, the base for the second logarithm
-    pub base: Point<E>,
-    /// `Z`, the value inside the second logarithm `log_H`
-    pub exp: Point<E>,
+    /// `G`, the base for one logarithm
+    pub base1: Point<E>,
+    /// `X`, the value inside one logarithm
+    pub exp1: Point<E>,
+    /// `H`, the base for the other logarithm
+    pub base2: Point<E>,
+    /// `Z`, the value inside the other logarithm
+    pub exp2: Point<E>,
+}
+
+impl<E: Curve> Data<E> {
+    /// Create the data for the common case where `G` is the principal group
+    /// generator, and `x` is a secret key
+    ///
+    /// In this case, we set `H = base` as base2 and `Z = G * x` as exp2
+    pub fn from_secret_key(x: &generic_ec::SecretScalar<E>, base: Point<E>) -> Data<E> {
+        Self {
+            base1: Point::generator().into(),
+            exp1: Point::generator() * x,
+            base2: base,
+            exp2: base * x,
+        }
+    }
 }
 
 /// Functions for interactive protocol for the proof. See usage example in
@@ -130,15 +141,15 @@ pub mod interactive {
     /// [`Commitment`] to be sent
     ///
     /// - `r` - random nonce. Can be produced by `Scalar::random(&mut rng)`
-    pub fn commit<E: Curve>(base: Point<E>, r: Scalar<E>) -> Commitment<E> {
-        (Point::generator() * r, base * r)
+    pub fn commit<E: Curve>(base1: Point<E>, base2: Point<E>, r: Scalar<E>) -> Commitment<E> {
+        (base1 * r, base2 * r)
     }
     /// First round of the protocol: commit to well-constructed [`Data`] by
     /// itself. Produces [`Commitment`] to be sent
     ///
     /// - `r` - random nonce. Can be produced by `Scalar::random(&mut rng)`
     pub fn commit_data<E: Curve>(data: Data<E>, r: Scalar<E>) -> Commitment<E> {
-        commit(data.base, r)
+        commit(data.base1, data.base2, r)
     }
 
     /// First round of the protocol: verifier generates a challenge. A challenge
@@ -173,14 +184,14 @@ pub mod interactive {
     ) -> Result<(), InvalidProof> {
         let (a1, a2) = comm;
         // equation 1
-        let lhs = Point::generator() * proof;
-        let rhs = a1 + data.pub_share * challenge;
+        let lhs = data.base1 * proof;
+        let rhs = a1 + data.exp1 * challenge;
         if lhs != rhs {
             return Err(InvalidProof);
         }
         // equation 2
-        let lhs = data.base * proof;
-        let rhs = a2 + data.exp * challenge;
+        let lhs = data.base2 * proof;
+        let rhs = a2 + data.exp2 * challenge;
         if lhs != rhs {
             return Err(InvalidProof);
         }
@@ -197,7 +208,7 @@ pub mod interactive {
 /// this paper: <https://eprint.iacr.org/2020/096>
 #[cfg(feature = "udigest")]
 pub mod non_interactive {
-    use generic_ec::{Curve, Point, Scalar, SecretScalar};
+    use generic_ec::{Curve, Scalar, SecretScalar};
 
     const TAG: &str = "bls-style-digest.zkp";
 
@@ -231,8 +242,8 @@ pub mod non_interactive {
         data: Data<E>,
         r: Scalar<E>,
     ) -> Proof<E> {
-        let com1 = Point::generator() * r;
-        let com2 = data.base * r;
+        let com1 = data.base1 * r;
+        let com2 = data.base2 * r;
 
         let seed = udigest::inline_struct!(TAG {
             shared_state,
@@ -258,8 +269,8 @@ pub mod non_interactive {
         data: Data<E>,
         proof: Proof<E>,
     ) -> Result<(), InvalidProof> {
-        let com1 = Point::generator() * proof.res - data.pub_share * proof.ch;
-        let com2 = data.base * proof.res - data.exp * proof.ch;
+        let com1 = data.base1 * proof.res - data.exp1 * proof.ch;
+        let com2 = data.base2 * proof.res - data.exp2 * proof.ch;
 
         let seed = udigest::inline_struct!(TAG {
             shared_state,
