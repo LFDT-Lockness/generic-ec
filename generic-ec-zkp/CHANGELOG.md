@@ -1,3 +1,8 @@
+## v0.4.4
+* Add `dlog_eq` proof [#54]
+
+[#54]: https://github.com/LFDT-Lockness/generic-ec/pull/54
+
 ## v0.4.3
 * Fix double header menu issue on docs.rs [#49]
 
