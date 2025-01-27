@@ -35,10 +35,8 @@
 //! let data = non_interactive::Data::from_secret_key(&x, H);
 //! assert_eq!(Z, data.exp2);
 //!
-//! // Prover chooses a private nonce
-//! let r = Scalar::random(&mut OsRng);
 //! // Prover proves in zero knowledge the equality of `H * x = Z`
-//! let proof = non_interactive::prove::<sha2::Sha256, E>(&"shared_state", &x, data, r);
+//! let proof = non_interactive::prove::<sha2::Sha256, E>(&"shared_state", &x, data, &mut OsRng);
 //! // The proof is sent to the Verifier
 //! send(proof);
 //!
@@ -69,10 +67,8 @@
 //! let data = interactive::Data::from_secret_key(&x, H);
 //! assert_eq!(Z, data.exp2);
 //!
-//! // Prover chooses a nonce for itself
-//! let r = Scalar::random(&mut OsRng);
 //! // Prover commits to the data
-//! let commitment = interactive::commit_data(data, r);
+//! let (commitment, private_commitment) = interactive::commit_data(data, &mut OsRng);
 //! // Prover sends this commitment to the verifier
 //! send(commitment);
 //!
@@ -81,7 +77,7 @@
 //! send(challenge);
 //!
 //! // Prover receives the challenge and computes the proof of equality `H * x = Z`
-//! let proof = interactive::prove(r, challenge, &x);
+//! let proof = interactive::prove(private_commitment, challenge, &x);
 //! // This proof is sent to the verifier
 //! send(proof);
 //!
@@ -130,6 +126,8 @@ pub mod interactive {
 
     /// Commitment to `H`, sent in the first round
     pub type Commitment<E> = (Point<E>, Point<E>);
+    /// Private part of commitment, the nonce `r`. Kept by the Prover
+    pub type PrivateCommitment<E> = Scalar<E>;
     /// Challenge, sent to the Prover in the first round
     pub type Challenge<E> = Scalar<E>;
     /// Proof data, sent by prover to the verifier
@@ -140,16 +138,25 @@ pub mod interactive {
     /// First round of the protocol: commit to `H` by itself. Produces
     /// [`Commitment`] to be sent
     ///
-    /// - `r` - random nonce. Can be produced by `Scalar::random(&mut rng)`
-    pub fn commit<E: Curve>(base1: Point<E>, base2: Point<E>, r: Scalar<E>) -> Commitment<E> {
-        (base1 * r, base2 * r)
+    /// `rng` is used to generate the nonce for the private commitment
+    pub fn commit<E: Curve>(
+        base1: Point<E>,
+        base2: Point<E>,
+        rng: &mut impl rand_core::RngCore,
+    ) -> (Commitment<E>, PrivateCommitment<E>) {
+        let r = Scalar::random(rng);
+        let comm = (base1 * r, base2 * r);
+        (comm, r)
     }
     /// First round of the protocol: commit to well-constructed [`Data`] by
     /// itself. Produces [`Commitment`] to be sent
     ///
-    /// - `r` - random nonce. Can be produced by `Scalar::random(&mut rng)`
-    pub fn commit_data<E: Curve>(data: Data<E>, r: Scalar<E>) -> Commitment<E> {
-        commit(data.base1, data.base2, r)
+    /// `rng` is used to generate the nonce for the private commitment
+    pub fn commit_data<E: Curve>(
+        data: Data<E>,
+        rng: &mut impl rand_core::RngCore,
+    ) -> (Commitment<E>, PrivateCommitment<E>) {
+        commit(data.base1, data.base2, rng)
     }
 
     /// First round of the protocol: verifier generates a challenge. A challenge
@@ -158,13 +165,18 @@ pub mod interactive {
         Scalar::random(rng)
     }
 
-    /// Second round of the protocol: produce the proof for [`Data`] commited to
-    /// with the given nonce `r`
+    /// Second round of the protocol: produce the proof for [`Data`] with the
+    /// given private commitment, public part of which was communicated to the
+    /// verifier
     ///
-    /// - `r` - nonce, the same as used in [`commit`] or [`commit_data`]
+    /// - `r` - private commitment, the same as given by [`commit`] or [`commit_data`]
     /// - `challenge` - challenge sent by the Verifier
     /// - `x` - secret value of discrete logarithm
-    pub fn prove<E: Curve>(r: Scalar<E>, challenge: Scalar<E>, x: &SecretScalar<E>) -> Proof<E> {
+    pub fn prove<E: Curve>(
+        r: PrivateCommitment<E>,
+        challenge: Scalar<E>,
+        x: &SecretScalar<E>,
+    ) -> Proof<E> {
         r + challenge * x
     }
 
@@ -204,8 +216,8 @@ pub mod interactive {
 /// [`dlog_eq`](crate::dlog_eq)
 ///
 /// Compared to naive protocol produced by Fiat-Shamir heuristic, this is
-/// optimized to send less data in proof. It's based on `PrEq` functionality in
-/// this paper: <https://eprint.iacr.org/2020/096>
+/// optimized to send less data in the proof. It's based on `PrEq` functionality
+/// in this paper: <https://eprint.iacr.org/2020/096>
 #[cfg(feature = "udigest")]
 pub mod non_interactive {
     use generic_ec::{Curve, Scalar, SecretScalar};
@@ -235,13 +247,14 @@ pub mod non_interactive {
     ///   from replay attacks
     /// - `share` - `x`, secret value of discrete logarithm
     /// - `data` - data to compute the proof for
-    /// - `r` - random nonce. Can be produced by `Scalar::random(&mut rng)`
+    /// - `rng` - used to generate a random nonce for proof
     pub fn prove<D: digest::Digest, E: Curve>(
         shared_state: &impl udigest::Digestable,
         share: &SecretScalar<E>,
         data: Data<E>,
-        r: Scalar<E>,
+        rng: &mut impl rand_core::RngCore,
     ) -> Proof<E> {
+        let r = Scalar::random(rng);
         let com1 = data.base1 * r;
         let com2 = data.base2 * r;
 

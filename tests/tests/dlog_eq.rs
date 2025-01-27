@@ -11,11 +11,9 @@ mod interactive {
         let base = generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng);
         let data = dlog_eq::Data::from_secret_key(&secret_share, base);
 
-        let r = generic_ec::Scalar::random(&mut rng);
-
-        let comm = dlog_eq::commit_data(data, r);
+        let (comm, pcomm) = dlog_eq::commit_data(data, &mut rng);
         let challenge = generic_ec::Scalar::random(&mut rng);
-        let proof = dlog_eq::prove(r, challenge, &secret_share);
+        let proof = dlog_eq::prove(pcomm, challenge, &secret_share);
         dlog_eq::verify(data, comm, challenge, proof).unwrap()
     }
     #[test]
@@ -29,11 +27,9 @@ mod interactive {
         // Replace the exponentiation with something wrong
         data.exp2 += generic_ec::Point::generator();
 
-        let r = generic_ec::Scalar::random(&mut rng);
-
-        let comm = dlog_eq::commit_data(data, r);
+        let (comm, pcomm) = dlog_eq::commit_data(data, &mut rng);
         let challenge = generic_ec::Scalar::random(&mut rng);
-        let proof = dlog_eq::prove(r, challenge, &secret_share);
+        let proof = dlog_eq::prove(pcomm, challenge, &secret_share);
         assert!(
             dlog_eq::verify(data, comm, challenge, proof).is_err(),
             "proof should fail"
@@ -64,8 +60,7 @@ mod non_interactive {
         let base = generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng);
         let data = dlog_eq::Data::from_secret_key(&secret_share, base);
 
-        let r = generic_ec::Scalar::random(&mut rng);
-        let proof = dlog_eq::prove::<D, E>(&shared_state, &secret_share, data, r);
+        let proof = dlog_eq::prove::<D, E>(&shared_state, &secret_share, data, &mut rng);
         dlog_eq::verify::<D, E>(&shared_state, data, proof).unwrap();
     }
 
@@ -81,9 +76,7 @@ mod non_interactive {
         // make exp2 wrong so that proof won't hold
         data.exp2 += generic_ec::Point::generator();
 
-        let r = generic_ec::Scalar::random(&mut rng);
-
-        let proof = dlog_eq::prove::<D, E>(&shared_state, &secret_share, data, r);
+        let proof = dlog_eq::prove::<D, E>(&shared_state, &secret_share, data, &mut rng);
         assert!(dlog_eq::verify::<D, E>(&shared_state, data, proof).is_err());
     }
 
