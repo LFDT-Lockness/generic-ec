@@ -11,8 +11,8 @@ mod interactive {
         let base = generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng);
         let data = dlog_eq::Data::from_secret_key(&secret_share, base);
 
-        let (comm, pcomm) = dlog_eq::commit_data(data, &mut rng);
-        let challenge = generic_ec::Scalar::random(&mut rng);
+        let (comm, pcomm) = dlog_eq::commit_data(&mut rng, data);
+        let challenge = dlog_eq::challenge(&mut rng);
         let proof = dlog_eq::prove(pcomm, challenge, &secret_share);
         dlog_eq::verify(data, comm, challenge, proof).unwrap()
     }
@@ -25,10 +25,10 @@ mod interactive {
         let base = generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng);
         let mut data = dlog_eq::Data::from_secret_key(&secret_share, base);
         // Replace the exponentiation with something wrong
-        data.exp2 += generic_ec::Point::generator();
+        data.prod2 += generic_ec::Point::generator();
 
-        let (comm, pcomm) = dlog_eq::commit_data(data, &mut rng);
-        let challenge = generic_ec::Scalar::random(&mut rng);
+        let (comm, pcomm) = dlog_eq::commit_data(&mut rng, data);
+        let challenge = dlog_eq::challenge(&mut rng);
         let proof = dlog_eq::prove(pcomm, challenge, &secret_share);
         assert!(
             dlog_eq::verify(data, comm, challenge, proof).is_err(),
@@ -60,8 +60,8 @@ mod non_interactive {
         let base = generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng);
         let data = dlog_eq::Data::from_secret_key(&secret_share, base);
 
-        let proof = dlog_eq::prove::<D, E>(&shared_state, &secret_share, data, &mut rng);
-        dlog_eq::verify::<D, E>(&shared_state, data, proof).unwrap();
+        let proof = dlog_eq::prove::<E, D>(&mut rng, &shared_state, &secret_share, data);
+        dlog_eq::verify::<E, D>(&shared_state, data, proof).unwrap();
     }
 
     #[test]
@@ -74,10 +74,10 @@ mod non_interactive {
         let base = generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng);
         let mut data = dlog_eq::Data::from_secret_key(&secret_share, base);
         // make exp2 wrong so that proof won't hold
-        data.exp2 += generic_ec::Point::generator();
+        data.prod2 += generic_ec::Point::generator();
 
-        let proof = dlog_eq::prove::<D, E>(&shared_state, &secret_share, data, &mut rng);
-        assert!(dlog_eq::verify::<D, E>(&shared_state, data, proof).is_err());
+        let proof = dlog_eq::prove::<E, D>(&mut rng, &shared_state, &secret_share, data);
+        assert!(dlog_eq::verify::<E, D>(&shared_state, data, proof).is_err());
     }
 
     #[instantiate_tests(<generic_ec::curves::Secp256k1, sha2::Sha256>)]

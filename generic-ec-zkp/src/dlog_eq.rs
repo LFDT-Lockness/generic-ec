@@ -13,6 +13,10 @@
 //! key, a fact known to both parties, and the proof is that $H \cdot x = Z$
 //! without disclosing $x$.
 //!
+//! Since in this library we use additive notation, some terminology has been
+//! adjusted in function arguments, for example what would be an `exponent` is
+//! called a `product`.
+//!
 //! ## Non-interactive example
 //!
 //! ```rust
@@ -33,15 +37,15 @@
 //! let Z = H * &x;
 //!
 //! let data = non_interactive::Data::from_secret_key(&x, H);
-//! assert_eq!(Z, data.exp2);
+//! assert_eq!(Z, data.prod2);
 //!
 //! // Prover proves in zero knowledge the equality of `H * x = Z`
-//! let proof = non_interactive::prove::<sha2::Sha256, E>(&"shared_state", &x, data, &mut OsRng);
+//! let proof = non_interactive::prove::<E, sha2::Sha256>(&mut OsRng, &"shared_state", &x, data);
 //! // The proof is sent to the Verifier
 //! send(proof);
 //!
 //! // Verifier checks that the proof is correct
-//! non_interactive::verify::<sha2::Sha256, E>(&"shared_state", data, proof)
+//! non_interactive::verify::<E, sha2::Sha256>(&"shared_state", data, proof)
 //!     .expect("Verification failed!");
 //! ```
 //!
@@ -65,10 +69,10 @@
 //! let Z = H * &x;
 //!
 //! let data = interactive::Data::from_secret_key(&x, H);
-//! assert_eq!(Z, data.exp2);
+//! assert_eq!(Z, data.prod2);
 //!
 //! // Prover commits to the data
-//! let (commitment, private_commitment) = interactive::commit_data(data, &mut OsRng);
+//! let (commitment, private_commitment) = interactive::commit_data(&mut OsRng, data);
 //! // Prover sends this commitment to the verifier
 //! send(commitment);
 //!
@@ -88,31 +92,31 @@
 
 use generic_ec::{Curve, Point};
 
-/// Object of the proof: `log_base1 exp1 == log_base2 exp2`
+/// Object of the proof: `log_gen1 prod1 == log_gen2 prod2`
 #[derive(Debug, Clone, Copy)]
 #[cfg_attr(feature = "udigest", derive(udigest::Digestable), udigest(bound = ""))]
 pub struct Data<E: Curve> {
-    /// `G`, the base for one logarithm
-    pub base1: Point<E>,
-    /// `X`, the value inside one logarithm
-    pub exp1: Point<E>,
-    /// `H`, the base for the other logarithm
-    pub base2: Point<E>,
-    /// `Z`, the value inside the other logarithm
-    pub exp2: Point<E>,
+    /// `G`, a generator, in multiplicative notation the base for one logarithm
+    pub gen1: Point<E>,
+    /// `X`, a point `G * x`, in multiplicative notation the value inside one logarithm
+    pub prod1: Point<E>,
+    /// `H`, a generator, in multiplicative notation the base for the other logarithm
+    pub gen2: Point<E>,
+    /// `Z`, a point `H * x`, in multiplicative notation the value inside the other logarithm
+    pub prod2: Point<E>,
 }
 
 impl<E: Curve> Data<E> {
     /// Create the data for the common case where `G` is the principal group
     /// generator, and `x` is a secret key
     ///
-    /// In this case, we set `H = base` as base2 and `Z = G * x` as exp2
-    pub fn from_secret_key(x: &generic_ec::SecretScalar<E>, base: Point<E>) -> Data<E> {
+    /// In this case, we set `H = gen` as gen2 and `Z = G * x` as prod2
+    pub fn from_secret_key(x: &generic_ec::SecretScalar<E>, gen: Point<E>) -> Data<E> {
         Self {
-            base1: Point::generator().into(),
-            exp1: Point::generator() * x,
-            base2: base,
-            exp2: base * x,
+            gen1: Point::generator().into(),
+            prod1: Point::generator() * x,
+            gen2: gen,
+            prod2: gen * x,
         }
     }
 }
@@ -140,12 +144,12 @@ pub mod interactive {
     ///
     /// `rng` is used to generate the nonce for the private commitment
     pub fn commit<E: Curve>(
-        base1: Point<E>,
-        base2: Point<E>,
-        rng: &mut impl rand_core::RngCore,
+        rng: &mut (impl rand_core::RngCore + rand_core::CryptoRng),
+        gen1: Point<E>,
+        gen2: Point<E>,
     ) -> (Commitment<E>, PrivateCommitment<E>) {
         let r = Scalar::random(rng);
-        let comm = (base1 * r, base2 * r);
+        let comm = (gen1 * r, gen2 * r);
         (comm, r)
     }
     /// First round of the protocol: commit to well-constructed [`Data`] by
@@ -153,15 +157,17 @@ pub mod interactive {
     ///
     /// `rng` is used to generate the nonce for the private commitment
     pub fn commit_data<E: Curve>(
+        rng: &mut (impl rand_core::RngCore + rand_core::CryptoRng),
         data: Data<E>,
-        rng: &mut impl rand_core::RngCore,
     ) -> (Commitment<E>, PrivateCommitment<E>) {
-        commit(data.base1, data.base2, rng)
+        commit(rng, data.gen1, data.gen2)
     }
 
     /// First round of the protocol: verifier generates a challenge. A challenge
     /// is simply a random scalar
-    pub fn challenge<E: Curve>(rng: &mut impl rand_core::RngCore) -> Challenge<E> {
+    pub fn challenge<E: Curve>(
+        rng: &mut (impl rand_core::RngCore + rand_core::CryptoRng),
+    ) -> Challenge<E> {
         Scalar::random(rng)
     }
 
@@ -196,14 +202,14 @@ pub mod interactive {
     ) -> Result<(), InvalidProof> {
         let (a1, a2) = comm;
         // equation 1
-        let lhs = data.base1 * proof;
-        let rhs = a1 + data.exp1 * challenge;
+        let lhs = data.gen1 * proof;
+        let rhs = a1 + data.prod1 * challenge;
         if lhs != rhs {
             return Err(InvalidProof);
         }
         // equation 2
-        let lhs = data.base2 * proof;
-        let rhs = a2 + data.exp2 * challenge;
+        let lhs = data.gen2 * proof;
+        let rhs = a2 + data.prod2 * challenge;
         if lhs != rhs {
             return Err(InvalidProof);
         }
@@ -245,18 +251,18 @@ pub mod non_interactive {
     ///
     /// - `shared_state` - shared data not known to this proof, used to protect
     ///   from replay attacks
-    /// - `share` - `x`, secret value of discrete logarithm
+    /// - `x` - the secret value of discrete logarithm
     /// - `data` - data to compute the proof for
     /// - `rng` - used to generate a random nonce for proof
-    pub fn prove<D: digest::Digest, E: Curve>(
+    pub fn prove<E: Curve, D: digest::Digest>(
+        rng: &mut (impl rand_core::RngCore + rand_core::CryptoRng),
         shared_state: &impl udigest::Digestable,
-        share: &SecretScalar<E>,
+        x: &SecretScalar<E>,
         data: Data<E>,
-        rng: &mut impl rand_core::RngCore,
     ) -> Proof<E> {
         let r = Scalar::random(rng);
-        let com1 = data.base1 * r;
-        let com2 = data.base2 * r;
+        let com1 = data.gen1 * r;
+        let com2 = data.gen2 * r;
 
         let seed = udigest::inline_struct!(TAG {
             shared_state,
@@ -266,7 +272,7 @@ pub mod non_interactive {
         });
         let ch = Scalar::from_hash::<D>(&seed);
 
-        let res = r + share * ch;
+        let res = r + x * ch;
         Proof { ch, res }
     }
 
@@ -277,13 +283,13 @@ pub mod non_interactive {
     /// - `data` - data for which the proof was computed
     /// - `proof` - produced by the Prover in the second round for this data and
     ///   shared_state
-    pub fn verify<D: digest::Digest, E: Curve>(
+    pub fn verify<E: Curve, D: digest::Digest>(
         shared_state: &impl udigest::Digestable,
         data: Data<E>,
         proof: Proof<E>,
     ) -> Result<(), InvalidProof> {
-        let com1 = data.base1 * proof.res - data.exp1 * proof.ch;
-        let com2 = data.base2 * proof.res - data.exp2 * proof.ch;
+        let com1 = data.gen1 * proof.res - data.prod1 * proof.ch;
+        let com2 = data.gen2 * proof.res - data.prod2 * proof.ch;
 
         let seed = udigest::inline_struct!(TAG {
             shared_state,
