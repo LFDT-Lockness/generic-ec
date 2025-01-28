@@ -8,12 +8,14 @@ publish = false
 
 [dependencies]
 generic-ec = { path = "../generic-ec", default-features = false, features = ["all-curves", "serde"] }
+generic-ec-zkp = { path = "../generic-ec-zkp", default-features = false, features = ["serde", "udigest"] }
 
 plotters = "0.3"
 anyhow = "1"
 regex = "1.10"
 tabled = { version = "0.15", default-features = false, features = ["std"] }
 
+digest.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_with.workspace = true
 serde_test.workspace = true
@@ -24,6 +26,7 @@ hex.workspace = true
 generic-tests.workspace = true
 rand_dev.workspace = true
 rand.workspace = true
+sha2.workspace = true
 
 criterion = { workspace = true, features = ["html_reports"] }
 

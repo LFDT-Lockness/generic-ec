@@ -729,7 +729,7 @@ dependencies = [
 
 [[package]]
 name = "generic-ec-core"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "generic-array",
  "rand_core",
@@ -740,7 +740,7 @@ dependencies = [
 
 [[package]]
 name = "generic-ec-curves"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "criterion",
  "curve25519-dalek",
@@ -764,7 +764,9 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "criterion",
+ "digest",
  "generic-ec",
+ "generic-ec-zkp",
  "generic-tests",
  "hex",
  "plotters",
@@ -775,14 +777,16 @@ dependencies = [
  "serde_json",
  "serde_test",
  "serde_with",
+ "sha2",
  "tabled",
 ]
 
 [[package]]
 name = "generic-ec-zkp"
-version = "0.4.3"
+version = "0.4.4"
 dependencies = [
  "criterion",
+ "digest",
  "generic-array",
  "generic-ec",
  "generic-tests",
