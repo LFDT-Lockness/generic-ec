@@ -732,7 +732,6 @@ name = "generic-ec-core"
 version = "0.2.3"
 dependencies = [
  "generic-array",
- "rand_core",
  "serde",
  "subtle",
  "zeroize",

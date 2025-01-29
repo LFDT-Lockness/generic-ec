@@ -11,7 +11,6 @@ use core::fmt::Debug;
 use core::hash::Hash;
 
 use generic_array::{ArrayLength, GenericArray};
-use rand_core::RngCore;
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::Zeroize;
 
@@ -128,10 +127,36 @@ pub trait One {
     fn is_one(x: &Self) -> Choice;
 }
 
-/// Type can be uniformely sampled from source of randomness
+/// Type can be uniformly sampled
 pub trait Samplable {
-    /// Uniformely samples a random value of `Self`
-    fn random<R: RngCore>(rng: &mut R) -> Self;
+    /// Byte array that can be converted into instance of `Self` via [`Samplable::from_uniform_bytes`]
+    type Bytes: ByteArray;
+
+    /// Maps uniformly distributed bytes array to uniformly distributed instance of `Self`.
+    ///
+    /// Instead of taking a source of randomness directly, this implementation takes a byte array, that was
+    /// populated from the source of randomness, and outputs a random element.
+    ///
+    /// ## Guarantees
+    /// When `bytes` are uniformly distributed, output distribution must be indistinguishable from uniform,
+    /// respective to the security level of the curve.
+    ///
+    /// ## Implementation details
+    /// This trait is required to be implemented for scalars. It's recommended to take approach described in
+    /// "5. Hashing to Finite Field" of [RFC9380]:
+    ///
+    /// 1. Take a uniform bytestring of `L` bytes, where
+    ///    ```text
+    ///    L = ceil((ceil(log2(q)) + k) / 8)
+    ///    ```
+    ///
+    ///    `q` is prime (sub)group order, and `k` is target security level in bits
+    /// 2. Interpret the bytestring as big-endian/little-endian encoding of the integer, and reduce it modulo `q`
+    ///
+    /// The output is then guaranteed to have a bias at most 2^-k.
+    ///
+    /// [RFC9380]: https://www.rfc-editor.org/rfc/rfc9380.html#name-hashing-to-a-finite-field
+    fn from_uniform_bytes(bytes: Self::Bytes) -> Self;
 }
 
 /// Checks whether the point is on curve

@@ -14,7 +14,7 @@ use elliptic_curve::ops::Reduce;
 use elliptic_curve::sec1::{FromEncodedPoint, ModulusSize, ToEncodedPoint};
 use elliptic_curve::{CurveArithmetic, FieldBytesSize, ScalarPrimitive};
 use generic_ec_core::{
-    CompressedEncoding, Curve, IntegerEncoding, NoInvalidPoints, UncompressedEncoding,
+    CompressedEncoding, Curve, IntegerEncoding, NoInvalidPoints, Samplable, UncompressedEncoding,
 };
 use subtle::{ConditionallySelectable, ConstantTimeEq};
 use zeroize::{DefaultIsZeroes, Zeroize};
@@ -88,7 +88,7 @@ where
     for<'a> &'a C::ProjectivePoint: Mul<&'a C::Scalar, Output = C::ProjectivePoint>,
     C::Scalar:
         Reduce<C::Uint> + Eq + ConstantTimeEq + ConditionallySelectable + DefaultIsZeroes + Unpin,
-    RustCryptoScalar<C>: scalar::BytesModOrder,
+    RustCryptoScalar<C>: scalar::BytesModOrder + Samplable,
     for<'a> ScalarPrimitive<C>: From<&'a C::Scalar>,
     FieldBytesSize<C>: ModulusSize,
     X: 'static,

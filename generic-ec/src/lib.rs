@@ -218,12 +218,18 @@ mod _unused_deps {
 /// Common traits for points and scalars
 pub mod traits {
     #[doc(inline)]
-    pub use crate::core::{NoInvalidPoints, One, Reduce, Samplable, Zero};
+    pub use crate::core::{NoInvalidPoints, One, Reduce, Zero};
 
     /// Trait that allows you to check whether value is zero
     pub trait IsZero {
         /// Checks whether `self` is zero
         fn is_zero(&self) -> bool;
+    }
+
+    /// Uniformly samples an instance of `Self` from source of randomness
+    pub trait Samplable {
+        /// Uniformly samples an instance of `Self` from source of randomness
+        fn random<R: rand_core::RngCore>(rng: &mut R) -> Self;
     }
 }
 

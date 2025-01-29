@@ -8,7 +8,7 @@ use subtle::{ConstantTimeEq, CtOption};
 
 use crate::{
     as_raw::FromRaw,
-    core::Samplable,
+    core::{ByteArray, Samplable},
     errors::{ZeroPoint, ZeroScalar},
     Curve, Point, Scalar, SecretScalar,
 };
@@ -51,10 +51,14 @@ impl<E: Curve> NonZero<Scalar<E>> {
     /// Panics if randomness source returned 100 zero scalars in a row. It happens with
     /// $2^{-25600}$ probability, which practically means that randomness source is broken.
     pub fn random<R: RngCore>(rng: &mut R) -> Self {
-        match iter::repeat_with(|| E::Scalar::random(rng))
-            .take(100)
-            .flat_map(|s| NonZero::from_scalar(Scalar::from_raw(s)))
-            .next()
+        match iter::repeat_with(|| {
+            let mut bytes = <<E::Scalar as Samplable>::Bytes as ByteArray>::zeroes();
+            rng.fill_bytes(bytes.as_mut());
+            <E::Scalar as Samplable>::from_uniform_bytes(bytes)
+        })
+        .take(100)
+        .flat_map(|s| NonZero::from_scalar(Scalar::from_raw(s)))
+        .next()
         {
             Some(s) => s,
             None => panic!("defected source of randomness"),
