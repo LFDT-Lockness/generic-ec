@@ -33,7 +33,7 @@ generic-tests.workspace = true
 
 criterion = { workspace = true, features = ["html_reports"] }
 
-generic-ec = { version = "0.4.0", path = "../generic-ec", default-features = false, features = ["all-curves"] }
+generic-ec = { version = "0.5.0", path = "../generic-ec", default-features = false, features = ["all-curves"] }
 
 [features]
 default = ["std"]

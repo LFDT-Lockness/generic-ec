@@ -704,7 +704,7 @@ dependencies = [
 
 [[package]]
 name = "generic-ec"
-version = "0.4.5"
+version = "0.5.0"
 dependencies = [
  "curve25519-dalek",
  "digest",
@@ -729,7 +729,7 @@ dependencies = [
 
 [[package]]
 name = "generic-ec-core"
-version = "0.2.3"
+version = "0.3.0"
 dependencies = [
  "generic-array",
  "serde",
@@ -739,7 +739,7 @@ dependencies = [
 
 [[package]]
 name = "generic-ec-curves"
-version = "0.2.4"
+version = "0.3.0"
 dependencies = [
  "criterion",
  "curve25519-dalek",
@@ -782,7 +782,7 @@ dependencies = [
 
 [[package]]
 name = "generic-ec-zkp"
-version = "0.4.4"
+version = "0.5.0"
 dependencies = [
  "criterion",
  "digest",

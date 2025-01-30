@@ -10,7 +10,7 @@ mod requires_alloc {
     use alloc::{vec, vec::Vec};
     use core::{iter, ops};
 
-    use generic_ec::traits::{IsZero, Random, Zero};
+    use generic_ec::traits::{IsZero, Samplable, Zero};
     use rand_core::RngCore;
 
     /// Polynomial $f(x) = \sum_i a_i x^i$ defined as a list of coefficients $[a_0, \dots, a_{\text{degree}}]$
@@ -96,7 +96,7 @@ mod requires_alloc {
         }
     }
 
-    impl<C: Random> Polynomial<C> {
+    impl<C: Samplable> Polynomial<C> {
         /// Samples a random polynomial with specified degree
         pub fn sample(rng: &mut impl RngCore, degree: usize) -> Self {
             Self {
