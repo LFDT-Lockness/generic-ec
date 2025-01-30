@@ -1,3 +1,8 @@
+## v0.3.0
+* Update `generic-ec-core` to v0.3 [#55]
+
+[#55]: https://github.com/LFDT-Lockness/generic-ec/pull/55
+
 ## v0.2.4
 * Implement `NoInvalidPoints` for prime order curves [#50]
 

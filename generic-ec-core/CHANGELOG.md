@@ -1,3 +1,9 @@
+## v0.3.0
+* Rename `Samplable` trait into `FromUniformBytes` and change it so it
+  accepts a uniform byte array instead of `impl RngCore` [#55]
+
+[#55]: https://github.com/LFDT-Lockness/generic-ec/pull/55
+
 ## v0.2.3
 * Add `NoInvalidPoints` trait [#50]
 

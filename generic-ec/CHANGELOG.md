@@ -1,3 +1,11 @@
+## v0.5.0
+* Hash to scalar: guarantee reproducibility on all platforms [#55]
+* Use reproducible & constant-time algorithm for random scalar
+  generation [#55]
+* Update `generic-ec-core` & `generic-ec-curves` to v0.3 [#55]
+
+[#55]: https://github.com/LFDT-Lockness/generic-ec/pull/55
+
 ## v0.4.5
 * Add curve-specific aliases (see `generic_ec::curves::{secp256k1, secp256r1, stark, ed25519}::*`) [#52]
 * Implement infallible `FromRaw` for `Point<E>` conversion for prime order curves
