@@ -50,7 +50,7 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send + 'stati
         + Invertible
         + Zero
         + One
-        + Samplable
+        + FromUniformBytes
         + Zeroize
         + Copy
         + Eq
@@ -127,9 +127,9 @@ pub trait One {
     fn is_one(x: &Self) -> Choice;
 }
 
-/// Type can be uniformly sampled
-pub trait Samplable {
-    /// Byte array that can be converted into instance of `Self` via [`Samplable::from_uniform_bytes`]
+/// Uniform instance of the type can be derived from uniformly distributed byte array
+pub trait FromUniformBytes {
+    /// Byte array that can be converted into instance of `Self` via [`FromUniformBytes::from_uniform_bytes`]
     type Bytes: ByteArray;
 
     /// Maps uniformly distributed bytes array to uniformly distributed instance of `Self`.

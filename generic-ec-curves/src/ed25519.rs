@@ -220,7 +220,7 @@ impl generic_ec_core::One for Scalar {
     }
 }
 
-impl generic_ec_core::Samplable for Scalar {
+impl generic_ec_core::FromUniformBytes for Scalar {
     /// 48 bytes
     ///
     /// `L = ceil((ceil(log2(q)) + k) / 8) = ceil((256 + 128) / 8) = 48` bytes are enough to

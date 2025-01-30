@@ -3,8 +3,8 @@ use core::ops::Mul;
 use elliptic_curve::bigint::{ArrayEncoding, ByteArray, U256, U512};
 use elliptic_curve::{Curve, CurveArithmetic, Field, Group, ScalarPrimitive};
 use generic_ec_core::{
-    Additive, CurveGenerator, IntegerEncoding, Invertible, Multiplicative, One, Reduce, Samplable,
-    Zero,
+    Additive, CurveGenerator, FromUniformBytes, IntegerEncoding, Invertible, Multiplicative, One,
+    Reduce, Zero,
 };
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::DefaultIsZeroes;
@@ -85,7 +85,7 @@ impl<E: CurveArithmetic> One for RustCryptoScalar<E> {
 }
 
 #[cfg(feature = "secp256k1")]
-impl Samplable for RustCryptoScalar<k256::Secp256k1> {
+impl FromUniformBytes for RustCryptoScalar<k256::Secp256k1> {
     type Bytes = [u8; 48];
     fn from_uniform_bytes(bytes: Self::Bytes) -> Self {
         let mut bytes_be = [0u8; 64];
@@ -94,7 +94,7 @@ impl Samplable for RustCryptoScalar<k256::Secp256k1> {
     }
 }
 #[cfg(feature = "secp256r1")]
-impl Samplable for RustCryptoScalar<p256::NistP256> {
+impl FromUniformBytes for RustCryptoScalar<p256::NistP256> {
     type Bytes = [u8; 48];
     fn from_uniform_bytes(bytes: Self::Bytes) -> Self {
         let mut bytes_be = [0u8; 64];
@@ -103,7 +103,7 @@ impl Samplable for RustCryptoScalar<p256::NistP256> {
     }
 }
 #[cfg(feature = "stark")]
-impl Samplable for RustCryptoScalar<stark_curve::StarkCurve> {
+impl FromUniformBytes for RustCryptoScalar<stark_curve::StarkCurve> {
     type Bytes = [u8; 48];
     fn from_uniform_bytes(bytes: Self::Bytes) -> Self {
         let mut bytes_be = [0u8; 64];

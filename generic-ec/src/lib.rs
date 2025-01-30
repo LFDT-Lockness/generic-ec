@@ -21,7 +21,7 @@
 //! ## Exposed API
 //!
 //! Limited API is exposed: elliptic point arithmetic (points addition, negation, multiplying at scalar), scalar
-//! arithmetic (addition, multiplication, inverse modulo prime group order), and encode/decode to bytes represenstation.
+//! arithmetic (addition, multiplication, inverse modulo prime group order), and encode/decode to bytes representation.
 //!
 //! Hash to curve, hash to scalar primitives, accessing affine coordinates of points are available for some curves through
 //! `FromHash` and other traits.
@@ -227,7 +227,7 @@ pub mod traits {
     }
 
     /// Uniformly samples an instance of `Self` from source of randomness
-    pub trait Samplable {
+    pub trait Random {
         /// Uniformly samples an instance of `Self` from source of randomness
         fn random<R: rand_core::RngCore>(rng: &mut R) -> Self;
     }

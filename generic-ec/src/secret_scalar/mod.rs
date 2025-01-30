@@ -110,7 +110,7 @@ impl<E: Curve> fmt::Debug for SecretScalar<E> {
     }
 }
 
-impl<E: Curve> crate::traits::Samplable for SecretScalar<E> {
+impl<E: Curve> crate::traits::Random for SecretScalar<E> {
     fn random<R: RngCore>(rng: &mut R) -> Self {
         let mut scalar = Scalar::random(rng);
         Self::new(&mut scalar)
