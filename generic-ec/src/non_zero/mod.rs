@@ -152,7 +152,7 @@ impl<E: Curve> NonZero<SecretScalar<E>> {
     /// Panics if randomness source returned 100 zero scalars in a row. It happens with
     /// $2^{-25600}$ probability, which practically means that randomness source is broken.
     pub fn random<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
-        <Self as crate::traits::Random>::random(rng)
+        <Self as crate::traits::Samplable>::random(rng)
     }
 
     /// Constructs $S = 1$
@@ -304,13 +304,13 @@ impl<'s, E: Curve> Sum<&'s NonZero<Point<E>>> for Point<E> {
     }
 }
 
-impl<E: Curve> crate::traits::Random for NonZero<Scalar<E>> {
+impl<E: Curve> crate::traits::Samplable for NonZero<Scalar<E>> {
     fn random<R: RngCore>(rng: &mut R) -> Self {
         Self::random(rng)
     }
 }
 
-impl<E: Curve> crate::traits::Random for NonZero<SecretScalar<E>> {
+impl<E: Curve> crate::traits::Samplable for NonZero<SecretScalar<E>> {
     fn random<R: RngCore>(rng: &mut R) -> Self {
         NonZero::<Scalar<E>>::random(rng).into_secret()
     }

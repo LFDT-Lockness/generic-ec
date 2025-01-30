@@ -227,7 +227,7 @@ pub mod traits {
     }
 
     /// Uniformly samples an instance of `Self` from source of randomness
-    pub trait Random {
+    pub trait Samplable {
         /// Uniformly samples an instance of `Self` from source of randomness
         fn random<R: rand_core::RngCore>(rng: &mut R) -> Self;
     }

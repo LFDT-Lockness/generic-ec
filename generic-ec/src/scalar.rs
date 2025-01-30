@@ -319,7 +319,7 @@ impl<E: Curve> crate::traits::One for Scalar<E> {
     }
 }
 
-impl<E: Curve> crate::traits::Random for Scalar<E> {
+impl<E: Curve> crate::traits::Samplable for Scalar<E> {
     fn random<R: RngCore>(rng: &mut R) -> Self {
         Self::random(rng)
     }
