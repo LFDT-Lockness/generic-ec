@@ -89,7 +89,7 @@ impl FromUniformBytes for RustCryptoScalar<k256::Secp256k1> {
     type Bytes = [u8; 48];
     fn from_uniform_bytes(bytes: Self::Bytes) -> Self {
         let mut bytes_be = [0u8; 64];
-        bytes_be[..48].copy_from_slice(&bytes);
+        bytes_be[64 - 48..].copy_from_slice(&bytes);
         <Self as Reduce<64>>::from_be_array_mod_order(&bytes_be)
     }
 }
@@ -98,7 +98,7 @@ impl FromUniformBytes for RustCryptoScalar<p256::NistP256> {
     type Bytes = [u8; 48];
     fn from_uniform_bytes(bytes: Self::Bytes) -> Self {
         let mut bytes_be = [0u8; 64];
-        bytes_be[..48].copy_from_slice(&bytes);
+        bytes_be[64 - 48..].copy_from_slice(&bytes);
         BytesModOrder::from_be_bytes_mod_order(&bytes)
     }
 }
@@ -107,7 +107,7 @@ impl FromUniformBytes for RustCryptoScalar<stark_curve::StarkCurve> {
     type Bytes = [u8; 48];
     fn from_uniform_bytes(bytes: Self::Bytes) -> Self {
         let mut bytes_be = [0u8; 64];
-        bytes_be[..48].copy_from_slice(&bytes);
+        bytes_be[64 - 48..].copy_from_slice(&bytes);
         BytesModOrder::from_be_bytes_mod_order(&bytes)
     }
 }

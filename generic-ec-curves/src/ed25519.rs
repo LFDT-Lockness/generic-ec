@@ -229,7 +229,7 @@ impl generic_ec_core::FromUniformBytes for Scalar {
 
     fn from_uniform_bytes(bytes: Self::Bytes) -> Self {
         let mut bytes_le = [0u8; 64];
-        bytes_le[64 - 48..].copy_from_slice(&bytes);
+        bytes_le[..48].copy_from_slice(&bytes);
         Self(curve25519::Scalar::from_bytes_mod_order_wide(&bytes_le))
     }
 }
