@@ -704,12 +704,27 @@ dependencies = [
 
 [[package]]
 name = "generic-ec"
+version = "0.4.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8de1099ac0b4d87261d67ff5d4ed400af617a1da40b58908d759b9cf5fd8ed27"
+dependencies = [
+ "curve25519-dalek",
+ "generic-ec-core 0.2.3",
+ "generic-ec-curves 0.2.4",
+ "phantom-type",
+ "rand_core",
+ "subtle",
+ "zeroize",
+]
+
+[[package]]
+name = "generic-ec"
 version = "0.5.0"
 dependencies = [
  "curve25519-dalek",
  "digest",
- "generic-ec-core",
- "generic-ec-curves",
+ "generic-ec-core 0.3.0",
+ "generic-ec-curves 0.3.0",
  "generic-tests",
  "hex",
  "phantom-type",
@@ -729,10 +744,41 @@ dependencies = [
 
 [[package]]
 name = "generic-ec-core"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dcba5fdf70cc3ce5805c487f8523b4ceeb32e8ec5237c71ffd93c1ca47a97fee"
+dependencies = [
+ "generic-array",
+ "rand_core",
+ "subtle",
+ "zeroize",
+]
+
+[[package]]
+name = "generic-ec-core"
 version = "0.3.0"
 dependencies = [
  "generic-array",
  "serde",
+ "subtle",
+ "zeroize",
+]
+
+[[package]]
+name = "generic-ec-curves"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4c7c6d23001a5eb60eec2b785a63d2ca965fdfbaf3314b3b46df047398369e28"
+dependencies = [
+ "curve25519-dalek",
+ "elliptic-curve",
+ "generic-ec-core 0.2.3",
+ "group",
+ "k256",
+ "p256",
+ "rand_core",
+ "sha2",
+ "stark-curve",
  "subtle",
  "zeroize",
 ]
@@ -744,7 +790,7 @@ dependencies = [
  "criterion",
  "curve25519-dalek",
  "elliptic-curve",
- "generic-ec-core",
+ "generic-ec-core 0.3.0",
  "group",
  "k256",
  "p256",
@@ -764,7 +810,8 @@ dependencies = [
  "anyhow",
  "criterion",
  "digest",
- "generic-ec",
+ "generic-ec 0.4.5",
+ "generic-ec 0.5.0",
  "generic-ec-zkp",
  "generic-tests",
  "hex",
@@ -787,7 +834,7 @@ dependencies = [
  "criterion",
  "digest",
  "generic-array",
- "generic-ec",
+ "generic-ec 0.5.0",
  "generic-tests",
  "rand",
  "rand_core",
@@ -1713,7 +1760,7 @@ dependencies = [
 name = "wasm-example"
 version = "0.1.0"
 dependencies = [
- "generic-ec",
+ "generic-ec 0.5.0",
  "getrandom",
  "rand_core",
  "wasm-bindgen",
