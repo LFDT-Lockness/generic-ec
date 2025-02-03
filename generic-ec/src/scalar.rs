@@ -157,17 +157,20 @@ impl<E: Curve> Scalar<E> {
         Self::from_raw(scalar)
     }
 
-    /// Generates random non-zero scalar
+    /// Samples a uniform scalar from source of randomness using constant-time algorithm
     ///
-    /// Algorithm is based on rejection sampling: we sample a scalar, if it's zero try again.
-    /// It may be considered constant-time as zero scalar appears with $2^{-256}$ probability
-    /// which is considered to be negligible.
-    ///
-    /// ## Panics
-    /// Panics if randomness source returned 100 zero scalars in a row. It happens with
-    /// $2^{-25600}$ probability, which practically means that randomness source is broken.
+    /// Under the hood, it uses [`NonZero::<Scalar<E>>::random()`] method, therefore it shares
+    /// its guarantees and performance. Refer to its documentation to learn more.
     pub fn random<R: RngCore>(rng: &mut R) -> Self {
         NonZero::<Scalar<E>>::random(rng).into()
+    }
+
+    /// Samples a uniform scalar from source of randomness using vartime algorithm
+    ///
+    /// Under the hood, it uses [`NonZero::<Scalar<E>>::random_vartime()`] method, therefore it shares
+    /// its guarantees and performance. Refer to its documentation to learn more.
+    pub fn random_vartime<R: RngCore>(rng: &mut R) -> Self {
+        NonZero::<Scalar<E>>::random_vartime(rng).into()
     }
 
     #[doc = include_str!("../docs/hash_to_scalar.md")]
@@ -322,6 +325,10 @@ impl<E: Curve> crate::traits::One for Scalar<E> {
 impl<E: Curve> crate::traits::Samplable for Scalar<E> {
     fn random<R: RngCore>(rng: &mut R) -> Self {
         Self::random(rng)
+    }
+
+    fn random_vartime<R: rand_core::RngCore>(rng: &mut R) -> Self {
+        Self::random_vartime(rng)
     }
 }
 

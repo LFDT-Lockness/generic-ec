@@ -10,8 +10,6 @@ publish = false
 generic-ec = { path = "../generic-ec", default-features = false, features = ["all-curves", "serde"] }
 generic-ec-zkp = { path = "../generic-ec-zkp", default-features = false, features = ["serde", "udigest"] }
 
-generic-ec-v04 = { package = "generic-ec", version = "0.4.5", default-features = false, features = ["all-curves"] }
-
 plotters = "0.3"
 anyhow = "1"
 regex = "1.10"

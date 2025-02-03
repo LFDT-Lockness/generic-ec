@@ -227,9 +227,30 @@ pub mod traits {
     }
 
     /// Uniformly samples an instance of `Self` from source of randomness
+    ///
+    /// This trait is implemented for scalars in all their variations: `Scalar<E>`,
+    /// `SecretScalar<E>`, `NonZero<Scalar<E>>`, etc.
+    ///
+    /// Under the hood, it uses `NonZero::<Scalar<E>>::{random, random_vartime}`
+    /// methods.
     pub trait Samplable {
         /// Uniformly samples an instance of `Self` from source of randomness
+        /// using constant-time method
+        ///
+        /// Under the hood, it uses [`NonZero::<Scalar<E>>::random()`](
+        /// crate::NonZero::<Scalar<E>>::random()) method,
+        /// therefore it shares the same guarantees and performance drawbacks.
+        /// Refer to its documentation to learn more.
         fn random<R: rand_core::RngCore>(rng: &mut R) -> Self;
+
+        /// Uniformly samples an instance of `Self` from source of randomness
+        /// using vartime method
+        ///
+        /// Under the hood, it uses [`NonZero::<Scalar<E>>::random_vartime()`](
+        /// crate::NonZero::<Scalar<E>>::random_vartime()) method,
+        /// therefore it shares the same guarantees and performance drawbacks.
+        /// Refer to its documentation to learn more.
+        fn random_vartime<R: rand_core::RngCore>(rng: &mut R) -> Self;
     }
 }
 

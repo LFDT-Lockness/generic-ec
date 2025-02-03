@@ -170,7 +170,7 @@ fn bench_curve<E: Curve>(
 fn random_scalar<E: Curve>(rng: &mut impl rand_core::RngCore) -> E::Scalar {
     let mut bytes = <<E::Scalar as FromUniformBytes>::Bytes as ByteArray>::zeroes();
     rng.fill_bytes(bytes.as_mut());
-    <E::Scalar as FromUniformBytes>::from_uniform_bytes(bytes)
+    <E::Scalar as FromUniformBytes>::from_uniform_bytes(&bytes)
 }
 
 fn bench_bytes_reduction<E: Curve, const N: usize>(

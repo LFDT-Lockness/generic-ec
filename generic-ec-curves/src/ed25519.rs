@@ -227,10 +227,36 @@ impl generic_ec_core::FromUniformBytes for Scalar {
     /// guarantee the uniform distribution
     type Bytes = [u8; 48];
 
-    fn from_uniform_bytes(bytes: Self::Bytes) -> Self {
+    fn from_uniform_bytes(bytes: &Self::Bytes) -> Self {
         let mut bytes_le = [0u8; 64];
-        bytes_le[..48].copy_from_slice(&bytes);
+        bytes_le[..48].copy_from_slice(bytes);
         Self(curve25519::Scalar::from_bytes_mod_order_wide(&bytes_le))
+    }
+}
+
+impl generic_ec_core::SamplableVartime for Scalar {
+    fn random_vartime(rng: &mut impl rand_core::RngCore) -> Self {
+        // Having crypto rng for scalar generation is not a hard requirement,
+        // as in some cases it isn't needed. However, `curve25519` lib asks for
+        // it, so we'll trick it
+        struct FakeCryptoRng<R>(R);
+        impl<R: rand_core::RngCore> rand_core::RngCore for FakeCryptoRng<R> {
+            fn next_u32(&mut self) -> u32 {
+                self.0.next_u32()
+            }
+            fn next_u64(&mut self) -> u64 {
+                self.0.next_u64()
+            }
+            fn fill_bytes(&mut self, dest: &mut [u8]) {
+                self.0.fill_bytes(dest)
+            }
+            fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), rand_core::Error> {
+                self.0.try_fill_bytes(dest)
+            }
+        }
+        impl<R> rand_core::CryptoRng for FakeCryptoRng<R> {}
+
+        Self(curve25519::Scalar::random(&mut FakeCryptoRng(rng)))
     }
 }
 

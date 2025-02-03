@@ -51,6 +51,7 @@ pub trait Curve: Debug + Copy + Eq + Ord + Hash + Default + Sync + Send + 'stati
         + Zero
         + One
         + FromUniformBytes
+        + SamplableVartime
         + Zeroize
         + Copy
         + Eq
@@ -139,7 +140,12 @@ pub trait FromUniformBytes {
     ///
     /// ## Guarantees
     /// When `bytes` are uniformly distributed, output distribution must be indistinguishable from uniform,
-    /// respective to the security level of the curve.
+    /// with bias respective to the security level of the curve, meaning that any instance of the type can
+    /// appear with equal probability.
+    ///
+    /// Implementation is reproducible: the same input `bytes` give the same output on all platforms.
+    ///
+    /// Implementation is constant-time: there's no branching on the input.
     ///
     /// ## Implementation details
     /// This trait is required to be implemented for scalars. It's recommended to take approach described in
@@ -156,7 +162,24 @@ pub trait FromUniformBytes {
     /// The output is then guaranteed to have a bias at most 2^-k.
     ///
     /// [RFC9380]: https://www.rfc-editor.org/rfc/rfc9380.html#name-hashing-to-a-finite-field
-    fn from_uniform_bytes(bytes: Self::Bytes) -> Self;
+    fn from_uniform_bytes(bytes: &Self::Bytes) -> Self;
+}
+
+/// Samples a uniform instance of the type from source of randomness
+pub trait SamplableVartime {
+    /// Samples a uniform instance of the type from source of randomness
+    ///
+    /// ## Guarantees
+    /// If output of provided PRNG is uniform, then the output of this function is uniformly
+    /// distributed (with bias respective to the security level of the curve), meaning that
+    /// any instance of the type can appear with equal probability.
+    ///
+    /// Implementation **is not** reproducible: it may lead to different results on different
+    /// platform and/or instances of the program even if the same `rng` is used with the same
+    /// seed.
+    ///
+    /// Implementation **is not** constant-time: it likely uses reject-sample strategy.
+    fn random_vartime(rng: &mut impl rand_core::RngCore) -> Self;
 }
 
 /// Checks whether the point is on curve

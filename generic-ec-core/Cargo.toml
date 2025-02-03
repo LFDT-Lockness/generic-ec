@@ -12,6 +12,7 @@ description = "Core traits of `generic-ec` crate"
 generic-array.workspace = true
 subtle.workspace = true
 zeroize.workspace = true
+rand_core.workspace = true
 serde = { workspace = true, features = ["derive"], optional = true }
 
 [features]
