@@ -86,6 +86,10 @@ impl<E: CurveArithmetic> One for RustCryptoScalar<E> {
 
 #[cfg(feature = "secp256k1")]
 impl FromUniformBytes for RustCryptoScalar<k256::Secp256k1> {
+    /// 48 bytes
+    ///
+    /// `L = ceil((ceil(log2(q)) + k) / 8) = ceil((256 + 128) / 8) = 48` bytes are enough to
+    /// guarantee the uniform distribution
     type Bytes = [u8; 48];
     fn from_uniform_bytes(bytes: &Self::Bytes) -> Self {
         let mut bytes_be = [0u8; 64];
@@ -95,6 +99,10 @@ impl FromUniformBytes for RustCryptoScalar<k256::Secp256k1> {
 }
 #[cfg(feature = "secp256r1")]
 impl FromUniformBytes for RustCryptoScalar<p256::NistP256> {
+    /// 48 bytes
+    ///
+    /// `L = ceil((ceil(log2(q)) + k) / 8) = ceil((256 + 128) / 8) = 48` bytes are enough to
+    /// guarantee the uniform distribution
     type Bytes = [u8; 48];
     fn from_uniform_bytes(bytes: &Self::Bytes) -> Self {
         BytesModOrder::from_be_bytes_mod_order(bytes)
@@ -102,6 +110,10 @@ impl FromUniformBytes for RustCryptoScalar<p256::NistP256> {
 }
 #[cfg(feature = "stark")]
 impl FromUniformBytes for RustCryptoScalar<stark_curve::StarkCurve> {
+    /// 48 bytes
+    ///
+    /// `L = ceil((ceil(log2(q)) + k) / 8) = ceil((256 + 128) / 8) = 48` bytes are enough to
+    /// guarantee the uniform distribution
     type Bytes = [u8; 48];
     fn from_uniform_bytes(bytes: &Self::Bytes) -> Self {
         BytesModOrder::from_be_bytes_mod_order(bytes)
