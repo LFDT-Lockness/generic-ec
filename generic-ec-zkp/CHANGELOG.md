@@ -1,3 +1,8 @@
+## v0.5.0
+* Update `generic_ec` dep to v0.5 [#55]
+
+[#55]: https://github.com/LFDT-Lockness/generic-ec/pull/55
+
 ## v0.4.4
 * Add `dlog_eq` proof [#54]
 

@@ -8,7 +8,7 @@ use subtle::{ConstantTimeEq, CtOption};
 
 use crate::{
     as_raw::FromRaw,
-    core::Samplable,
+    core::{ByteArray, FromUniformBytes},
     errors::{ZeroPoint, ZeroScalar},
     Curve, Point, Scalar, SecretScalar,
 };
@@ -41,20 +41,30 @@ impl<E: Curve> NonZero<Point<E>> {
 }
 
 impl<E: Curve> NonZero<Scalar<E>> {
-    /// Generates random non-zero scalar
-    ///
-    /// Algorithm is based on rejection sampling: we sample a scalar, if it's zero try again.
-    /// It may be considered constant-time as zero scalar appears with $2^{-256}$ probability
-    /// which is considered to be negligible.
-    ///
-    /// ## Panics
-    /// Panics if randomness source returned 100 zero scalars in a row. It happens with
-    /// $2^{-25600}$ probability, which practically means that randomness source is broken.
+    #[doc = include_str!("../../docs/nonzero_scalar_random.md")]
     pub fn random<R: RngCore>(rng: &mut R) -> Self {
-        match iter::repeat_with(|| E::Scalar::random(rng))
-            .take(100)
-            .flat_map(|s| NonZero::from_scalar(Scalar::from_raw(s)))
-            .next()
+        match iter::repeat_with(|| {
+            let mut bytes = <<E::Scalar as FromUniformBytes>::Bytes as ByteArray>::zeroes();
+            rng.fill_bytes(bytes.as_mut());
+            <E::Scalar as FromUniformBytes>::from_uniform_bytes(&bytes)
+        })
+        .take(100)
+        .flat_map(|s| NonZero::from_scalar(Scalar::from_raw(s)))
+        .next()
+        {
+            Some(s) => s,
+            None => panic!("defected source of randomness"),
+        }
+    }
+
+    #[doc = include_str!("../../docs/nonzero_scalar_random_vartime.md")]
+    pub fn random_vartime<R: RngCore>(rng: &mut R) -> Self {
+        match iter::repeat_with(|| {
+            <E::Scalar as generic_ec_core::SamplableVartime>::random_vartime(rng)
+        })
+        .take(100)
+        .flat_map(|s| NonZero::from_scalar(Scalar::from_raw(s)))
+        .next()
         {
             Some(s) => s,
             None => panic!("defected source of randomness"),
@@ -138,17 +148,14 @@ impl<E: Curve> NonZero<Scalar<E>> {
 }
 
 impl<E: Curve> NonZero<SecretScalar<E>> {
-    /// Generates random non-zero scalar
-    ///
-    /// Algorithm is based on rejection sampling: we sample a scalar, if it's zero try again.
-    /// It may be considered constant-time as zero scalar appears with $2^{-256}$ probability
-    /// which is considered to be negligible.
-    ///
-    /// ## Panics
-    /// Panics if randomness source returned 100 zero scalars in a row. It happens with
-    /// $2^{-25600}$ probability, which practically means that randomness source is broken.
+    #[doc = include_str!("../../docs/nonzero_scalar_random.md")]
     pub fn random<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
         <Self as crate::traits::Samplable>::random(rng)
+    }
+
+    #[doc = include_str!("../../docs/nonzero_scalar_random_vartime.md")]
+    pub fn random_vartime<R: RngCore + CryptoRng>(rng: &mut R) -> Self {
+        <Self as crate::traits::Samplable>::random_vartime(rng)
     }
 
     /// Constructs $S = 1$
@@ -304,11 +311,19 @@ impl<E: Curve> crate::traits::Samplable for NonZero<Scalar<E>> {
     fn random<R: RngCore>(rng: &mut R) -> Self {
         Self::random(rng)
     }
+
+    fn random_vartime<R: rand_core::RngCore>(rng: &mut R) -> Self {
+        Self::random_vartime(rng)
+    }
 }
 
 impl<E: Curve> crate::traits::Samplable for NonZero<SecretScalar<E>> {
     fn random<R: RngCore>(rng: &mut R) -> Self {
         NonZero::<Scalar<E>>::random(rng).into_secret()
+    }
+
+    fn random_vartime<R: rand_core::RngCore>(rng: &mut R) -> Self {
+        NonZero::<Scalar<E>>::random_vartime(rng).into_secret()
     }
 }
 

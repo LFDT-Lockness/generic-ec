@@ -38,7 +38,7 @@ fn bench_curve<E: Curve>(
     });
     g.bench_function("[k]P", |b| {
         b.iter_batched(
-            || (E::Scalar::random(rng), random_point::<E>(rng)),
+            || (random_scalar::<E>(rng), random_point::<E>(rng)),
             |(k, p)| E::Scalar::mul(&k, &p),
             criterion::BatchSize::SmallInput,
         );
@@ -81,53 +81,53 @@ fn bench_curve<E: Curve>(
 
     g.bench_function("a+b", |b| {
         b.iter_batched(
-            || (E::Scalar::random(rng), E::Scalar::random(rng)),
+            || (random_scalar::<E>(rng), random_scalar::<E>(rng)),
             |(a, b)| E::Scalar::add(&a, &b),
             criterion::BatchSize::SmallInput,
         );
     });
     g.bench_function("a*b", |b| {
         b.iter_batched(
-            || (E::Scalar::random(rng), E::Scalar::random(rng)),
+            || (random_scalar::<E>(rng), random_scalar::<E>(rng)),
             |(a, b)| E::Scalar::mul(&a, &b),
             criterion::BatchSize::SmallInput,
         );
     });
     g.bench_function("inv(a)", |b| {
         b.iter_batched(
-            || E::Scalar::random(rng),
+            || random_scalar::<E>(rng),
             |a| E::Scalar::invert(&a),
             criterion::BatchSize::SmallInput,
         );
     });
     g.bench_function("RandomScalar", |b| {
-        b.iter(|| E::Scalar::random(rng));
+        b.iter(|| random_scalar::<E>(rng));
     });
 
     g.bench_function("EncodeScalarBE", |b| {
         b.iter_batched(
-            || E::Scalar::random(rng),
+            || random_scalar::<E>(rng),
             |a| a.to_be_bytes(),
             criterion::BatchSize::SmallInput,
         );
     });
     g.bench_function("EncodeScalarLE", |b| {
         b.iter_batched(
-            || E::Scalar::random(rng),
+            || random_scalar::<E>(rng),
             |a| a.to_le_bytes(),
             criterion::BatchSize::SmallInput,
         );
     });
     g.bench_function("DecodeScalarBE", |b| {
         b.iter_batched(
-            || E::Scalar::random(rng).to_be_bytes(),
+            || random_scalar::<E>(rng).to_be_bytes(),
             |bytes| E::Scalar::from_be_bytes_exact(&bytes).unwrap(),
             criterion::BatchSize::SmallInput,
         );
     });
     g.bench_function("DecodeScalarLE", |b| {
         b.iter_batched(
-            || E::Scalar::random(rng).to_le_bytes(),
+            || random_scalar::<E>(rng).to_le_bytes(),
             |bytes| E::Scalar::from_le_bytes_exact(&bytes).unwrap(),
             criterion::BatchSize::SmallInput,
         );
@@ -167,6 +167,12 @@ fn bench_curve<E: Curve>(
     }
 }
 
+fn random_scalar<E: Curve>(rng: &mut impl rand_core::RngCore) -> E::Scalar {
+    let mut bytes = <<E::Scalar as FromUniformBytes>::Bytes as ByteArray>::zeroes();
+    rng.fill_bytes(bytes.as_mut());
+    <E::Scalar as FromUniformBytes>::from_uniform_bytes(&bytes)
+}
+
 fn bench_bytes_reduction<E: Curve, const N: usize>(
     c: &mut criterion::Criterion,
     rng: &mut rand_dev::DevRng,
@@ -199,6 +205,6 @@ fn bench_bytes_reduction<E: Curve, const N: usize>(
 }
 
 fn random_point<E: Curve>(rng: &mut rand_dev::DevRng) -> E::Point {
-    let scalar = E::Scalar::random(rng);
+    let scalar = random_scalar::<E>(rng);
     E::Scalar::mul(&scalar, &CurveGenerator)
 }

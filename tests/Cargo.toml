@@ -37,3 +37,7 @@ default = ["generic-ec/std"]
 name = "multiscalar"
 harness = false
 
+[[bench]]
+name = "random"
+harness = false
+

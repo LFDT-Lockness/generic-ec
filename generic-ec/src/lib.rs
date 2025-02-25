@@ -21,7 +21,7 @@
 //! ## Exposed API
 //!
 //! Limited API is exposed: elliptic point arithmetic (points addition, negation, multiplying at scalar), scalar
-//! arithmetic (addition, multiplication, inverse modulo prime group order), and encode/decode to bytes represenstation.
+//! arithmetic (addition, multiplication, inverse modulo prime group order), and encode/decode to bytes representation.
 //!
 //! Hash to curve, hash to scalar primitives, accessing affine coordinates of points are available for some curves through
 //! `FromHash` and other traits.
@@ -218,12 +218,39 @@ mod _unused_deps {
 /// Common traits for points and scalars
 pub mod traits {
     #[doc(inline)]
-    pub use crate::core::{NoInvalidPoints, One, Reduce, Samplable, Zero};
+    pub use crate::core::{NoInvalidPoints, One, Reduce, Zero};
 
     /// Trait that allows you to check whether value is zero
     pub trait IsZero {
         /// Checks whether `self` is zero
         fn is_zero(&self) -> bool;
+    }
+
+    /// Uniformly samples an instance of `Self` from source of randomness
+    ///
+    /// This trait is implemented for scalars in all their variations: `Scalar<E>`,
+    /// `SecretScalar<E>`, `NonZero<Scalar<E>>`, etc.
+    ///
+    /// Under the hood, it uses `NonZero::<Scalar<E>>::{random, random_vartime}`
+    /// methods.
+    pub trait Samplable {
+        /// Uniformly samples an instance of `Self` from source of randomness
+        /// using constant-time method
+        ///
+        /// Under the hood, it uses [`NonZero::<Scalar<E>>::random()`](
+        /// crate::NonZero::<Scalar<E>>::random()) method,
+        /// therefore it shares the same guarantees and performance drawbacks.
+        /// Refer to its documentation to learn more.
+        fn random<R: rand_core::RngCore>(rng: &mut R) -> Self;
+
+        /// Uniformly samples an instance of `Self` from source of randomness
+        /// using vartime method
+        ///
+        /// Under the hood, it uses [`NonZero::<Scalar<E>>::random_vartime()`](
+        /// crate::NonZero::<Scalar<E>>::random_vartime()) method,
+        /// therefore it shares the same guarantees and performance drawbacks.
+        /// Refer to its documentation to learn more.
+        fn random_vartime<R: rand_core::RngCore>(rng: &mut R) -> Self;
     }
 }
 

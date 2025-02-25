@@ -220,8 +220,22 @@ impl generic_ec_core::One for Scalar {
     }
 }
 
-impl generic_ec_core::Samplable for Scalar {
-    fn random<R: rand_core::RngCore>(rng: &mut R) -> Self {
+impl generic_ec_core::FromUniformBytes for Scalar {
+    /// 48 bytes
+    ///
+    /// `L = ceil((ceil(log2(q)) + k) / 8) = ceil((256 + 128) / 8) = 48` bytes are enough to
+    /// guarantee the uniform distribution
+    type Bytes = [u8; 48];
+
+    fn from_uniform_bytes(bytes: &Self::Bytes) -> Self {
+        let mut bytes_le = [0u8; 64];
+        bytes_le[..48].copy_from_slice(bytes);
+        Self(curve25519::Scalar::from_bytes_mod_order_wide(&bytes_le))
+    }
+}
+
+impl generic_ec_core::SamplableVartime for Scalar {
+    fn random_vartime(rng: &mut impl rand_core::RngCore) -> Self {
         // Having crypto rng for scalar generation is not a hard requirement,
         // as in some cases it isn't needed. However, `curve25519` lib asks for
         // it, so we'll trick it

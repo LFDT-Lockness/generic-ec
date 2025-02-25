@@ -1,10 +1,10 @@
 use core::ops::Mul;
 
 use elliptic_curve::bigint::{ArrayEncoding, ByteArray, U256, U512};
-use elliptic_curve::{Curve, CurveArithmetic, Field, Group, PrimeField, ScalarPrimitive};
+use elliptic_curve::{Curve, CurveArithmetic, Field, Group, ScalarPrimitive};
 use generic_ec_core::{
-    Additive, CurveGenerator, IntegerEncoding, Invertible, Multiplicative, One, Reduce, Samplable,
-    Zero,
+    Additive, CurveGenerator, FromUniformBytes, IntegerEncoding, Invertible, Multiplicative, One,
+    Reduce, SamplableVartime, Zero,
 };
 use subtle::{Choice, ConditionallySelectable, ConstantTimeEq, CtOption};
 use zeroize::DefaultIsZeroes;
@@ -84,10 +84,47 @@ impl<E: CurveArithmetic> One for RustCryptoScalar<E> {
     }
 }
 
-impl<E: CurveArithmetic> Samplable for RustCryptoScalar<E> {
-    fn random<R: rand_core::RngCore>(rng: &mut R) -> Self {
-        let mut bytes: <E::Scalar as PrimeField>::Repr = Default::default();
+#[cfg(feature = "secp256k1")]
+impl FromUniformBytes for RustCryptoScalar<k256::Secp256k1> {
+    /// 48 bytes
+    ///
+    /// `L = ceil((ceil(log2(q)) + k) / 8) = ceil((256 + 128) / 8) = 48` bytes are enough to
+    /// guarantee the uniform distribution
+    type Bytes = [u8; 48];
+    fn from_uniform_bytes(bytes: &Self::Bytes) -> Self {
+        let mut bytes_be = [0u8; 64];
+        bytes_be[64 - 48..].copy_from_slice(bytes);
+        <Self as Reduce<64>>::from_be_array_mod_order(&bytes_be)
+    }
+}
+#[cfg(feature = "secp256r1")]
+impl FromUniformBytes for RustCryptoScalar<p256::NistP256> {
+    /// 48 bytes
+    ///
+    /// `L = ceil((ceil(log2(q)) + k) / 8) = ceil((256 + 128) / 8) = 48` bytes are enough to
+    /// guarantee the uniform distribution
+    type Bytes = [u8; 48];
+    fn from_uniform_bytes(bytes: &Self::Bytes) -> Self {
+        BytesModOrder::from_be_bytes_mod_order(bytes)
+    }
+}
+#[cfg(feature = "stark")]
+impl FromUniformBytes for RustCryptoScalar<stark_curve::StarkCurve> {
+    /// 48 bytes
+    ///
+    /// `L = ceil((ceil(log2(q)) + k) / 8) = ceil((256 + 128) / 8) = 48` bytes are enough to
+    /// guarantee the uniform distribution
+    type Bytes = [u8; 48];
+    fn from_uniform_bytes(bytes: &Self::Bytes) -> Self {
+        BytesModOrder::from_be_bytes_mod_order(bytes)
+    }
+}
 
+impl<E: CurveArithmetic> SamplableVartime for RustCryptoScalar<E> {
+    fn random_vartime(rng: &mut impl rand_core::RngCore) -> Self {
+        use elliptic_curve::PrimeField;
+
+        let mut bytes: <E::Scalar as PrimeField>::Repr = Default::default();
         loop {
             rng.fill_bytes(bytes.as_mut());
 

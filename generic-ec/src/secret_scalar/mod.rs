@@ -115,4 +115,9 @@ impl<E: Curve> crate::traits::Samplable for SecretScalar<E> {
         let mut scalar = Scalar::random(rng);
         Self::new(&mut scalar)
     }
+
+    fn random_vartime<R: rand_core::RngCore>(rng: &mut R) -> Self {
+        let mut scalar = Scalar::random_vartime(rng);
+        Self::new(&mut scalar)
+    }
 }
