@@ -6,7 +6,7 @@
 //! [`generic-ec` crate]: https://docs.rs/generic-ec
 
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used))]
-#![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(missing_docs)]
 #![no_std]
 
