@@ -320,6 +320,8 @@ mod tests {
     mod secp256k1 {}
     #[instantiate_tests(<crate::curves::Secp256r1>)]
     mod secp256r1 {}
+    #[instantiate_tests(<crate::curves::Secp384r1>)]
+    mod secp384r1 {}
     #[instantiate_tests(<crate::curves::Stark>)]
     mod stark {}
     #[instantiate_tests(<crate::curves::Ed25519>)]

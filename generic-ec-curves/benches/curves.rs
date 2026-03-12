@@ -14,6 +14,9 @@ fn bench_curves(c: &mut criterion::Criterion) {
     bench_curve::<generic_ec_curves::Secp256r1>(c, &mut rng, "secp256r1");
     bench_bytes_reduction::<generic_ec_curves::Secp256r1, 32>(c, &mut rng, "secp256r1");
 
+    bench_curve::<generic_ec_curves::Secp384r1>(c, &mut rng, "secp384r1");
+    bench_bytes_reduction::<generic_ec_curves::Secp384r1, 48>(c, &mut rng, "secp384r1");
+
     bench_curve::<generic_ec_curves::Stark>(c, &mut rng, "stark");
     bench_bytes_reduction::<generic_ec_curves::Stark, 32>(c, &mut rng, "stark");
 

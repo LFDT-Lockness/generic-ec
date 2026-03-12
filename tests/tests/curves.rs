@@ -248,6 +248,9 @@ mod tests {
     #[instantiate_tests(<Secp256r1>)]
     mod secp256r1 {}
 
+    #[instantiate_tests(<Secp384r1>)]
+    mod secp384r1 {}
+
     #[instantiate_tests(<Stark>)]
     mod stark {}
 
@@ -287,6 +290,9 @@ mod scalar_reduce {
     #[instantiate_tests(<generic_ec::curves::Secp256r1, 32>)]
     mod secp256r1_32 {}
 
+    #[instantiate_tests(<generic_ec::curves::Secp384r1, 48>)]
+    mod secp384r1_48 {}
+
     #[instantiate_tests(<generic_ec::curves::Stark, 32>)]
     mod stark_32 {}
 
@@ -299,7 +305,7 @@ mod scalar_reduce {
 #[generic_tests::define]
 mod coordinates {
     use generic_ec::coords::{HasAffineX, HasAffineXAndParity, HasAffineXY, HasAffineY};
-    use generic_ec::curves::{Secp256k1, Secp256r1, Stark};
+    use generic_ec::curves::{Secp256k1, Secp256r1, Secp384r1, Stark};
     use generic_ec::{Curve, Point, Scalar};
 
     use rand_dev::DevRng;
@@ -352,6 +358,9 @@ mod coordinates {
 
     #[instantiate_tests(<Secp256r1>)]
     mod secp256r1 {}
+
+    #[instantiate_tests(<Secp384r1>)]
+    mod secp384r1 {}
 
     #[instantiate_tests(<Stark>)]
     mod stark {}
