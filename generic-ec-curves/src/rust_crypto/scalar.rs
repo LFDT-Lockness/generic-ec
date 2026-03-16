@@ -311,31 +311,43 @@ impl BytesModOrder for RustCryptoScalar<k256::Secp256k1> {
 #[cfg(feature = "secp256r1")]
 impl BytesModOrder for RustCryptoScalar<p256::NistP256> {
     fn from_be_bytes_mod_order(bytes: &[u8]) -> Self {
-        crate::utils::scalar_from_be_bytes_mod_order_reducing_32(bytes, &Self(p256::Scalar::ONE))
+        crate::utils::scalar_from_be_bytes_mod_order_reducing::<_, 32>(
+            bytes,
+            &Self(p256::Scalar::ONE),
+        )
     }
     fn from_le_bytes_mod_order(bytes: &[u8]) -> Self {
-        crate::utils::scalar_from_le_bytes_mod_order_reducing_32(bytes, &Self(p256::Scalar::ONE))
+        crate::utils::scalar_from_le_bytes_mod_order_reducing::<_, 32>(
+            bytes,
+            &Self(p256::Scalar::ONE),
+        )
     }
 }
 #[cfg(feature = "secp384r1")]
 impl BytesModOrder for RustCryptoScalar<p384::NistP384> {
     fn from_be_bytes_mod_order(bytes: &[u8]) -> Self {
-        crate::utils::scalar_from_be_bytes_mod_order_reducing_48(bytes, &Self(p384::Scalar::ONE))
+        crate::utils::scalar_from_be_bytes_mod_order_reducing::<_, 48>(
+            bytes,
+            &Self(p384::Scalar::ONE),
+        )
     }
     fn from_le_bytes_mod_order(bytes: &[u8]) -> Self {
-        crate::utils::scalar_from_le_bytes_mod_order_reducing_48(bytes, &Self(p384::Scalar::ONE))
+        crate::utils::scalar_from_le_bytes_mod_order_reducing::<_, 48>(
+            bytes,
+            &Self(p384::Scalar::ONE),
+        )
     }
 }
 #[cfg(feature = "stark")]
 impl BytesModOrder for RustCryptoScalar<stark_curve::StarkCurve> {
     fn from_be_bytes_mod_order(bytes: &[u8]) -> Self {
-        crate::utils::scalar_from_be_bytes_mod_order_reducing_32(
+        crate::utils::scalar_from_be_bytes_mod_order_reducing::<_, 32>(
             bytes,
             &Self(stark_curve::Scalar::ONE),
         )
     }
     fn from_le_bytes_mod_order(bytes: &[u8]) -> Self {
-        crate::utils::scalar_from_le_bytes_mod_order_reducing_32(
+        crate::utils::scalar_from_le_bytes_mod_order_reducing::<_, 32>(
             bytes,
             &Self(stark_curve::Scalar::ONE),
         )

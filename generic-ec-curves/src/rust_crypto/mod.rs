@@ -20,7 +20,7 @@ use generic_ec_core::{
 use subtle::{ConditionallySelectable, ConstantTimeEq};
 use zeroize::{DefaultIsZeroes, Zeroize};
 
-#[cfg(any(feature = "secp256k1", feature = "secp256r1", feature = "secp384r1", feature = "stark"))]
+#[cfg(any(feature = "secp256k1", feature = "secp256r1", feature = "stark"))]
 use sha2::Sha256;
 
 pub use self::{curve_name::CurveName, point::RustCryptoPoint, scalar::RustCryptoScalar};

@@ -133,216 +133,100 @@ where
 /// Interprets `bytes` as little-endian encoding of an integer, takes it modulo curve (prime)
 /// order and returns scalar `S`
 ///
-/// Works with scalars for which only [`Reduce<48>`][Reduce] is defined.
+/// Works with scalars for which [`Reduce<N>`][Reduce] is defined.
 ///
 /// Takes:
 /// * Little-endian `bytes` representation of the integer
 /// * Scalar `one = 1`
-pub fn scalar_from_le_bytes_mod_order_reducing_48<S>(bytes: &[u8], one: &S) -> S
+pub fn scalar_from_le_bytes_mod_order_reducing<S, const N: usize>(bytes: &[u8], one: &S) -> S
 where
     S: Default + Copy,
-    S: Reduce<48>,
+    S: Reduce<N>,
     S: generic_ec_core::Additive + generic_ec_core::Multiplicative<S, Output = S>,
 {
     let len = bytes.len();
-    match len {
-        ..=47 => {
-            let mut padded = [0u8; 48];
-            padded[..len].copy_from_slice(bytes);
-            S::from_le_array_mod_order(&padded)
-        }
-        48 => {
+    if len < N {
+        let mut padded = [0u8; N];
+        padded[..len].copy_from_slice(bytes);
+        S::from_le_array_mod_order(&padded)
+    } else if len == N {
+        #[allow(clippy::expect_used)]
+        let bytes: &[u8; N] = bytes.try_into().expect("we checked that bytes len == N");
+        S::from_le_array_mod_order(bytes)
+    } else {
+        let two_to_8n = S::add(&S::from_le_array_mod_order(&[0xff; N]), one);
+
+        let chunks = bytes.chunks_exact(N);
+        let remainder = if !chunks.remainder().is_empty() {
+            Some(scalar_from_le_bytes_mod_order_reducing::<S, N>(
+                chunks.remainder(),
+                one,
+            ))
+        } else {
+            None
+        };
+
+        let chunks = chunks.rev().map(|chunk| {
             #[allow(clippy::expect_used)]
-            let bytes: &[u8; 48] = bytes.try_into().expect("we checked that bytes len == 48");
-            S::from_le_array_mod_order(bytes)
-        }
-        49.. => {
-            let two_to_384 = S::add(&S::from_le_array_mod_order(&[0xff; 48]), one);
+            let chunk: &[u8; N] = chunk.try_into().expect("wrong chunk size");
+            S::from_le_array_mod_order(chunk)
+        });
 
-            let chunks = bytes.chunks_exact(48);
-            let remainder = if !chunks.remainder().is_empty() {
-                Some(scalar_from_le_bytes_mod_order_reducing_48::<S>(
-                    chunks.remainder(),
-                    one,
-                ))
-            } else {
-                None
-            };
-
-            let chunks = chunks.rev().map(|chunk| {
-                #[allow(clippy::expect_used)]
-                let chunk: &[u8; 48] = chunk.try_into().expect("wrong chunk size");
-                S::from_le_array_mod_order(chunk)
-            });
-
-            remainder
-                .into_iter()
-                .chain(chunks)
-                .reduce(|acc, int| S::add(&S::mul(&acc, &two_to_384), &int))
-                .unwrap_or_default()
-        }
+        remainder
+            .into_iter()
+            .chain(chunks)
+            .reduce(|acc, int| S::add(&S::mul(&acc, &two_to_8n), &int))
+            .unwrap_or_default()
     }
 }
 
 /// Interprets `bytes` as big-endian encoding of an integer, takes it modulo curve (prime)
 /// order and returns scalar `S`
 ///
-/// Works with scalars for which only [`Reduce<48>`][Reduce] is defined.
+/// Works with scalars for which [`Reduce<N>`][Reduce] is defined.
 ///
 /// Takes:
 /// * Big-endian `bytes` representation of the integer
 /// * Scalar `one = 1`
-pub fn scalar_from_be_bytes_mod_order_reducing_48<S>(bytes: &[u8], one: &S) -> S
+pub fn scalar_from_be_bytes_mod_order_reducing<S, const N: usize>(bytes: &[u8], one: &S) -> S
 where
     S: Default + Copy,
-    S: Reduce<48>,
+    S: Reduce<N>,
     S: generic_ec_core::Additive + generic_ec_core::Multiplicative<S, Output = S>,
 {
     let len = bytes.len();
-    match len {
-        ..=47 => {
-            let mut padded = [0u8; 48];
-            padded[48 - len..].copy_from_slice(bytes);
-            S::from_be_array_mod_order(&padded)
-        }
-        48 => {
+    if len < N {
+        let mut padded = [0u8; N];
+        padded[N - len..].copy_from_slice(bytes);
+        S::from_be_array_mod_order(&padded)
+    } else if len == N {
+        #[allow(clippy::expect_used)]
+        let bytes: &[u8; N] = bytes.try_into().expect("we checked that bytes len == N");
+        S::from_be_array_mod_order(bytes)
+    } else {
+        let two_to_8n = S::add(&S::from_be_array_mod_order(&[0xff; N]), one);
+
+        let chunks = bytes.rchunks_exact(N);
+        let remainder = if !chunks.remainder().is_empty() {
+            Some(scalar_from_be_bytes_mod_order_reducing::<S, N>(
+                chunks.remainder(),
+                one,
+            ))
+        } else {
+            None
+        };
+
+        let chunks = chunks.rev().map(|chunk| {
             #[allow(clippy::expect_used)]
-            let bytes: &[u8; 48] = bytes.try_into().expect("we checked that bytes len == 48");
-            S::from_be_array_mod_order(bytes)
-        }
-        49.. => {
-            let two_to_384 = S::add(&S::from_be_array_mod_order(&[0xff; 48]), one);
+            let chunk: &[u8; N] = chunk.try_into().expect("wrong chunk size");
+            S::from_be_array_mod_order(chunk)
+        });
 
-            let chunks = bytes.rchunks_exact(48);
-            let remainder = if !chunks.remainder().is_empty() {
-                Some(scalar_from_be_bytes_mod_order_reducing_48::<S>(
-                    chunks.remainder(),
-                    one,
-                ))
-            } else {
-                None
-            };
-
-            let chunks = chunks.rev().map(|chunk| {
-                #[allow(clippy::expect_used)]
-                let chunk: &[u8; 48] = chunk.try_into().expect("wrong chunk size");
-                S::from_be_array_mod_order(chunk)
-            });
-
-            remainder
-                .into_iter()
-                .chain(chunks)
-                .reduce(|acc, int| S::add(&S::mul(&acc, &two_to_384), &int))
-                .unwrap_or_default()
-        }
-    }
-}
-
-/// Interprets `bytes` as little-endian encoding of an integer, takes it modulo curve (prime)
-/// order and returns scalar `S`
-///
-/// Works with scalars for which only [`Reduce<32>`][Reduce] is defined.
-///
-/// Takes:
-/// * Little-endian `bytes` representation of the integer
-/// * Scalar `one = 1`
-pub fn scalar_from_le_bytes_mod_order_reducing_32<S>(bytes: &[u8], one: &S) -> S
-where
-    S: Default + Copy,
-    S: Reduce<32>,
-    S: generic_ec_core::Additive + generic_ec_core::Multiplicative<S, Output = S>,
-{
-    let len = bytes.len();
-    match len {
-        ..=31 => {
-            let mut padded = [0u8; 32];
-            padded[..len].copy_from_slice(bytes);
-            S::from_le_array_mod_order(&padded)
-        }
-        32 => {
-            #[allow(clippy::expect_used)]
-            let bytes: &[u8; 32] = bytes.try_into().expect("we checked that bytes len == 32");
-            S::from_le_array_mod_order(bytes)
-        }
-        33.. => {
-            let two_to_256 = S::add(&S::from_le_array_mod_order(&[0xff; 32]), one);
-
-            let chunks = bytes.chunks_exact(32);
-            let remainder = if !chunks.remainder().is_empty() {
-                Some(scalar_from_le_bytes_mod_order_reducing_32::<S>(
-                    chunks.remainder(),
-                    one,
-                ))
-            } else {
-                None
-            };
-
-            let chunks = chunks.rev().map(|chunk| {
-                #[allow(clippy::expect_used)]
-                let chunk: &[u8; 32] = chunk.try_into().expect("wrong chunk size");
-                S::from_le_array_mod_order(chunk)
-            });
-
-            remainder
-                .into_iter()
-                .chain(chunks)
-                .reduce(|acc, int| S::add(&S::mul(&acc, &two_to_256), &int))
-                .unwrap_or_default()
-        }
-    }
-}
-
-/// Interprets `bytes` as big-endian encoding of an integer, takes it modulo curve (prime)
-/// order and returns scalar `S`
-///
-/// Works with scalars for which only [`Reduce<32>`][Reduce] is defined.
-///
-/// Takes:
-/// * Big-endian `bytes` representation of the integer
-/// * Scalar `one = 1`
-pub fn scalar_from_be_bytes_mod_order_reducing_32<S>(bytes: &[u8], one: &S) -> S
-where
-    S: Default + Copy,
-    S: Reduce<32>,
-    S: generic_ec_core::Additive + generic_ec_core::Multiplicative<S, Output = S>,
-{
-    let len = bytes.len();
-    match len {
-        ..=31 => {
-            let mut padded = [0u8; 32];
-            padded[32 - len..].copy_from_slice(bytes);
-            S::from_be_array_mod_order(&padded)
-        }
-        32 => {
-            #[allow(clippy::expect_used)]
-            let bytes: &[u8; 32] = bytes.try_into().expect("we checked that bytes len == 32");
-            S::from_be_array_mod_order(bytes)
-        }
-        33.. => {
-            let two_to_256 = S::add(&S::from_be_array_mod_order(&[0xff; 32]), one);
-
-            let chunks = bytes.rchunks_exact(32);
-            let remainder = if !chunks.remainder().is_empty() {
-                Some(scalar_from_be_bytes_mod_order_reducing_32::<S>(
-                    chunks.remainder(),
-                    one,
-                ))
-            } else {
-                None
-            };
-
-            let chunks = chunks.rev().map(|chunk| {
-                #[allow(clippy::expect_used)]
-                let chunk: &[u8; 32] = chunk.try_into().expect("wrong chunk size");
-                S::from_be_array_mod_order(chunk)
-            });
-
-            remainder
-                .into_iter()
-                .chain(chunks)
-                .reduce(|acc, int| S::add(&S::mul(&acc, &two_to_256), &int))
-                .unwrap_or_default()
-        }
+        remainder
+            .into_iter()
+            .chain(chunks)
+            .reduce(|acc, int| S::add(&S::mul(&acc, &two_to_8n), &int))
+            .unwrap_or_default()
     }
 }
 
@@ -363,7 +247,7 @@ mod tests {
         );
         assert_eq!(
             expected,
-            super::scalar_from_be_bytes_mod_order_reducing_32(&x.to_be_bytes(), one).0
+            super::scalar_from_be_bytes_mod_order_reducing::<_, 32>(&x.to_be_bytes(), one).0
         );
 
         assert_eq!(
@@ -372,7 +256,7 @@ mod tests {
         );
         assert_eq!(
             expected,
-            super::scalar_from_le_bytes_mod_order_reducing_32(&x.to_le_bytes(), one).0
+            super::scalar_from_le_bytes_mod_order_reducing::<_, 32>(&x.to_le_bytes(), one).0
         );
     }
 }
