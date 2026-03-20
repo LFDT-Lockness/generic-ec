@@ -2,9 +2,11 @@
 * Hash to scalar: guarantee reproducibility on all platforms [#55]
 * Use reproducible & constant-time algorithm for random scalar
   generation [#55]
+* Add secp384r1 curve [#59]
 * Update `generic-ec-core` & `generic-ec-curves` to v0.3 [#55]
 
 [#55]: https://github.com/LFDT-Lockness/generic-ec/pull/55
+[#59]: https://github.com/LFDT-Lockness/generic-ec/pull/59
 
 ## v0.4.5
 * Add curve-specific aliases (see `generic_ec::curves::{secp256k1, secp256r1, stark, ed25519}::*`) [#52]
