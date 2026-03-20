@@ -1,7 +1,9 @@
 ## v0.3.0
+* Add secp384r1 curve [#59]
 * Update `generic-ec-core` to v0.3 [#55]
 
 [#55]: https://github.com/LFDT-Lockness/generic-ec/pull/55
+[#59]: https://github.com/LFDT-Lockness/generic-ec/pull/59
 
 ## v0.2.4
 * Implement `NoInvalidPoints` for prime order curves [#50]
