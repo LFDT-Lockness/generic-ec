@@ -18,6 +18,7 @@ zeroize = { workspace = true, features = ["zeroize_derive"] }
 elliptic-curve = { version = "0.13", default-features = false, features = ["sec1", "hash2curve"], optional = true }
 k256 = { version = "0.13", optional = true, default-features = false, features = ["hash2curve"] }
 p256 = { version = "0.13", optional = true, default-features = false, features = ["hash2curve"] }
+p384 = { version = "0.13", optional = true, default-features = false, features = ["hash2curve"] }
 sha2 = { workspace = true, optional = true }
 stark-curve = { version = "0.1", default-features = false, optional = true }
 
@@ -39,6 +40,7 @@ default = []
 rust-crypto = ["elliptic-curve"]
 secp256k1 = ["rust-crypto", "k256", "sha2"]
 secp256r1 = ["rust-crypto", "p256", "sha2"]
+secp384r1 = ["rust-crypto", "p384", "sha2"]
 stark = ["rust-crypto", "stark-curve", "sha2"]
 ed25519 = ["dep:curve25519", "dep:group"]
 

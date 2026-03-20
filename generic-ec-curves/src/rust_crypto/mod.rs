@@ -67,6 +67,12 @@ pub type Secp256k1 = RustCryptoCurve<k256::Secp256k1, ExpandMsgXmd<Sha256>>;
 #[cfg(feature = "secp256r1")]
 pub type Secp256r1 = RustCryptoCurve<p256::NistP256, ExpandMsgXmd<Sha256>>;
 
+/// secp384r1 curve (NIST P-384)
+///
+/// Based on [p384] crate
+#[cfg(feature = "secp384r1")]
+pub type Secp384r1 = RustCryptoCurve<p384::NistP384, ExpandMsgXmd<sha2::Sha384>>;
+
 /// Stark curve
 ///
 /// Based on [stark_curve] crate
@@ -175,6 +181,13 @@ unsafe impl NoInvalidPoints for Secp256r1 {}
 /// Safe because:
 /// - RustCrypto curves are always on curve:
 ///   generic-ec-curves/src/rust_crypto/point.rs:60
+/// - p384 is prime order and so is always torsion-free:
+///   <https://github.com/RustCrypto/elliptic-curves/blob/7a71e403e49fbe92d6b2ae8fe3eabbfdef124975/primeorder/src/projective.rs#L172-L174>
+#[cfg(feature = "secp384r1")]
+unsafe impl NoInvalidPoints for Secp384r1 {}
+/// Safe because:
+/// - RustCrypto curves are always on curve:
+///   generic-ec-curves/src/rust_crypto/point.rs:60
 /// - stark is prime order and so is always torsion-free:
 ///   <https://github.com/RustCrypto/elliptic-curves/blob/7a71e403e49fbe92d6b2ae8fe3eabbfdef124975/primeorder/src/projective.rs#L172-L174>
 #[cfg(feature = "stark")]
@@ -187,7 +200,7 @@ mod tests {
         Curve,
     };
 
-    use super::{Secp256k1, Secp256r1, Stark};
+    use super::{Secp256k1, Secp256r1, Secp384r1, Stark};
 
     /// Asserts that `E` implements `Curve`
     fn _impls_curve<E: Curve>() {}
@@ -196,10 +209,12 @@ mod tests {
     fn _curves_impl_trait() {
         _impls_curve::<Secp256k1>();
         _impls_curve::<Secp256r1>();
+        _impls_curve::<Secp384r1>();
         _impls_curve::<Stark>();
 
         _exposes_affine_coords::<Secp256k1>();
         _exposes_affine_coords::<Secp256r1>();
+        _exposes_affine_coords::<Secp384r1>();
         _exposes_affine_coords::<Stark>();
     }
 }

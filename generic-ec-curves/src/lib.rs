@@ -6,7 +6,7 @@
 //! [`generic-ec` crate]: https://docs.rs/generic-ec
 
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used))]
-#![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![forbid(missing_docs)]
 #![no_std]
 
@@ -26,6 +26,9 @@ pub use rust_crypto::Secp256k1;
 
 #[cfg(feature = "secp256r1")]
 pub use rust_crypto::Secp256r1;
+
+#[cfg(feature = "secp384r1")]
+pub use rust_crypto::Secp384r1;
 
 #[cfg(feature = "stark")]
 pub use rust_crypto::Stark;

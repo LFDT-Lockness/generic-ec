@@ -71,11 +71,13 @@
 //! |--------------|--------------------|-------------------|
 //! | secp256k1    | `curve-secp256k1`  | [RustCrypto/k256] |
 //! | secp256r1    | `curve-secp256r1`  | [RustCrypto/p256] |
+//! | secp384r1    | `curve-secp384r1`  | [RustCrypto/p384] |
 //! | stark-curve  | `curve-stark`      | [Dfns/stark]      |
 //! | Ed25519      | `curve-ed25519`    | [curve25519-dalek]|
 //!
 //! [RustCrypto/k256]: https://github.com/RustCrypto/elliptic-curves/tree/master/k256
 //! [RustCrypto/p256]: https://github.com/RustCrypto/elliptic-curves/tree/master/p256
+//! [RustCrypto/p384]: https://github.com/RustCrypto/elliptic-curves/tree/master/p384
 //! [Dfns/stark]: https://github.com/LFDT-Lockness/stark-curve/
 //! [curve25519-dalek]: https://docs.rs/curve25519-dalek/
 //!
@@ -184,7 +186,7 @@
 #![cfg_attr(not(test), forbid(unused_crate_dependencies))]
 #![cfg_attr(not(test), deny(clippy::unwrap_used, clippy::expect_used))]
 #![no_std]
-#![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
 #[cfg(feature = "std")]
 extern crate std;
@@ -277,6 +279,9 @@ pub mod curves {
     #[cfg(feature = "curve-secp256r1")]
     #[cfg_attr(docsrs, doc(cfg(feature = "curve-secp256r1")))]
     pub use generic_ec_curves::Secp256r1;
+    #[cfg(feature = "curve-secp384r1")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "curve-secp384r1")))]
+    pub use generic_ec_curves::Secp384r1;
     #[cfg(feature = "curve-stark")]
     #[cfg_attr(docsrs, doc(cfg(feature = "curve-stark")))]
     pub use generic_ec_curves::Stark;
@@ -351,6 +356,8 @@ pub mod curves {
         secp256k1: Secp256k1,
         #[cfg(feature = "curve-secp256r1")]
         secp256r1: Secp256r1,
+        #[cfg(feature = "curve-secp384r1")]
+        secp384r1: Secp384r1,
         #[cfg(feature = "curve-stark")]
         stark: Stark,
         #[cfg(feature = "curve-ed25519")]

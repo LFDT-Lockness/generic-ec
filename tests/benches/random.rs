@@ -8,6 +8,7 @@ fn random(c: &mut criterion::Criterion) {
 
     random_for_curve::<curves::Secp256k1>(c, &mut rng, "secp256k1");
     random_for_curve::<curves::Secp256r1>(c, &mut rng, "secp256r1");
+    random_for_curve::<curves::Secp384r1>(c, &mut rng, "secp384r1");
     random_for_curve::<curves::Stark>(c, &mut rng, "stark");
     random_for_curve::<curves::Ed25519>(c, &mut rng, "ed25519");
 }

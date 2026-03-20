@@ -40,6 +40,8 @@ mod interactive {
     mod secp256k1 {}
     #[instantiate_tests(<generic_ec::curves::Secp256r1>)]
     mod secp256r1 {}
+    #[instantiate_tests(<generic_ec::curves::Secp384r1>)]
+    mod secp384r1 {}
     #[instantiate_tests(<generic_ec::curves::Stark>)]
     mod stark {}
     #[instantiate_tests(<generic_ec::curves::Ed25519>)]
@@ -84,6 +86,8 @@ mod non_interactive {
     mod secp256k1_sha256 {}
     #[instantiate_tests(<generic_ec::curves::Secp256r1, sha2::Sha256>)]
     mod secp256r1_sha256 {}
+    #[instantiate_tests(<generic_ec::curves::Secp384r1, sha2::Sha256>)]
+    mod secp384r1_sha256 {}
     #[instantiate_tests(<generic_ec::curves::Stark, sha2::Sha256>)]
     mod stark_sha256 {}
     #[instantiate_tests(<generic_ec::curves::Ed25519, sha2::Sha256>)]

@@ -186,7 +186,7 @@ impl<E: Curve> NafMatrix<E> {
     fn add_scalar(&mut self, scalar: &Scalar<E>) {
         let scalar_bytes = scalar.to_le_bytes();
         let mut x_u64 = vec![0u64; scalar_bytes.len() / 8 + 1];
-        read_le_u64_into(&scalar_bytes, &mut x_u64[0..4]);
+        read_le_u64_into(&scalar_bytes, &mut x_u64[0..scalar_bytes.len() / 8]);
 
         let offset = self.matrix.len();
         debug_assert!(
@@ -320,6 +320,8 @@ mod tests {
     mod secp256k1 {}
     #[instantiate_tests(<crate::curves::Secp256r1>)]
     mod secp256r1 {}
+    #[instantiate_tests(<crate::curves::Secp384r1>)]
+    mod secp384r1 {}
     #[instantiate_tests(<crate::curves::Stark>)]
     mod stark {}
     #[instantiate_tests(<crate::curves::Ed25519>)]

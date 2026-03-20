@@ -14,6 +14,11 @@ impl CurveName for k256::Secp256k1 {
     const CURVE_NAME: &'static str = "secp256k1";
 }
 
+#[cfg(feature = "secp384r1")]
+impl CurveName for p384::NistP384 {
+    const CURVE_NAME: &'static str = "secp384r1";
+}
+
 #[cfg(feature = "stark")]
 impl CurveName for stark_curve::StarkCurve {
     const CURVE_NAME: &'static str = "stark";
