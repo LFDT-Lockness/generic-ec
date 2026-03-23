@@ -18,6 +18,7 @@ fn multiscalar(c: &mut criterion::Criterion) {
     multiscalar_for_curve::<curves::Secp384r1>(c, &mut rng, "secp384r1");
     multiscalar_for_curve::<curves::Stark>(c, &mut rng, "stark");
     multiscalar_for_curve::<curves::Ed25519>(c, &mut rng, "ed25519");
+    multiscalar_for_curve::<curves::Curve448>(c, &mut rng, "curve448");
 
     multiscalar_for_curve_and_algo::<curves::Ed25519, multiscalar::Dalek>(
         c, &mut rng, "ed25519", "dalek",

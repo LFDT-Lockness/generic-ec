@@ -23,10 +23,16 @@ sha2 = { workspace = true, optional = true }
 stark-curve = { version = "0.1", default-features = false, optional = true }
 
 group = { version = "0.13", default-features = false, optional = true }
+generic-array = { workspace = true, optional = true }
 
 [dependencies.curve25519]
 workspace = true
 features = ["group", "zeroize", "rand_core", "precomputed-tables"]
+optional = true
+
+[dependencies.ed448-goldilocks-plus]
+workspace = true
+features = ["zeroize"]
 optional = true
 
 [dev-dependencies]
@@ -43,6 +49,7 @@ secp256r1 = ["rust-crypto", "p256", "sha2"]
 secp384r1 = ["rust-crypto", "p384", "sha2"]
 stark = ["rust-crypto", "stark-curve", "sha2"]
 ed25519 = ["dep:curve25519", "dep:group"]
+curve448 = ["dep:ed448-goldilocks-plus", "dep:group", "dep:generic-array"]
 
 [package.metadata.docs.rs]
 all-features = true

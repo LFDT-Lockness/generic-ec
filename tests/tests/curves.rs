@@ -256,6 +256,9 @@ mod tests {
 
     #[instantiate_tests(<Ed25519>)]
     mod ed25519 {}
+
+    #[instantiate_tests(<Curve448>)]
+    mod curve448 {}
 }
 
 #[generic_tests::define]
@@ -300,6 +303,11 @@ mod scalar_reduce {
     mod ed25519_32 {}
     #[instantiate_tests(<generic_ec::curves::Ed25519, 64>)]
     mod ed25519_64 {}
+
+    #[instantiate_tests(<generic_ec::curves::Curve448, 56>)]
+    mod curve448_56 {}
+    #[instantiate_tests(<generic_ec::curves::Curve448, 112>)]
+    mod curve448_112 {}
 }
 
 #[generic_tests::define]
