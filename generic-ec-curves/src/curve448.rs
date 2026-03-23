@@ -300,7 +300,9 @@ impl generic_ec_core::SamplableVartime for Scalar {
         }
         impl<R> rand_core::CryptoRng for FakeCryptoRng<R> {}
 
-        Self(ed448_goldilocks_plus::Scalar::random(&mut FakeCryptoRng(rng)))
+        Self(ed448_goldilocks_plus::Scalar::random(&mut FakeCryptoRng(
+            rng,
+        )))
     }
 }
 

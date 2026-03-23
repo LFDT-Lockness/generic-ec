@@ -272,6 +272,9 @@ pub use self::{
 
 /// Curves supported out of the box
 pub mod curves {
+    #[cfg(feature = "curve-curve448")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "curve-curve448")))]
+    pub use generic_ec_curves::Curve448;
     #[cfg(feature = "curve-ed25519")]
     #[cfg_attr(docsrs, doc(cfg(feature = "curve-ed25519")))]
     pub use generic_ec_curves::Ed25519;
@@ -287,9 +290,6 @@ pub mod curves {
     #[cfg(feature = "curve-stark")]
     #[cfg_attr(docsrs, doc(cfg(feature = "curve-stark")))]
     pub use generic_ec_curves::Stark;
-    #[cfg(feature = "curve-curve448")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "curve-curve448")))]
-    pub use generic_ec_curves::Curve448;
 
     macro_rules! create_aliases {
         ($(#[$attr:meta] $mod:ident: $curve:ident),+$(,)?) => {$(

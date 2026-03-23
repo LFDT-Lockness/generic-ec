@@ -16,10 +16,10 @@ pub mod __docs;
 #[cfg(any(feature = "ed25519", feature = "curve448", feature = "rust-crypto"))]
 mod utils;
 
-#[cfg(feature = "ed25519")]
-pub mod ed25519;
 #[cfg(feature = "curve448")]
 pub mod curve448;
+#[cfg(feature = "ed25519")]
+pub mod ed25519;
 #[cfg(feature = "rust-crypto")]
 pub mod rust_crypto;
 
