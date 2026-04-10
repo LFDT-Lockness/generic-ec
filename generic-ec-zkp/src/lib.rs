@@ -14,5 +14,7 @@ extern crate alloc;
 use generic_array as _;
 
 pub mod dlog_eq;
+#[cfg(feature = "udigest")]
+pub mod hash_commitment;
 pub mod polynomial;
 pub mod schnorr_pok;
