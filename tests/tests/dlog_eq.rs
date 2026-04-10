@@ -46,8 +46,8 @@ mod interactive {
     mod stark {}
     #[instantiate_tests(<generic_ec::curves::Ed25519>)]
     mod ed25519 {}
-    #[instantiate_tests(<generic_ec::curves::Curve448>)]
-    mod curve448 {}
+    #[instantiate_tests(<generic_ec::curves::Ed448>)]
+    mod ed448 {}
 }
 
 #[generic_tests::define]
@@ -94,6 +94,6 @@ mod non_interactive {
     mod stark_sha256 {}
     #[instantiate_tests(<generic_ec::curves::Ed25519, sha2::Sha256>)]
     mod ed25519_sha256 {}
-    #[instantiate_tests(<generic_ec::curves::Curve448, sha2::Sha256>)]
-    mod curve448_sha256 {}
+    #[instantiate_tests(<generic_ec::curves::Ed448, sha2::Sha256>)]
+    mod ed448_sha256 {}
 }

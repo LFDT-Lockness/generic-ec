@@ -74,7 +74,7 @@
 //! | secp384r1    | `curve-secp384r1`  | [RustCrypto/p384]        |
 //! | stark-curve  | `curve-stark`      | [Dfns/stark]             |
 //! | Ed25519      | `curve-ed25519`    | [curve25519-dalek]       |
-//! | Curve448     | `curve-curve448`   | [ed448-goldilocks-plus]  |
+//! | Ed448        | `curve-ed448`      | [ed448-goldilocks-plus]  |
 //!
 //! [RustCrypto/k256]: https://github.com/RustCrypto/elliptic-curves/tree/master/k256
 //! [RustCrypto/p256]: https://github.com/RustCrypto/elliptic-curves/tree/master/p256
@@ -272,12 +272,12 @@ pub use self::{
 
 /// Curves supported out of the box
 pub mod curves {
-    #[cfg(feature = "curve-curve448")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "curve-curve448")))]
-    pub use generic_ec_curves::Curve448;
     #[cfg(feature = "curve-ed25519")]
     #[cfg_attr(docsrs, doc(cfg(feature = "curve-ed25519")))]
     pub use generic_ec_curves::Ed25519;
+    #[cfg(feature = "curve-ed448")]
+    #[cfg_attr(docsrs, doc(cfg(feature = "curve-ed448")))]
+    pub use generic_ec_curves::Ed448;
     #[cfg(feature = "curve-secp256k1")]
     #[cfg_attr(docsrs, doc(cfg(feature = "curve-secp256k1")))]
     pub use generic_ec_curves::Secp256k1;
@@ -367,7 +367,7 @@ pub mod curves {
         stark: Stark,
         #[cfg(feature = "curve-ed25519")]
         ed25519: Ed25519,
-        #[cfg(feature = "curve-curve448")]
-        curve448: Curve448,
+        #[cfg(feature = "curve-ed448")]
+        ed448: Ed448,
     }
 }

@@ -24,9 +24,9 @@ fn bench_curves(c: &mut criterion::Criterion) {
     bench_bytes_reduction::<generic_ec_curves::Ed25519, 32>(c, &mut rng, "ed25519");
     bench_bytes_reduction::<generic_ec_curves::Ed25519, 64>(c, &mut rng, "ed25519");
 
-    bench_curve::<generic_ec_curves::Curve448>(c, &mut rng, "curve448");
-    bench_bytes_reduction::<generic_ec_curves::Curve448, 56>(c, &mut rng, "curve448");
-    bench_bytes_reduction::<generic_ec_curves::Curve448, 112>(c, &mut rng, "curve448");
+    bench_curve::<generic_ec_curves::Ed448>(c, &mut rng, "ed448");
+    bench_bytes_reduction::<generic_ec_curves::Ed448, 57>(c, &mut rng, "ed448");
+    bench_bytes_reduction::<generic_ec_curves::Ed448, 114>(c, &mut rng, "ed448");
 }
 
 fn bench_curve<E: Curve>(

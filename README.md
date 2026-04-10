@@ -76,7 +76,7 @@ Crate provides support for following elliptic curves out of box:
 | secp384r1    | `curve-secp384r1`  | [RustCrypto/p384]        |
 | stark-curve  | `curve-stark`      | [Dfns/stark]             |
 | Ed25519      | `curve-ed25519`    | [curve25519-dalek]       |
-| Curve448     | `curve-curve448`   | [ed448-goldilocks-plus]  |
+| Ed448        | `curve-ed448`      | [ed448-goldilocks-plus]  |
 
 [RustCrypto/k256]: https://github.com/RustCrypto/elliptic-curves/tree/master/k256
 [RustCrypto/p256]: https://github.com/RustCrypto/elliptic-curves/tree/master/p256

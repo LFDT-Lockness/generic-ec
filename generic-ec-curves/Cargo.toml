@@ -49,7 +49,7 @@ secp256r1 = ["rust-crypto", "p256", "sha2"]
 secp384r1 = ["rust-crypto", "p384", "sha2"]
 stark = ["rust-crypto", "stark-curve", "sha2"]
 ed25519 = ["dep:curve25519", "dep:group"]
-curve448 = ["dep:ed448-goldilocks-plus", "dep:group", "dep:generic-array"]
+ed448 = ["dep:ed448-goldilocks-plus", "dep:group", "dep:generic-array"]
 
 [package.metadata.docs.rs]
 all-features = true

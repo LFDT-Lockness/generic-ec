@@ -1,29 +1,15 @@
-//! Curve448 (Goldilocks) curve
+//! Ed448 (Goldilocks) curve
 
 use generic_array::GenericArray;
 
-/// Pads a 56-byte LE scalar to 57 bytes (ScalarBytes format)
-fn pad_to_57(bytes: &[u8; 56]) -> [u8; 57] {
-    let mut padded = [0u8; 57];
-    padded[..56].copy_from_slice(bytes);
-    padded
-}
-
-/// Pads a 112-byte LE scalar to 114 bytes (WideScalarBytes format)
-fn pad_to_114(bytes: &[u8; 112]) -> [u8; 114] {
-    let mut padded = [0u8; 114];
-    padded[..112].copy_from_slice(bytes);
-    padded
-}
-
-/// Curve448 (Goldilocks) curve
-#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Default)]
-pub struct Curve448 {
+/// Ed448 (Goldilocks) curve
+#[derive(Clone, Copy, Debug, PartialEq, PartialOrd, Eq, Ord, Hash, Default, zeroize::Zeroize)]
+pub struct Ed448 {
     _private: (),
 }
 
-impl generic_ec_core::Curve for Curve448 {
-    const CURVE_NAME: &'static str = "curve448";
+impl generic_ec_core::Curve for Ed448 {
+    const CURVE_NAME: &'static str = "ed448";
 
     type Point = Point;
     type Scalar = Scalar;
@@ -33,14 +19,14 @@ impl generic_ec_core::Curve for Curve448 {
 
     type ScalarArray = <Scalar as generic_ec_core::IntegerEncoding>::Bytes;
 
-    // We don't expose affine coordinates for curve448
+    // We don't expose affine coordinates for ed448
     type CoordinateArray = [u8; 0];
 }
 
 // --- Point ---
 
-/// Curve448 point
-#[derive(Clone, Copy, PartialEq, Eq)]
+/// Ed448 point
+#[derive(Clone, Copy, PartialEq, Eq, zeroize::Zeroize)]
 #[repr(transparent)]
 pub struct Point(pub ed448_goldilocks_plus::EdwardsPoint);
 
@@ -116,10 +102,7 @@ impl generic_ec_core::CompressedEncoding for Point {
 
     fn to_bytes_compressed(&self) -> Self::Bytes {
         use group::GroupEncoding;
-        let ga = self.0.to_bytes();
-        let mut bytes = [0u8; 57];
-        bytes.copy_from_slice(ga.as_ref());
-        bytes
+        self.0.to_bytes().into()
     }
 }
 
@@ -174,17 +157,10 @@ impl core::fmt::Debug for Point {
     }
 }
 
-impl zeroize::Zeroize for Point {
-    fn zeroize(&mut self) {
-        // Replace with identity point
-        self.0 = group::Group::identity();
-    }
-}
-
 // --- Scalar ---
 
-/// Curve448 scalar
-#[derive(Default, Clone, Copy, PartialEq, Eq)]
+/// Ed448 scalar
+#[derive(Default, Clone, Copy, PartialEq, Eq, zeroize::Zeroize)]
 pub struct Scalar(pub ed448_goldilocks_plus::Scalar);
 
 impl Scalar {
@@ -264,15 +240,15 @@ impl generic_ec_core::One for Scalar {
 }
 
 impl generic_ec_core::FromUniformBytes for Scalar {
-    /// 72 bytes
+    /// 84 bytes
     ///
-    /// `L = ceil((ceil(log2(q)) + k) / 8) = ceil((446 + 128) / 8) = 72` bytes are enough to
+    /// `L = ceil((ceil(log2(q)) + k) / 8) = ceil((446 + 224) / 8) = 84` bytes are enough to
     /// guarantee the uniform distribution (RFC 9380)
-    type Bytes = [u8; 72];
+    type Bytes = [u8; 84];
 
     fn from_uniform_bytes(bytes: &Self::Bytes) -> Self {
         let mut bytes_le = [0u8; 114];
-        bytes_le[..72].copy_from_slice(bytes);
+        bytes_le[..84].copy_from_slice(bytes);
         Self(ed448_goldilocks_plus::Scalar::from_bytes_mod_order_wide(
             GenericArray::from_slice(&bytes_le),
         ))
@@ -321,7 +297,7 @@ impl subtle::ConditionallySelectable for Scalar {
 }
 
 impl generic_ec_core::IntegerEncoding for Scalar {
-    type Bytes = [u8; 56];
+    type Bytes = [u8; 57];
 
     fn to_be_bytes(&self) -> Self::Bytes {
         let mut bytes = self.to_le_bytes();
@@ -330,7 +306,7 @@ impl generic_ec_core::IntegerEncoding for Scalar {
     }
 
     fn to_le_bytes(&self) -> Self::Bytes {
-        self.0.to_bytes()
+        self.0.to_bytes_rfc_8032().into()
     }
 
     fn from_be_bytes_exact(bytes: &Self::Bytes) -> Option<Self> {
@@ -340,19 +316,18 @@ impl generic_ec_core::IntegerEncoding for Scalar {
     }
 
     fn from_le_bytes_exact(bytes: &Self::Bytes) -> Option<Self> {
-        let padded = pad_to_57(bytes);
         Option::from(ed448_goldilocks_plus::Scalar::from_canonical_bytes(
-            GenericArray::from_slice(&padded),
+            GenericArray::from_slice(bytes),
         ))
         .map(Self)
     }
 
     fn from_be_bytes_mod_order(bytes: &[u8]) -> Self {
-        crate::utils::scalar_from_be_bytes_mod_order_reducing::<_, 56>(bytes, &Self::ONE)
+        crate::utils::scalar_from_be_bytes_mod_order_reducing::<_, 57>(bytes, &Self::ONE)
     }
 
     fn from_le_bytes_mod_order(bytes: &[u8]) -> Self {
-        crate::utils::scalar_from_le_bytes_mod_order_reducing::<_, 56>(bytes, &Self::ONE)
+        crate::utils::scalar_from_le_bytes_mod_order_reducing::<_, 57>(bytes, &Self::ONE)
     }
 }
 
@@ -376,42 +351,35 @@ impl core::fmt::Debug for Scalar {
     }
 }
 
-impl zeroize::Zeroize for Scalar {
-    fn zeroize(&mut self) {
-        self.0 = ed448_goldilocks_plus::Scalar::ZERO;
-    }
-}
-
-impl generic_ec_core::Reduce<56> for Scalar {
-    fn from_be_array_mod_order(bytes: &[u8; 56]) -> Self {
+impl generic_ec_core::Reduce<57> for Scalar {
+    fn from_be_array_mod_order(bytes: &[u8; 57]) -> Self {
         let mut bytes = *bytes;
         bytes.reverse();
-        let padded = pad_to_57(&bytes);
-        Self(ed448_goldilocks_plus::Scalar::from_bytes_mod_order(
-            GenericArray::from_slice(&padded),
-        ))
+        Self::from_le_array_mod_order(&bytes)
     }
-    fn from_le_array_mod_order(bytes: &[u8; 56]) -> Self {
-        let padded = pad_to_57(bytes);
-        Self(ed448_goldilocks_plus::Scalar::from_bytes_mod_order(
-            GenericArray::from_slice(&padded),
+    fn from_le_array_mod_order(bytes: &[u8; 57]) -> Self {
+        // `from_bytes_mod_order` only uses bytes[0..56] and ignores byte[56].
+        // Use `from_bytes_mod_order_wide` with zero-padding so all 57 bytes
+        // (= 456-bit LE integer) are correctly reduced mod the group order.
+        let mut wide = [0u8; 114];
+        wide[..57].copy_from_slice(bytes);
+        Self(ed448_goldilocks_plus::Scalar::from_bytes_mod_order_wide(
+            GenericArray::from_slice(&wide),
         ))
     }
 }
 
-impl generic_ec_core::Reduce<112> for Scalar {
-    fn from_be_array_mod_order(bytes: &[u8; 112]) -> Self {
+impl generic_ec_core::Reduce<114> for Scalar {
+    fn from_be_array_mod_order(bytes: &[u8; 114]) -> Self {
         let mut bytes = *bytes;
         bytes.reverse();
-        let padded = pad_to_114(&bytes);
         Self(ed448_goldilocks_plus::Scalar::from_bytes_mod_order_wide(
-            GenericArray::from_slice(&padded),
+            GenericArray::from_slice(&bytes),
         ))
     }
-    fn from_le_array_mod_order(bytes: &[u8; 112]) -> Self {
-        let padded = pad_to_114(bytes);
+    fn from_le_array_mod_order(bytes: &[u8; 114]) -> Self {
         Self(ed448_goldilocks_plus::Scalar::from_bytes_mod_order_wide(
-            GenericArray::from_slice(&padded),
+            GenericArray::from_slice(bytes),
         ))
     }
 }
