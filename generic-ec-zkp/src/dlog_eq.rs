@@ -90,18 +90,18 @@
 //!     .expect("Verification failed!");
 //! ```
 
-use generic_ec::{Curve, Point};
+use generic_ec::{Curve, NonZero, Point};
 
 /// Object of the proof: `log_gen1 prod1 == log_gen2 prod2`
 #[derive(Debug, Clone, Copy)]
 #[cfg_attr(feature = "udigest", derive(udigest::Digestable), udigest(bound = ""))]
 pub struct Data<E: Curve> {
     /// `G`, a generator, in multiplicative notation the base for one logarithm
-    pub gen1: Point<E>,
+    pub gen1: NonZero<Point<E>>,
     /// `X`, a point `G * x`, in multiplicative notation the value inside one logarithm
     pub prod1: Point<E>,
     /// `H`, a generator, in multiplicative notation the base for the other logarithm
-    pub gen2: Point<E>,
+    pub gen2: NonZero<Point<E>>,
     /// `Z`, a point `H * x`, in multiplicative notation the value inside the other logarithm
     pub prod2: Point<E>,
 }
@@ -111,9 +111,9 @@ impl<E: Curve> Data<E> {
     /// generator, and `x` is a secret key
     ///
     /// In this case, we set `H = gen` as gen2 and `Z = G * x` as prod2
-    pub fn from_secret_key(x: &generic_ec::SecretScalar<E>, gen: Point<E>) -> Data<E> {
+    pub fn from_secret_key(x: &generic_ec::SecretScalar<E>, gen: NonZero<Point<E>>) -> Data<E> {
         Self {
-            gen1: Point::generator().into(),
+            gen1: Point::generator().to_nonzero_point(),
             prod1: Point::generator() * x,
             gen2: gen,
             prod2: gen * x,
@@ -145,8 +145,8 @@ pub mod interactive {
     /// `rng` is used to generate the nonce for the private commitment
     pub fn commit<E: Curve>(
         rng: &mut (impl rand_core::RngCore + rand_core::CryptoRng),
-        gen1: Point<E>,
-        gen2: Point<E>,
+        gen1: NonZero<Point<E>>,
+        gen2: NonZero<Point<E>>,
     ) -> (Commitment<E>, PrivateCommitment<E>) {
         let r = Scalar::random(rng);
         let comm = (gen1 * r, gen2 * r);

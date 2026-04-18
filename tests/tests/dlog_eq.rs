@@ -8,7 +8,7 @@ mod interactive {
 
         let secret_share = generic_ec::SecretScalar::<E>::random(&mut rng);
 
-        let base = generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng);
+        let base = generic_ec::NonZero::from_point(generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng)).unwrap();
         let data = dlog_eq::Data::from_secret_key(&secret_share, base);
 
         let (comm, pcomm) = dlog_eq::commit_data(&mut rng, data);
@@ -22,7 +22,7 @@ mod interactive {
 
         let secret_share = generic_ec::SecretScalar::<E>::random(&mut rng);
 
-        let base = generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng);
+        let base = generic_ec::NonZero::from_point(generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng)).unwrap();
         let mut data = dlog_eq::Data::from_secret_key(&secret_share, base);
         // Replace the exponentiation with something wrong
         data.prod2 += generic_ec::Point::generator();
@@ -59,7 +59,7 @@ mod non_interactive {
 
         let secret_share = generic_ec::SecretScalar::random(&mut rng);
 
-        let base = generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng);
+        let base = generic_ec::NonZero::from_point(generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng)).unwrap();
         let data = dlog_eq::Data::from_secret_key(&secret_share, base);
 
         let proof = dlog_eq::prove::<E, D>(&mut rng, &shared_state, &secret_share, data);
@@ -73,7 +73,7 @@ mod non_interactive {
 
         let secret_share = generic_ec::SecretScalar::random(&mut rng);
 
-        let base = generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng);
+        let base = generic_ec::NonZero::from_point(generic_ec::Point::generator() * generic_ec::Scalar::random(&mut rng)).unwrap();
         let mut data = dlog_eq::Data::from_secret_key(&secret_share, base);
         // make exp2 wrong so that proof won't hold
         data.prod2 += generic_ec::Point::generator();
