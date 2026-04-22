@@ -300,7 +300,7 @@ use generic_ec::{Curve, NonZero, Scalar};
 
 /// Calculates lagrange coefficient $\lambda_j$ to interpolate a polynomial at point $x$
 ///
-/// Lagrange coefficient are often used to turn polynomial key shares into additive
+/// Lagrange coefficients are often used to turn polynomial key shares into additive
 /// key shares.
 ///
 /// ## Inputs
@@ -407,7 +407,7 @@ mod tests {
         let secret = SecretScalar::<E>::random(&mut rng);
         let f = Polynomial::sample_with_const_term(&mut rng, 3, secret.clone());
 
-        // Chech that `f(0) = secret`
+        // Check that `f(0) = secret`
         {
             let f_0: Scalar<_> = f.value(&Scalar::zero());
             assert_eq!(secret.as_ref(), &f_0);
@@ -431,7 +431,7 @@ mod tests {
         let shares: [Scalar<_>; 4] = shares_indexes.map(|i| f.value(&i));
         let public_shares = shares.map(|secret_share| Point::generator() * secret_share);
 
-        // Chech that `public_shares[i] = F(i)`
+        // Check that `public_shares[i] = F(i)`
         {
             for (i, public_share) in (1..).zip(&public_shares) {
                 assert_eq!(public_share, &F.value::<_, Point<E>>(&Scalar::from(i)));
