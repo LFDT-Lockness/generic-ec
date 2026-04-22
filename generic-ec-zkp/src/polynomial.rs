@@ -338,8 +338,14 @@ use generic_ec::{Curve, NonZero, Scalar};
 ///     .sum::<Scalar<_>>();
 /// assert_eq!(secret.as_ref(), &reconstructed_secret);
 /// ```
-pub fn lagrange_coefficient<E: Curve>(
-    x: Scalar<E>,
+/// Calculates the inverted denominator of the lagrange coefficient.
+///
+/// Note that the denominator is independent of the point `x` at which the lagrange coefficient
+/// is evaluated. Computing it takes $O(N)$ modular inversions. You can compute it once and use it
+/// to compute lagrange coefficients for different `x` much faster using [`lagrange_coefficient_eval`].
+///
+/// Returns `None` if `j >= xs.len()` or if there's `m` such that `xs[j] == xs[m]`.
+pub fn lagrange_coefficient_denom_inv<E: Curve>(
     j: usize,
     xs: &[impl AsRef<Scalar<E>>],
 ) -> Option<NonZero<Scalar<E>>> {
@@ -348,18 +354,46 @@ pub fn lagrange_coefficient<E: Curve>(
         .enumerate()
         .filter(|(i, _x_i)| *i != j)
         .map(|(_, x_i)| x_i);
-    let nom = xs_without_j
-        .clone()
-        .map(|x_m| x - x_m.as_ref())
-        .product::<Scalar<E>>();
 
     let x_j = xs.get(j)?.as_ref();
     let denom = xs_without_j
         .map(|x_m| x_j - x_m.as_ref())
         .product::<Scalar<E>>();
-    let denom_inv = denom.invert()?;
+    NonZero::from_scalar(denom.invert()?)
+}
 
-    NonZero::from_scalar(nom * denom_inv)
+/// Evaluates lagrange coefficient at point `x` using a precomputed inverted denominator.
+///
+/// See [`lagrange_coefficient_denom_inv`] for precomputing the denominator.
+pub fn lagrange_coefficient_eval<E: Curve>(
+    x: Scalar<E>,
+    j: usize,
+    xs: &[impl AsRef<Scalar<E>>],
+    denom_inv: &NonZero<Scalar<E>>,
+) -> Option<NonZero<Scalar<E>>> {
+    if j >= xs.len() {
+        return None;
+    }
+
+    let xs_without_j = xs
+        .iter()
+        .enumerate()
+        .filter(|(i, _x_i)| *i != j)
+        .map(|(_, x_i)| x_i);
+    let nom = xs_without_j
+        .map(|x_m| x - x_m.as_ref())
+        .product::<Scalar<E>>();
+
+    NonZero::from_scalar(nom * denom_inv.as_ref())
+}
+
+pub fn lagrange_coefficient<E: Curve>(
+    x: Scalar<E>,
+    j: usize,
+    xs: &[impl AsRef<Scalar<E>>],
+) -> Option<NonZero<Scalar<E>>> {
+    let denom_inv = lagrange_coefficient_denom_inv(j, xs)?;
+    lagrange_coefficient_eval(x, j, xs, &denom_inv)
 }
 
 /// Calculates lagrange coefficient $\lambda_j$ to interpolate a polynomial at point $0$
@@ -503,6 +537,30 @@ mod tests {
             let expected = coefs[0] + x * coefs[1] + x * x * coefs[2];
 
             assert_eq!(f_x, expected);
+        }
+    }
+
+    #[test]
+    fn optimized_lagrange_evaluation<E: Curve>() {
+        let mut rng = DevRng::new();
+
+        let xs: [Scalar<E>; 4] = [
+            Scalar::from(1),
+            Scalar::from(2),
+            Scalar::from(3),
+            Scalar::from(4),
+        ];
+
+        for _ in 0..10 {
+            let x = Scalar::random(&mut rng);
+
+            for j in 0..4 {
+                let denom_inv = crate::polynomial::lagrange_coefficient_denom_inv(j, &xs).unwrap();
+                let eval_opt = crate::polynomial::lagrange_coefficient_eval(x, j, &xs, &denom_inv).unwrap();
+                let eval_orig = lagrange_coefficient(x, j, &xs).unwrap();
+
+                assert_eq!(eval_opt, eval_orig);
+            }
         }
     }
 
