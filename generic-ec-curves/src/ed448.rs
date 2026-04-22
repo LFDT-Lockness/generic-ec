@@ -75,9 +75,7 @@ impl generic_ec_core::OnCurve for Point {
 impl generic_ec_core::SmallFactor for Point {
     #[inline]
     fn is_torsion_free(&self) -> subtle::Choice {
-        <ed448_goldilocks_plus::EdwardsPoint as group::cofactor::CofactorGroup>::is_torsion_free(
-            &self.0,
-        )
+        self.0.is_torsion_free()
     }
 }
 
@@ -117,6 +115,9 @@ impl generic_ec_core::UncompressedEncoding for Point {
 impl generic_ec_core::Decode for Point {
     fn decode(bytes: &[u8]) -> Option<Self> {
         use group::GroupEncoding;
+        if bytes.len() != 57 {
+            return None;
+        }
         let ga = GenericArray::from_slice(bytes);
         Option::from(ed448_goldilocks_plus::EdwardsPoint::from_bytes(ga)).map(Self)
     }
@@ -145,15 +146,6 @@ impl core::hash::Hash for Point {
 impl Default for Point {
     fn default() -> Self {
         Self(group::Group::identity())
-    }
-}
-
-impl core::fmt::Debug for Point {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        use generic_ec_core::CompressedEncoding;
-        f.debug_tuple("Point")
-            .field(&self.to_bytes_compressed())
-            .finish()
     }
 }
 
@@ -247,10 +239,10 @@ impl generic_ec_core::FromUniformBytes for Scalar {
     type Bytes = [u8; 84];
 
     fn from_uniform_bytes(bytes: &Self::Bytes) -> Self {
-        let mut bytes_le = [0u8; 114];
-        bytes_le[..84].copy_from_slice(bytes);
+        let mut wide = GenericArray::default();
+        wide[..84].copy_from_slice(bytes);
         Self(ed448_goldilocks_plus::Scalar::from_bytes_mod_order_wide(
-            GenericArray::from_slice(&bytes_le),
+            &wide,
         ))
     }
 }
@@ -317,7 +309,7 @@ impl generic_ec_core::IntegerEncoding for Scalar {
 
     fn from_le_bytes_exact(bytes: &Self::Bytes) -> Option<Self> {
         Option::from(ed448_goldilocks_plus::Scalar::from_canonical_bytes(
-            GenericArray::from_slice(bytes),
+            bytes.into(),
         ))
         .map(Self)
     }
@@ -344,13 +336,6 @@ impl core::cmp::Ord for Scalar {
     }
 }
 
-impl core::fmt::Debug for Scalar {
-    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        use generic_ec_core::IntegerEncoding;
-        f.debug_tuple("Scalar").field(&self.to_le_bytes()).finish()
-    }
-}
-
 impl generic_ec_core::Reduce<57> for Scalar {
     fn from_be_array_mod_order(bytes: &[u8; 57]) -> Self {
         let mut bytes = *bytes;
@@ -361,10 +346,10 @@ impl generic_ec_core::Reduce<57> for Scalar {
         // `from_bytes_mod_order` only uses bytes[0..56] and ignores byte[56].
         // Use `from_bytes_mod_order_wide` with zero-padding so all 57 bytes
         // (= 456-bit LE integer) are correctly reduced mod the group order.
-        let mut wide = [0u8; 114];
+        let mut wide = GenericArray::default();
         wide[..57].copy_from_slice(bytes);
         Self(ed448_goldilocks_plus::Scalar::from_bytes_mod_order_wide(
-            GenericArray::from_slice(&wide),
+            &wide,
         ))
     }
 }
@@ -373,13 +358,17 @@ impl generic_ec_core::Reduce<114> for Scalar {
     fn from_be_array_mod_order(bytes: &[u8; 114]) -> Self {
         let mut bytes = *bytes;
         bytes.reverse();
+        let mut wide = GenericArray::default();
+        wide.copy_from_slice(&bytes);
         Self(ed448_goldilocks_plus::Scalar::from_bytes_mod_order_wide(
-            GenericArray::from_slice(&bytes),
+            &wide,
         ))
     }
     fn from_le_array_mod_order(bytes: &[u8; 114]) -> Self {
+        let mut wide = GenericArray::default();
+        wide.copy_from_slice(bytes);
         Self(ed448_goldilocks_plus::Scalar::from_bytes_mod_order_wide(
-            GenericArray::from_slice(bytes),
+            &wide,
         ))
     }
 }
