@@ -380,16 +380,19 @@ macro_rules! impl_from_primitive_integer {
 }
 
 macro_rules! impl_from_signed_integer {
-    ($($iint:ident),+) => {$(
+    ($($iint:ident => $uint:ident),+ $(,)?) => {$(
         impl<E: Curve> From<$iint> for Scalar<E> {
             fn from(i: $iint) -> Self {
-                use subtle::{ConditionallyNegatable, Choice};
-                // TODO: what's a better way to do that check in constant time?
-                let is_neg = Choice::from(u8::from(i.is_negative()));
-                let i = i.unsigned_abs();
-                let mut i = Scalar::from(i);
-                i.conditional_negate(is_neg);
-                i
+                use subtle::{Choice, ConditionallyNegatable};
+                const BITS: u32 = <$iint>::BITS;
+                let x = i as $uint;
+                let mask = (x >> (BITS - 1)).wrapping_neg();
+                let abs = x.wrapping_add(mask) ^ mask;
+                let mut scalar = Scalar::from(abs);
+                scalar.conditional_negate(
+                    Choice::from((mask >> (BITS - 1)) as u8)
+                );
+                scalar
             }
         }
     )+};
@@ -399,7 +402,12 @@ impl_from_primitive_integer! {
     u8, u16, u32, u64, u128, usize
 }
 impl_from_signed_integer! {
-    i8, i16, i32, i64, i128
+    i8 => u8,
+    i16 => u16,
+    i32 => u32,
+    i64 => u64,
+    i128 => u128,
+    isize => usize
 }
 
 impl<E: Curve> fmt::Debug for Scalar<E> {
