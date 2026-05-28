@@ -4,6 +4,7 @@
 [![Docs](https://docs.rs/generic-ec/badge.svg)](https://docs.rs/generic-ec)
 [![Crates io](https://img.shields.io/crates/v/generic-ec.svg)](https://crates.io/crates/generic-ec)
 [![Discord](https://img.shields.io/discord/905194001349627914?logo=discord&logoColor=ffffff&label=Discord)][in Discord]
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/LFDT-Lockness/generic-ec/badge)](https://scorecard.dev/viewer/?uri=github.com/LFDT-Lockness/generic-ec)
 
 # General elliptic curve cryptography
 
