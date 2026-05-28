@@ -4,6 +4,7 @@
 [![Docs](https://docs.rs/generic-ec/badge.svg)](https://docs.rs/generic-ec)
 [![Crates io](https://img.shields.io/crates/v/generic-ec.svg)](https://crates.io/crates/generic-ec)
 [![Discord](https://img.shields.io/discord/905194001349627914?logo=discord&logoColor=ffffff&label=Discord)][in Discord]
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/LFDT-Lockness/generic-ec/badge)](https://scorecard.dev/viewer/?uri=github.com/LFDT-Lockness/generic-ec)
 
 # General elliptic curve cryptography
 
@@ -173,7 +174,7 @@ let _ = some_generic_computation(&mut rng, point2);
 ## Join us in Discord!
 Feel free to reach out to us [in Discord]!
 
-[in Discord]: https://discordapp.com/channels/905194001349627914/1285268686147424388
+[in Discord]: https://discord.com/invite/hyperledger
 
 ## License
 
