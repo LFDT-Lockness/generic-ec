@@ -76,6 +76,23 @@ mod tests {
     }
 
     #[test]
+    fn scalar_from_signed_min<E: Curve>() {
+        assert_eq!(Scalar::<E>::from(i8::MIN), Scalar::<E>::zero() - Scalar::from(i8::MIN.unsigned_abs()));
+        assert_eq!(Scalar::<E>::from(i16::MIN), Scalar::<E>::zero() - Scalar::from(i16::MIN.unsigned_abs()));
+        assert_eq!(Scalar::<E>::from(i32::MIN), Scalar::<E>::zero() - Scalar::from(i32::MIN.unsigned_abs()));
+        assert_eq!(Scalar::<E>::from(i64::MIN), Scalar::<E>::zero() - Scalar::from(i64::MIN.unsigned_abs()));
+        assert_eq!(Scalar::<E>::from(i128::MIN), Scalar::<E>::zero() - Scalar::from(i128::MIN.unsigned_abs()));
+        assert_eq!(Scalar::<E>::from(isize::MIN),Scalar::<E>::zero() - Scalar::from(isize::MIN.unsigned_abs())
+    );
+    }
+    #[test]
+    fn scalar_from_minus_one<E: Curve>() {
+        assert_eq!(
+            Scalar::<E>::from(-1i32),
+            Scalar::<E>::zero() - Scalar::<E>::one()
+        )
+    }
+    #[test]
     fn scalar_invert<E: Curve>() {
         let mut rng = DevRng::new();
 
