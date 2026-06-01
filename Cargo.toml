@@ -34,7 +34,7 @@ udigest = { version = "0.2.1", default-features = false }
 
 zeroize = { version = "1", default-features = false }
 
-criterion = "0.5"
+criterion = "0.8"
 generic-tests = "0.1"
 serde_test = "1"
 rand_dev = "0.1"
