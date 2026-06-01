@@ -13,7 +13,7 @@ generic-ec-zkp = { path = "../generic-ec-zkp", default-features = false, feature
 plotters = "0.3"
 anyhow = "1"
 regex = "1.10"
-tabled = { version = "0.15", default-features = false, features = ["std"] }
+tabled = { version = "0.21", default-features = false, features = ["std"] }
 
 digest.workspace = true
 serde = { workspace = true, features = ["derive"] }
