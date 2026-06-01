@@ -12,7 +12,7 @@ generic-ec-zkp = { path = "../generic-ec-zkp", default-features = false, feature
 
 plotters = "0.3"
 anyhow = "1"
-regex = "1.10"
+regex = "1.12"
 tabled = { version = "0.15", default-features = false, features = ["std"] }
 
 digest.workspace = true
