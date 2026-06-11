@@ -1,8 +1,11 @@
 use core::{fmt, ops};
 
+use zeroize::Zeroize;
+
 use crate::{as_raw::AsRaw, core::ByteArray, Curve};
 
 /// Bytes representation of an elliptic point
+#[derive(Zeroize)]
 pub struct EncodedPoint<E: Curve>(EncodedPointInner<E>);
 
 impl<E: Curve> EncodedPoint<E> {
@@ -64,6 +67,24 @@ enum EncodedPointInner<E: Curve> {
 impl<E: Curve> AsRef<[u8]> for EncodedPoint<E> {
     fn as_ref(&self) -> &[u8] {
         self.as_bytes()
+    }
+}
+
+impl<E: Curve> AsMut<[u8]> for EncodedPoint<E> {
+    fn as_mut(&mut self) -> &mut [u8] {
+        match &mut self.0 {
+            EncodedPointInner::Compressed(a) => a.as_mut(),
+            EncodedPointInner::Uncompressed(a) => a.as_mut(),
+        }
+    }
+}
+
+impl<E: Curve> Zeroize for EncodedPointInner<E> {
+    fn zeroize(&mut self) {
+        match self {
+            EncodedPointInner::Compressed(a) => a.as_mut().zeroize(),
+            EncodedPointInner::Uncompressed(a) => a.as_mut().zeroize(),
+        }
     }
 }
 
@@ -131,5 +152,11 @@ impl<E: Curve> AsRaw for EncodedScalar<E> {
     type Raw = E::ScalarArray;
     fn as_raw(&self) -> &Self::Raw {
         &self.0
+    }
+}
+
+impl<E: Curve> Zeroize for EncodedScalar<E> {
+    fn zeroize(&mut self) {
+        self.as_mut().zeroize()
     }
 }
