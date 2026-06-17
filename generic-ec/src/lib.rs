@@ -207,6 +207,7 @@ pub mod multiscalar;
 mod non_zero;
 mod point;
 mod scalar;
+mod secret_point;
 mod secret_scalar;
 
 mod _unused_deps {
@@ -266,6 +267,7 @@ pub use self::{
     non_zero::definition::NonZero,
     point::definition::Point,
     scalar::{Radix16Iter, Scalar},
+    secret_point::definition::SecretPoint,
     secret_scalar::definition::SecretScalar,
 };
 

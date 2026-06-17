@@ -4,6 +4,8 @@ use core::iter::{Product, Sum};
 use rand_core::{CryptoRng, RngCore};
 use subtle::{Choice, ConstantTimeEq};
 
+#[cfg(feature = "alloc")]
+use crate::EncodedScalar;
 use crate::{errors::InvalidScalar, Curve, Scalar};
 
 use self::definition::SecretScalar;
@@ -59,6 +61,20 @@ impl<E: Curve> SecretScalar<E> {
     pub fn from_hash<D: digest::Digest>(data: &impl udigest::Digestable) -> Self {
         let mut rng = rand_hash::HashRng::<D, _>::from_seed(data);
         Self::random(&mut rng)
+    }
+
+    /// Encodes scalar as bytes in big-endian order
+    #[cfg(feature = "alloc")]
+    pub fn to_be_bytes(&self) -> alloc::boxed::Box<zeroize::Zeroizing<EncodedScalar<E>>> {
+        let bytes = zeroize::Zeroizing::new(self.as_ref().to_be_bytes());
+        alloc::boxed::Box::new(bytes)
+    }
+
+    /// Encodes scalar as bytes in little-endian order
+    #[cfg(feature = "alloc")]
+    pub fn to_le_bytes(&self) -> alloc::boxed::Box<zeroize::Zeroizing<EncodedScalar<E>>> {
+        let bytes = zeroize::Zeroizing::new(self.as_ref().to_le_bytes());
+        alloc::boxed::Box::new(bytes)
     }
 
     /// Decodes scalar from its bytes representation in big-endian order

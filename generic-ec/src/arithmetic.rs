@@ -1,6 +1,6 @@
 use core::ops::{Add, AddAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-use crate::{Curve, Generator, NonZero, Point, Scalar, SecretScalar};
+use crate::{Curve, Generator, NonZero, Point, Scalar, SecretPoint, SecretScalar};
 
 mod laws {
     use crate::{
@@ -38,8 +38,11 @@ mod laws {
     ///
     /// Therefore, (2) holds.
     #[inline]
-    pub fn sum_of_points_is_valid_point<E: Curve>(a: &Point<E>, b: &Point<E>) -> Point<E> {
-        let sum = Additive::add(a.as_raw(), b.as_raw());
+    pub fn sum_of_points_is_valid_point<E: Curve>(
+        a: impl AsRef<Point<E>>,
+        b: impl AsRef<Point<E>>,
+    ) -> Point<E> {
+        let sum = Additive::add(a.as_ref().as_raw(), b.as_ref().as_raw());
         // Correctness: refer to doc comment of the function
         Point::from_raw_unchecked(sum)
     }
@@ -48,8 +51,11 @@ mod laws {
     ///
     /// Please, refer to [`sum_of_points_is_valid_point`], as the proof is pretty much the same.
     #[inline]
-    pub fn sub_of_points_is_valid_point<E: Curve>(a: &Point<E>, b: &Point<E>) -> Point<E> {
-        let result = Additive::sub(a.as_raw(), b.as_raw());
+    pub fn sub_of_points_is_valid_point<E: Curve>(
+        a: impl AsRef<Point<E>>,
+        b: impl AsRef<Point<E>>,
+    ) -> Point<E> {
+        let result = Additive::sub(a.as_ref().as_raw(), b.as_ref().as_raw());
         // Correctness: refer to doc comment of the function
         Point::from_raw_unchecked(result)
     }
@@ -67,33 +73,33 @@ mod laws {
     /// If $A$ is valid `Point<E>`, then $A + G$ is valid `Point<E>`
     #[inline]
     pub fn sum_of_point_and_generator_is_valid_point<E: Curve>(
-        a: &Point<E>,
+        a: impl AsRef<Point<E>>,
         g: &Generator<E>,
     ) -> Point<E> {
-        sum_of_points_is_valid_point(a, &g.to_point())
+        sum_of_points_is_valid_point(a.as_ref(), &g.to_point())
     }
     /// If $A$ is valid `Point<E>`, then $G + A$ is valid `Point<E>`
     #[inline]
     pub fn sum_of_generator_and_point_is_valid_point<E: Curve>(
         g: &Generator<E>,
-        a: &Point<E>,
+        a: impl AsRef<Point<E>>,
     ) -> Point<E> {
-        sum_of_points_is_valid_point(&g.to_point(), a)
+        sum_of_points_is_valid_point(&g.to_point(), a.as_ref())
     }
 
     /// If $A$ is valid `Point<E>`, then $A - G$ is valid `Point<E>`
     pub fn sub_of_point_and_generator_is_valid_point<E: Curve>(
-        a: &Point<E>,
+        a: impl AsRef<Point<E>>,
         g: &Generator<E>,
     ) -> Point<E> {
-        sub_of_points_is_valid_point(a, &g.to_point())
+        sub_of_points_is_valid_point(a.as_ref(), &g.to_point())
     }
     /// If $A$ is valid `Point<E>`, then $G - A$ is valid `Point<E>`
     pub fn sub_of_generator_and_point_is_valid_point<E: Curve>(
         g: &Generator<E>,
-        a: &Point<E>,
+        a: impl AsRef<Point<E>>,
     ) -> Point<E> {
-        sub_of_points_is_valid_point(&g.to_point(), a)
+        sub_of_points_is_valid_point(&g.to_point(), a.as_ref())
     }
 
     /// If $A$ is a valid `Point<E>`, then $-A$ is a valid `Point<E>`
@@ -135,9 +141,9 @@ mod laws {
     #[inline]
     pub fn mul_of_scalar_at_point_is_valid_point<E: Curve>(
         n: impl AsRef<Scalar<E>>,
-        a: &Point<E>,
+        a: impl AsRef<Point<E>>,
     ) -> Point<E> {
-        let prod = Multiplicative::mul(n.as_ref().as_raw(), a.as_raw());
+        let prod = Multiplicative::mul(n.as_ref().as_raw(), a.as_ref().as_raw());
         // Correctness: refer to doc comment of the function
         Point::from_raw_unchecked(prod)
     }
@@ -145,10 +151,10 @@ mod laws {
     /// Same as [`mul_of_scalar_at_point_is_valid_point`] but flipped arguments
     #[inline]
     pub fn mul_of_point_at_scalar_is_valid_point<E: Curve>(
-        a: &Point<E>,
+        a: impl AsRef<Point<E>>,
         b: impl AsRef<Scalar<E>>,
     ) -> Point<E> {
-        mul_of_scalar_at_point_is_valid_point(b, a)
+        mul_of_scalar_at_point_is_valid_point(b, a.as_ref())
     }
 
     /// If $n$ is valid `Scalar<E>`, then $n \G$ is valid `Point<E>`
@@ -377,19 +383,35 @@ macro_rules! impl_op_assign {
 // Point <> Point, Point <> Scalar, Scalar <> Scalar arithmetic ops
 impl_binary_ops! {
     Add (Point<E>, add, Point<E> = Point<E>) laws::sum_of_points_is_valid_point,
+    Add (Point<E>, add, SecretPoint<E> = Point<E>) laws::sum_of_points_is_valid_point,
+    Add (SecretPoint<E>, add, Point<E> = Point<E>) laws::sum_of_points_is_valid_point,
+
     Sub (Point<E>, sub, Point<E> = Point<E>) laws::sub_of_points_is_valid_point,
+    Sub (Point<E>, sub, SecretPoint<E> = Point<E>) laws::sub_of_points_is_valid_point,
+    Sub (SecretPoint<E>, sub, Point<E> = Point<E>) laws::sub_of_points_is_valid_point,
 
     Add (Point<E>, add, Generator<E> = Point<E>) laws::sum_of_point_and_generator_is_valid_point,
     Add (Generator<E>, add, Point<E> = Point<E>) laws::sum_of_generator_and_point_is_valid_point,
     Sub (Point<E>, sub, Generator<E> = Point<E>) laws::sub_of_point_and_generator_is_valid_point,
     Sub (Generator<E>, sub, Point<E> = Point<E>) laws::sub_of_generator_and_point_is_valid_point,
 
+    Add (SecretPoint<E>, add, Generator<E> = Point<E>)
+        laws::sum_of_point_and_generator_is_valid_point,
+    Add (Generator<E>, add, SecretPoint<E> = Point<E>)
+        laws::sum_of_generator_and_point_is_valid_point,
+    Sub (SecretPoint<E>, sub, Generator<E> = Point<E>)
+        laws::sub_of_point_and_generator_is_valid_point,
+    Sub (Generator<E>, sub, SecretPoint<E> = Point<E>)
+        laws::sub_of_generator_and_point_is_valid_point,
+
     Add (Scalar<E>, add, Scalar<E> = Scalar<E>) scalar::add,
     Sub (Scalar<E>, sub, Scalar<E> = Scalar<E>) scalar::sub,
     Mul (Scalar<E>, mul, Scalar<E> = Scalar<E>) scalar::mul,
 
     Mul (Point<E>, mul, Scalar<E> = Point<E>) laws::mul_of_point_at_scalar_is_valid_point,
+    Mul (SecretPoint<E>, mul, Scalar<E> = Point<E>) laws::mul_of_point_at_scalar_is_valid_point,
     Mul (Scalar<E>, mul, Point<E> = Point<E>) laws::mul_of_scalar_at_point_is_valid_point,
+    Mul (Scalar<E>, mul, SecretPoint<E> = Point<E>) laws::mul_of_scalar_at_point_is_valid_point,
     Mul (Generator<E>, mul, Scalar<E> = Point<E>) laws::mul_of_generator_at_scalar_is_valid_point,
     Mul (Scalar<E>, mul, Generator<E> = Point<E>) laws::mul_of_scalar_at_generator_is_valid_point,
 }
