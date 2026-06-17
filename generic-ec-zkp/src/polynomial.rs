@@ -315,7 +315,8 @@ use generic_ec::{Curve, NonZero, Scalar};
 /// elements in `xs` are pairwise distinct.
 ///
 /// ## Example
-/// ```rust
+#[cfg_attr(feature = "alloc", doc = "```rust")]
+#[cfg_attr(not(feature = "alloc"), doc = "```ignore")] // Doesn't compile without alloc because of Polynomial
 /// use generic_ec::{Scalar, SecretScalar, NonZero, curves::Secp256k1};
 /// use generic_ec_zkp::polynomial::{Polynomial, lagrange_coefficient};
 /// # use rand_core::OsRng;
