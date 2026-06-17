@@ -76,7 +76,7 @@ mod laws {
         a: impl AsRef<Point<E>>,
         g: &Generator<E>,
     ) -> Point<E> {
-        sum_of_points_is_valid_point(a.as_ref(), &g.to_point())
+        sum_of_points_is_valid_point(a.as_ref(), g.to_point())
     }
     /// If $A$ is valid `Point<E>`, then $G + A$ is valid `Point<E>`
     #[inline]
@@ -84,7 +84,7 @@ mod laws {
         g: &Generator<E>,
         a: impl AsRef<Point<E>>,
     ) -> Point<E> {
-        sum_of_points_is_valid_point(&g.to_point(), a.as_ref())
+        sum_of_points_is_valid_point(g.to_point(), a.as_ref())
     }
 
     /// If $A$ is valid `Point<E>`, then $A - G$ is valid `Point<E>`
@@ -92,14 +92,14 @@ mod laws {
         a: impl AsRef<Point<E>>,
         g: &Generator<E>,
     ) -> Point<E> {
-        sub_of_points_is_valid_point(a.as_ref(), &g.to_point())
+        sub_of_points_is_valid_point(a.as_ref(), g.to_point())
     }
     /// If $A$ is valid `Point<E>`, then $G - A$ is valid `Point<E>`
     pub fn sub_of_generator_and_point_is_valid_point<E: Curve>(
         g: &Generator<E>,
         a: impl AsRef<Point<E>>,
     ) -> Point<E> {
-        sub_of_points_is_valid_point(&g.to_point(), a.as_ref())
+        sub_of_points_is_valid_point(g.to_point(), a.as_ref())
     }
 
     /// If $A$ is a valid `Point<E>`, then $-A$ is a valid `Point<E>`
@@ -192,7 +192,7 @@ mod laws {
     #[inline]
     pub fn mul_of_nonzero_scalar_at_nonzero_point_is_valid_nonzero_point<E: Curve>(
         n: &(impl AsRef<Scalar<E>> + AlwaysNonZero),
-        a: &NonZero<Point<E>>,
+        a: &(impl AsRef<Point<E>> + AlwaysNonZero),
     ) -> NonZero<Point<E>> {
         let prod = mul_of_scalar_at_point_is_valid_point(n, a);
         // Correctness: refer to doc comment of the function
@@ -202,7 +202,7 @@ mod laws {
     /// Same as [`mul_of_nonzero_scalar_at_nonzero_point_is_valid_nonzero_point`] but flipped arguments
     #[inline]
     pub fn mul_of_nonzero_point_at_nonzero_scalar_is_valid_nonzero_point<E: Curve>(
-        a: &NonZero<Point<E>>,
+        a: &(impl AsRef<Point<E>> + AlwaysNonZero),
         n: &(impl AsRef<Scalar<E>> + AlwaysNonZero),
     ) -> NonZero<Point<E>> {
         mul_of_nonzero_scalar_at_nonzero_point_is_valid_nonzero_point(n, a)
@@ -465,6 +465,9 @@ impl_binary_ops! {
     Mul (Generator<E>, mul, NonZero<Scalar<E>> = NonZero<Point<E>>) laws::mul_of_generator_at_nonzero_scalar_is_valid_nonzero_point,
     Mul (NonZero<Scalar<E>>, mul, Generator<E> = NonZero<Point<E>>) laws::mul_of_nonzero_scalar_at_generator_is_valid_nonzero_point,
 
+    Mul (NonZero<SecretPoint<E>>, mul, NonZero<Scalar<E>> = NonZero<Point<E>>) laws::mul_of_nonzero_point_at_nonzero_scalar_is_valid_nonzero_point,
+    Mul (NonZero<Scalar<E>>, mul, NonZero<SecretPoint<E>> = NonZero<Point<E>>) laws::mul_of_nonzero_scalar_at_nonzero_point_is_valid_nonzero_point,
+
     Mul (NonZero<Point<E>>, mul, NonZero<SecretScalar<E>> = NonZero<Point<E>>) laws::mul_of_nonzero_point_at_nonzero_scalar_is_valid_nonzero_point,
     Mul (NonZero<SecretScalar<E>>, mul, NonZero<Point<E>> = NonZero<Point<E>>) laws::mul_of_nonzero_scalar_at_nonzero_point_is_valid_nonzero_point,
     Mul (Generator<E>, mul, NonZero<SecretScalar<E>> = NonZero<Point<E>>) laws::mul_of_generator_at_nonzero_scalar_is_valid_nonzero_point,
@@ -476,6 +479,14 @@ impl_binary_ops! {
 impl_nonzero_ops! {
     Add (Point<E>, add, Point<E> = Point<E>) laws::sum_of_points_is_valid_point,
     Sub (Point<E>, sub, Point<E> = Point<E>) laws::sub_of_points_is_valid_point,
+
+    Add (Point<E>, add, SecretPoint<E> = Point<E>) laws::sum_of_points_is_valid_point,
+    Add (SecretPoint<E>, add, Point<E> = Point<E>) laws::sum_of_points_is_valid_point,
+    Sub (Point<E>, sub, SecretPoint<E> = Point<E>) laws::sub_of_points_is_valid_point,
+    Sub (SecretPoint<E>, sub, Point<E> = Point<E>) laws::sub_of_points_is_valid_point,
+
+    Add (SecretPoint<E>, add, SecretPoint<E> = Point<E>) laws::sum_of_points_is_valid_point,
+    Sub (SecretPoint<E>, sub, SecretPoint<E> = Point<E>) laws::sub_of_points_is_valid_point,
 
     Add (Scalar<E>, add, Scalar<E> = Scalar<E>) scalar::add,
     Sub (Scalar<E>, sub, Scalar<E> = Scalar<E>) scalar::sub,
@@ -501,6 +512,11 @@ impl_binary_ops! {
     Mul (NonZero<Scalar<E>>, mul, Point<E> = Point<E>) laws::mul_of_scalar_at_point_is_valid_point,
     Mul (NonZero<Point<E>>, mul, Scalar<E> = Point<E>) laws::mul_of_point_at_scalar_is_valid_point,
     Mul (Scalar<E>, mul, NonZero<Point<E>> = Point<E>) laws::mul_of_scalar_at_point_is_valid_point,
+
+    Mul (SecretPoint<E>, mul, NonZero<Scalar<E>> = Point<E>) laws::mul_of_point_at_scalar_is_valid_point,
+    Mul (NonZero<Scalar<E>>, mul, SecretPoint<E> = Point<E>) laws::mul_of_scalar_at_point_is_valid_point,
+    Mul (NonZero<SecretPoint<E>>, mul, Scalar<E> = Point<E>) laws::mul_of_point_at_scalar_is_valid_point,
+    Mul (Scalar<E>, mul, NonZero<SecretPoint<E>> = Point<E>) laws::mul_of_scalar_at_point_is_valid_point,
 }
 
 // -Point, -Scalar, -NonZero<Point>, -NonZero<Scalar>
@@ -515,10 +531,14 @@ impl_unary_ops! {
 impl_op_assign! {
     Point<E>, AddAssign, Point<E>, add_assign, +,
     Point<E>, AddAssign, NonZero<Point<E>>, add_assign, +,
+    Point<E>, AddAssign, SecretPoint<E>, add_assign, +,
+    Point<E>, AddAssign, NonZero<SecretPoint<E>>, add_assign, +,
     Point<E>, AddAssign, Generator<E>, add_assign, +,
 
     Point<E>, SubAssign, Point<E>, sub_assign, -,
     Point<E>, SubAssign, NonZero<Point<E>>, sub_assign, -,
+    Point<E>, SubAssign, SecretPoint<E>, sub_assign, -,
+    Point<E>, SubAssign, NonZero<SecretPoint<E>>, sub_assign, -,
     Point<E>, SubAssign, Generator<E>, sub_assign, -,
 
     Point<E>, MulAssign, Scalar<E>, mul_assign, *,

@@ -166,7 +166,7 @@ impl<'de, E: Curve> serde::Deserialize<'de> for CurveName<E> {
 pub use optional::*;
 #[cfg(feature = "serde")]
 mod optional {
-    use crate::{core::Curve, Point, Scalar, SecretScalar};
+    use crate::{core::Curve, Point, Scalar, SecretPoint, SecretScalar};
 
     use super::CurveName;
 
@@ -187,6 +187,24 @@ mod optional {
             models::PointUncompressed::deserialize(deserializer)?
                 .try_into()
                 .map_err(<D::Error as serde::de::Error>::custom)
+        }
+    }
+
+    impl<E: Curve> serde::Serialize for SecretPoint<E> {
+        fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            self.as_ref().serialize(serializer)
+        }
+    }
+
+    impl<'de, E: Curve> serde::Deserialize<'de> for SecretPoint<E> {
+        fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            Ok(SecretPoint::new(&mut Point::deserialize(deserializer)?))
         }
     }
 
@@ -250,6 +268,28 @@ mod optional {
             models::PointCompact::deserialize(deserializer)?
                 .try_into()
                 .map_err(<D::Error as serde::de::Error>::custom)
+        }
+    }
+
+    impl<E: Curve> serde_with::SerializeAs<SecretPoint<E>> for Compact {
+        fn serialize_as<S>(source: &SecretPoint<E>, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::Serializer,
+        {
+            use serde::Serialize;
+            models::PointCompact::from(source.as_ref()).serialize(serializer)
+        }
+    }
+
+    impl<'de, E: Curve> serde_with::DeserializeAs<'de, SecretPoint<E>> for Compact {
+        fn deserialize_as<D>(deserializer: D) -> Result<SecretPoint<E>, D::Error>
+        where
+            D: serde::Deserializer<'de>,
+        {
+            let mut point = <Compact as serde_with::DeserializeAs<'de, Point<E>>>::deserialize_as(
+                deserializer,
+            )?;
+            Ok(SecretPoint::new(&mut point))
         }
     }
 

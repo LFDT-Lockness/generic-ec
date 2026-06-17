@@ -40,7 +40,6 @@ mod without_alloc {
     pub struct SecretScalar<E: Curve>(Zeroizing<Scalar<E>>);
 }
 
-
 #[cfg(feature = "alloc")]
 #[cfg_attr(docsrs, doc(cfg(all())))]
 use with_alloc as imp;

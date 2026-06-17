@@ -8,6 +8,15 @@ use self::definition::SecretPoint;
 
 pub mod definition;
 
+impl<E: Curve> Point<E> {
+    /// Convert this value into a [`SecretPoint`]. You should do this at the end
+    /// of computations that produce a secret, like a key exchange
+    #[inline(always)] // Prevent a byte copy in most cases
+    pub fn into_secret(mut self) -> SecretPoint<E> {
+        SecretPoint::new(&mut self)
+    }
+}
+
 impl<E: Curve> SecretPoint<E> {
     /// Returns the generator defined in the curve specs
     pub fn generator() -> Self {
