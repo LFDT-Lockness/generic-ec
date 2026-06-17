@@ -1,7 +1,6 @@
 use crate::{Curve, Point};
 
 #[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(all())))]
 mod with_alloc {
     use alloc::sync::Arc;
     use zeroize::Zeroize as _;
@@ -21,7 +20,6 @@ mod with_alloc {
 }
 
 #[cfg(not(feature = "alloc"))]
-#[cfg_attr(docsrs, doc(cfg(all())))]
 mod without_alloc {
     pub(super) type Internal<E> = zeroize::Zeroizing<crate::Point<E>>;
 
@@ -34,10 +32,8 @@ mod without_alloc {
 }
 
 #[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(all())))]
 use with_alloc as imp;
 #[cfg(not(feature = "alloc"))]
-#[cfg_attr(docsrs, doc(cfg(all())))]
 use without_alloc as imp;
 
 /// Point representing sensitive information (like a derived secret)

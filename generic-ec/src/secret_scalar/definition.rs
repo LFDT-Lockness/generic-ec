@@ -1,7 +1,6 @@
 use crate::{Curve, Scalar};
 
 #[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(all())))]
 mod with_alloc {
     use alloc::sync::Arc;
     use zeroize::{Zeroize as _, Zeroizing};
@@ -21,7 +20,6 @@ mod with_alloc {
 }
 
 #[cfg(not(feature = "alloc"))]
-#[cfg_attr(docsrs, doc(cfg(all())))]
 mod without_alloc {
     use zeroize::{Zeroize as _, Zeroizing};
 
@@ -41,10 +39,8 @@ mod without_alloc {
 }
 
 #[cfg(feature = "alloc")]
-#[cfg_attr(docsrs, doc(cfg(all())))]
 use with_alloc as imp;
 #[cfg(not(feature = "alloc"))]
-#[cfg_attr(docsrs, doc(cfg(all())))]
 use without_alloc as imp;
 
 /// Scalar representing sensitive information (like secret key)
