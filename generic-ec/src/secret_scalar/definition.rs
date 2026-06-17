@@ -28,14 +28,11 @@ mod without_alloc {
     pub(super) type Inner<E> = Zeroizing<Scalar<E>>;
 
     #[inline(always)]
-    pub(super) fn new(scalar: &mut Scalar<E>) -> Self {
+    pub(super) fn new<E: Curve>(scalar: &mut Scalar<E>) -> Inner<E> {
         let scalar_new = Zeroizing::new(*scalar);
         scalar.zeroize();
         scalar_new
     }
-
-    #[doc = include_str!("docs.md")]
-    pub struct SecretScalar<E: Curve>(Zeroizing<Scalar<E>>);
 }
 
 #[cfg(feature = "alloc")]

@@ -21,10 +21,14 @@ mod with_alloc {
 
 #[cfg(not(feature = "alloc"))]
 mod without_alloc {
+    use zeroize::Zeroize as _;
+
+    use crate::{Curve, Point};
+
     pub(super) type Internal<E> = zeroize::Zeroizing<crate::Point<E>>;
 
     #[inline(always)]
-    pub fn new(point: &mut crate::Point<E>) -> Internal {
+    pub fn new<E: Curve>(point: &mut Point<E>) -> Internal<E> {
         let point_new = zeroize::Zeroizing::new(*point);
         point.zeroize();
         point_new
