@@ -4,13 +4,21 @@ use core::iter::{Product, Sum};
 use rand_core::{CryptoRng, RngCore};
 use subtle::{Choice, ConstantTimeEq};
 
-#[cfg(feature = "alloc")]
-use crate::EncodedScalar;
+use crate::EncodedSecretScalar;
 use crate::{errors::InvalidScalar, Curve, Scalar};
 
 use self::definition::SecretScalar;
 
 pub mod definition;
+
+impl<E: Curve> Scalar<E> {
+    /// Convert this value into a [`SecretScalar`]. You should do this at the end
+    /// of computations that produce a secret, like a key exchange
+    #[inline(always)] // Prevent a byte copy in most cases
+    pub fn into_secret(mut self) -> SecretScalar<E> {
+        SecretScalar::new(&mut self)
+    }
+}
 
 impl<E: Curve> SecretScalar<E> {
     /// Returns scalar $S = 0$
@@ -64,17 +72,15 @@ impl<E: Curve> SecretScalar<E> {
     }
 
     /// Encodes scalar as bytes in big-endian order
-    #[cfg(feature = "alloc")]
-    pub fn to_be_bytes(&self) -> alloc::boxed::Box<zeroize::Zeroizing<EncodedScalar<E>>> {
-        let bytes = zeroize::Zeroizing::new(self.as_ref().to_be_bytes());
-        alloc::boxed::Box::new(bytes)
+    pub fn to_be_bytes(&self) -> EncodedSecretScalar<E> {
+        let bytes = self.as_ref().to_be_bytes();
+        EncodedSecretScalar::new(bytes)
     }
 
     /// Encodes scalar as bytes in little-endian order
-    #[cfg(feature = "alloc")]
-    pub fn to_le_bytes(&self) -> alloc::boxed::Box<zeroize::Zeroizing<EncodedScalar<E>>> {
-        let bytes = zeroize::Zeroizing::new(self.as_ref().to_le_bytes());
-        alloc::boxed::Box::new(bytes)
+    pub fn to_le_bytes(&self) -> EncodedSecretScalar<E> {
+        let bytes = self.as_ref().to_le_bytes();
+        EncodedSecretScalar::new(bytes)
     }
 
     /// Decodes scalar from its bytes representation in big-endian order

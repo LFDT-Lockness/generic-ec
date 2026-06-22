@@ -1,7 +1,7 @@
 use core::fmt;
 use core::iter::Sum;
 
-use crate::{errors::InvalidPoint, Curve, Point};
+use crate::{errors::InvalidPoint, Curve, EncodedSecretPoint, Point};
 use subtle::{Choice, ConstantTimeEq};
 
 use self::definition::SecretPoint;
@@ -29,13 +29,9 @@ impl<E: Curve> SecretPoint<E> {
     }
 
     /// Encodes a point as bytes
-    #[cfg(feature = "alloc")]
-    pub fn to_bytes(
-        &self,
-        compressed: bool,
-    ) -> alloc::boxed::Box<zeroize::Zeroizing<crate::EncodedPoint<E>>> {
-        let bytes = zeroize::Zeroizing::new(self.as_ref().to_bytes(compressed));
-        alloc::boxed::Box::new(bytes)
+    pub fn to_bytes(&self, compressed: bool) -> EncodedSecretPoint<E> {
+        let bytes = self.as_ref().to_bytes(compressed);
+        EncodedSecretPoint::new(bytes)
     }
 
     /// Decodes a point from bytes

@@ -263,7 +263,7 @@ pub mod serde;
 
 pub use self::{
     core::Curve,
-    encoded::{EncodedPoint, EncodedScalar},
+    encoded::{EncodedPoint, EncodedScalar, EncodedSecretPoint, EncodedSecretScalar},
     generator::Generator,
     non_zero::definition::NonZero,
     point::definition::Point,

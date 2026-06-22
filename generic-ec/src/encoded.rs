@@ -1,5 +1,6 @@
 use core::{fmt, ops};
 
+use subtle::{Choice, ConstantTimeEq};
 use zeroize::Zeroize;
 
 use crate::{as_raw::AsRaw, core::ByteArray, Curve};
@@ -29,6 +30,14 @@ impl<E: Curve> EncodedPoint<E> {
 impl<E: Curve> Clone for EncodedPoint<E> {
     fn clone(&self) -> Self {
         Self(self.0.clone())
+    }
+}
+
+impl<E: Curve> Default for EncodedPoint<E> {
+    fn default() -> Self {
+        Self(EncodedPointInner::Uncompressed(
+            E::UncompressedPointArray::zeroes(),
+        ))
     }
 }
 
@@ -158,5 +167,163 @@ impl<E: Curve> AsRaw for EncodedScalar<E> {
 impl<E: Curve> Zeroize for EncodedScalar<E> {
     fn zeroize(&mut self) {
         self.as_mut().zeroize()
+    }
+}
+
+// Internals for both SecretEncodedPoint and SecretEncodingScalar depending on
+// presence of alloc
+#[cfg(feature = "alloc")]
+mod imp {
+    use alloc::sync::Arc;
+
+    pub(super) type Secret<T> = Arc<zeroize::Zeroizing<T>>;
+
+    #[inline(always)]
+    pub(super) fn new<T>(x: &mut T) -> Secret<T>
+    where
+        T: zeroize::Zeroize + Default + Clone,
+    {
+        let mut value_on_heap = Arc::<zeroize::Zeroizing<T>>::default();
+        let value_mut = Arc::make_mut(&mut value_on_heap);
+        core::mem::swap(&mut **value_mut, x);
+        x.zeroize();
+        value_on_heap
+    }
+
+    pub(super) fn inner<T>(x: Secret<T>) -> T
+    where
+        T: zeroize::Zeroize + Clone,
+    {
+        (**x).clone()
+    }
+}
+#[cfg(not(feature = "alloc"))]
+mod imp {
+    pub(super) type Secret<T> = zeroize::Zeroizing<T>;
+
+    #[inline(always)]
+    pub(super) fn new<T>(x: &mut T) -> Secret<T>
+    where
+        T: zeroize::Zeroize + Clone,
+    {
+        let value_new = zeroize::Zeroizing::new(x.clone());
+        x.zeroize();
+        value_new
+    }
+
+    pub(super) fn inner<T>(x: Secret<T>) -> T
+    where
+        T: zeroize::Zeroize + Clone,
+    {
+        (*x).clone()
+    }
+}
+
+/// Bytes representation of a secret elliptic point. See [`SecretPoint`] for
+/// more information
+///
+/// This representation is automatically zeroed on drop, and doesn't implement
+/// some vartime methods. You can still access the underlying bytes by calling
+/// `.as_ref()`. This bypasses all the secrecy guarantees given by this struct.
+///
+/// [`SecretPoint`]: crate::SecretPoint
+#[derive(Clone, Default)]
+pub struct EncodedSecretPoint<E: Curve>(imp::Secret<EncodedPoint<E>>);
+
+impl<E: Curve> EncodedSecretPoint<E> {
+    /// Wrap a non-secret representation
+    #[inline(always)]
+    pub fn new(mut point: EncodedPoint<E>) -> Self {
+        Self(imp::new(&mut point))
+    }
+
+    /// Obtain the reference to the encoded bytes. This bypasses all the secrecy
+    /// guarantees, so be careful when handling them
+    pub fn as_bytes(&self) -> &[u8] {
+        self.0.as_bytes()
+    }
+
+    /// Convert the representation into not-secret, dropping all guarantees
+    pub fn into_not_secret(self) -> EncodedPoint<E> {
+        imp::inner(self.0)
+    }
+}
+
+impl<E: Curve> fmt::Debug for EncodedSecretPoint<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("SecretEncodedPoint")
+    }
+}
+
+impl<E: Curve> ConstantTimeEq for EncodedSecretPoint<E> {
+    fn ct_eq(&self, other: &Self) -> Choice {
+        self.0.ct_eq(&other.0)
+    }
+}
+
+impl<E: Curve> ops::Deref for EncodedSecretPoint<E> {
+    type Target = [u8];
+    fn deref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
+impl<E: Curve> AsRef<[u8]> for EncodedSecretPoint<E> {
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
+/// Bytes representation of a secret elliptic scalar. See [`SecretScalar`] for
+/// more information
+///
+/// This representation is automatically zeroed on drop, and doesn't implement
+/// some vartime methods. You can still access the underlying bytes by calling
+/// `.as_ref()`. This bypasses all the secrecy guarantees given by this struct.
+///
+/// [`SecretScalar`]: crate::SecretScalar
+#[derive(Clone, Default)]
+pub struct EncodedSecretScalar<E: Curve>(imp::Secret<EncodedScalar<E>>);
+
+impl<E: Curve> EncodedSecretScalar<E> {
+    /// Wrap a non-secret representation
+    pub fn new(mut scalar: EncodedScalar<E>) -> Self {
+        Self(imp::new(&mut scalar))
+    }
+
+    /// Obtain the reference to the encoded bytes. This bypasses all the secrecy
+    /// guarantees, so be careful when handling them
+    pub fn as_bytes(&self) -> &[u8] {
+        self.0.as_bytes()
+    }
+
+    /// Convert the representation into not-secret, dropping all guarantees
+    pub fn into_not_secret(self) -> EncodedScalar<E> {
+        imp::inner(self.0)
+    }
+}
+
+impl<E: Curve> fmt::Debug for EncodedSecretScalar<E> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("SecretEncodedScalar")
+    }
+}
+
+impl<E: Curve> ConstantTimeEq for EncodedSecretScalar<E> {
+    fn ct_eq(&self, other: &Self) -> Choice {
+        self.0.ct_eq(&other.0)
+    }
+}
+
+impl<E: Curve> ops::Deref for EncodedSecretScalar<E> {
+    type Target = [u8];
+    fn deref(&self) -> &[u8] {
+        self.as_bytes()
+    }
+}
+
+impl<E: Curve> AsRef<[u8]> for EncodedSecretScalar<E> {
+    fn as_ref(&self) -> &[u8] {
+        self.as_bytes()
     }
 }

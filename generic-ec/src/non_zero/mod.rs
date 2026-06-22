@@ -41,6 +41,7 @@ impl<E: Curve> NonZero<Point<E>> {
 
     /// Convert this value into a `NonZero<SecretPoint<E>>`. You should do this at the end
     /// of computations that produce a secret, like a key exchange
+    #[inline(always)] // Prevent a byte copy in most cases
     pub fn into_secret(self) -> NonZero<SecretPoint<E>> {
         let mut point = self.into_inner();
         let secret_point = SecretPoint::new(&mut point);
@@ -176,6 +177,7 @@ impl<E: Curve> NonZero<Scalar<E>> {
     }
 
     /// Upgrades the non-zero scalar into non-zero [`SecretScalar`]
+    #[inline(always)] // Prevent a byte copy in most cases
     pub fn into_secret(self) -> NonZero<SecretScalar<E>> {
         let mut scalar = self.into_inner();
         let secret_scalar = SecretScalar::new(&mut scalar);
