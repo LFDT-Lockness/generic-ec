@@ -5,11 +5,28 @@ use rand_core::{CryptoRng, RngCore};
 use subtle::{Choice, ConstantTimeEq};
 
 use crate::EncodedSecretScalar;
-use crate::{errors::InvalidScalar, Curve, Scalar};
+use crate::{errors::InvalidScalar, secret, Curve, Scalar};
 
-use self::definition::SecretScalar;
-
-pub mod definition;
+/// Scalar representing sensitive information (like secret key)
+///
+/// Secret scalar should be treated with an extra care. You shouldn't do any
+/// branching (e.g. `Eq`, `Ord`) on the secret to avoid timing side-channel
+/// attacks, so it implements only constant time traits (like [`ConstantTimeEq`]).
+///
+/// Also, when `alloc` feature is enabled, we enforce extra measures:
+///
+/// * Secret scalar leaves no trace in RAM after it's dropped \
+///   Memory is zeroized after use
+/// * All clones of secret scalar refer to the same region in the memory \
+///   I.e. there will always be only one instance of the scalar in the memory
+///   no matter how many clones you make
+///
+/// All these guarantees can be bypassed by calling `.as_ref()` and obtaining
+/// `&Scalar<E>` that is not protected from timing attacks, leaving traces in
+/// the memory, etc.
+///
+/// [`ConstantTimeEq`]: subtle::ConstantTimeEq
+pub struct SecretScalar<E: Curve>(secret::Secret<Scalar<E>>);
 
 impl<E: Curve> Scalar<E> {
     /// Convert this value into a [`SecretScalar`]. You should do this at the end
@@ -21,6 +38,15 @@ impl<E: Curve> Scalar<E> {
 }
 
 impl<E: Curve> SecretScalar<E> {
+    /// Constructs a new secret scalar
+    ///
+    /// Takes the original scalar by mutable reference instead of taking by value to
+    /// avoid leaving copies of the scalar on stack. Scalar behind the reference will
+    /// be zeroized after the function has returned.
+    pub fn new(scalar: &mut Scalar<E>) -> Self {
+        Self(secret::new(scalar))
+    }
+
     /// Returns scalar $S = 0$
     pub fn zero() -> Self {
         Self::new(&mut Scalar::zero())
@@ -93,6 +119,18 @@ impl<E: Curve> SecretScalar<E> {
     pub fn from_le_bytes(bytes: &[u8]) -> Result<Self, InvalidScalar> {
         let mut scalar = Scalar::from_le_bytes(bytes)?;
         Ok(Self::new(&mut scalar))
+    }
+}
+
+impl<E: Curve> AsRef<Scalar<E>> for SecretScalar<E> {
+    fn as_ref(&self) -> &Scalar<E> {
+        &self.0
+    }
+}
+
+impl<E: Curve> Clone for SecretScalar<E> {
+    fn clone(&self) -> Self {
+        Self(self.0.clone())
     }
 }
 

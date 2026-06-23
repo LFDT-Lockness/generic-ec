@@ -3,7 +3,7 @@ use core::{fmt, ops};
 use subtle::{Choice, ConstantTimeEq};
 use zeroize::Zeroize;
 
-use crate::{as_raw::AsRaw, core::ByteArray, Curve};
+use crate::{as_raw::AsRaw, core::ByteArray, secret, Curve};
 
 /// Bytes representation of an elliptic point
 #[derive(Zeroize)]
@@ -170,55 +170,6 @@ impl<E: Curve> Zeroize for EncodedScalar<E> {
     }
 }
 
-// Internals for both SecretEncodedPoint and SecretEncodingScalar depending on
-// presence of alloc
-#[cfg(feature = "alloc")]
-mod imp {
-    use alloc::sync::Arc;
-
-    pub(super) type Secret<T> = Arc<zeroize::Zeroizing<T>>;
-
-    #[inline(always)]
-    pub(super) fn new<T>(x: &mut T) -> Secret<T>
-    where
-        T: zeroize::Zeroize + Default + Clone,
-    {
-        let mut value_on_heap = Arc::<zeroize::Zeroizing<T>>::default();
-        let value_mut = Arc::make_mut(&mut value_on_heap);
-        core::mem::swap(&mut **value_mut, x);
-        x.zeroize();
-        value_on_heap
-    }
-
-    pub(super) fn inner<T>(x: Secret<T>) -> T
-    where
-        T: zeroize::Zeroize + Clone,
-    {
-        (**x).clone()
-    }
-}
-#[cfg(not(feature = "alloc"))]
-mod imp {
-    pub(super) type Secret<T> = zeroize::Zeroizing<T>;
-
-    #[inline(always)]
-    pub(super) fn new<T>(x: &mut T) -> Secret<T>
-    where
-        T: zeroize::Zeroize + Clone,
-    {
-        let value_new = zeroize::Zeroizing::new(x.clone());
-        x.zeroize();
-        value_new
-    }
-
-    pub(super) fn inner<T>(x: Secret<T>) -> T
-    where
-        T: zeroize::Zeroize + Clone,
-    {
-        (*x).clone()
-    }
-}
-
 /// Bytes representation of a secret elliptic point. See [`SecretPoint`] for
 /// more information
 ///
@@ -228,13 +179,13 @@ mod imp {
 ///
 /// [`SecretPoint`]: crate::SecretPoint
 #[derive(Clone, Default)]
-pub struct EncodedSecretPoint<E: Curve>(imp::Secret<EncodedPoint<E>>);
+pub struct EncodedSecretPoint<E: Curve>(secret::Secret<EncodedPoint<E>>);
 
 impl<E: Curve> EncodedSecretPoint<E> {
     /// Wrap a non-secret representation
     #[inline(always)]
     pub fn new(mut point: EncodedPoint<E>) -> Self {
-        Self(imp::new(&mut point))
+        Self(secret::new(&mut point))
     }
 
     /// Obtain the reference to the encoded bytes. This bypasses all the secrecy
@@ -245,7 +196,7 @@ impl<E: Curve> EncodedSecretPoint<E> {
 
     /// Convert the representation into not-secret, dropping all guarantees
     pub fn into_not_secret(self) -> EncodedPoint<E> {
-        imp::inner(self.0)
+        secret::inner(self.0)
     }
 }
 
@@ -270,12 +221,12 @@ impl<E: Curve> ConstantTimeEq for EncodedSecretPoint<E> {
 ///
 /// [`SecretScalar`]: crate::SecretScalar
 #[derive(Clone, Default)]
-pub struct EncodedSecretScalar<E: Curve>(imp::Secret<EncodedScalar<E>>);
+pub struct EncodedSecretScalar<E: Curve>(secret::Secret<EncodedScalar<E>>);
 
 impl<E: Curve> EncodedSecretScalar<E> {
     /// Wrap a non-secret representation
     pub fn new(mut scalar: EncodedScalar<E>) -> Self {
-        Self(imp::new(&mut scalar))
+        Self(secret::new(&mut scalar))
     }
 
     /// Obtain the reference to the encoded bytes. This bypasses all the secrecy
@@ -286,7 +237,7 @@ impl<E: Curve> EncodedSecretScalar<E> {
 
     /// Convert the representation into not-secret, dropping all guarantees
     pub fn into_not_secret(self) -> EncodedScalar<E> {
-        imp::inner(self.0)
+        secret::inner(self.0)
     }
 }
 
