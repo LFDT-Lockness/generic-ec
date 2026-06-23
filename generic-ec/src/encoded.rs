@@ -261,19 +261,6 @@ impl<E: Curve> ConstantTimeEq for EncodedSecretPoint<E> {
     }
 }
 
-impl<E: Curve> ops::Deref for EncodedSecretPoint<E> {
-    type Target = [u8];
-    fn deref(&self) -> &[u8] {
-        self.as_bytes()
-    }
-}
-
-impl<E: Curve> AsRef<[u8]> for EncodedSecretPoint<E> {
-    fn as_ref(&self) -> &[u8] {
-        self.as_bytes()
-    }
-}
-
 /// Bytes representation of a secret elliptic scalar. See [`SecretScalar`] for
 /// more information
 ///
@@ -312,18 +299,5 @@ impl<E: Curve> fmt::Debug for EncodedSecretScalar<E> {
 impl<E: Curve> ConstantTimeEq for EncodedSecretScalar<E> {
     fn ct_eq(&self, other: &Self) -> Choice {
         self.0.ct_eq(&other.0)
-    }
-}
-
-impl<E: Curve> ops::Deref for EncodedSecretScalar<E> {
-    type Target = [u8];
-    fn deref(&self) -> &[u8] {
-        self.as_bytes()
-    }
-}
-
-impl<E: Curve> AsRef<[u8]> for EncodedSecretScalar<E> {
-    fn as_ref(&self) -> &[u8] {
-        self.as_bytes()
     }
 }
