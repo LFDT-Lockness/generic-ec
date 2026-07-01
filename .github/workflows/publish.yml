@@ -25,7 +25,7 @@ jobs:
       github.ref_type == 'tag'
       && startsWith(github.ref_name, 'v')
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 #v6.0.3
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
     - run: cargo publish -p generic-ec --token ${CRATES_TOKEN}
       env:
         CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
@@ -37,7 +37,7 @@ jobs:
       github.ref_type == 'tag'
       && startsWith(github.ref_name, 'core-v')
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 #v6.0.3
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
     - run: cargo publish -p generic-ec-core --token ${CRATES_TOKEN}
       env:
         CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
@@ -49,7 +49,7 @@ jobs:
       github.ref_type == 'tag'
       && startsWith(github.ref_name, 'curves-v')
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 #v6.0.3
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
     - run: cargo publish -p generic-ec-curves --token ${CRATES_TOKEN}
       env:
         CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
@@ -61,7 +61,7 @@ jobs:
       github.ref_type == 'tag'
       && startsWith(github.ref_name, 'zkp-v')
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 #v6.0.3
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
     - run: cargo publish -p generic-ec-zkp --token ${CRATES_TOKEN}
       env:
         CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
