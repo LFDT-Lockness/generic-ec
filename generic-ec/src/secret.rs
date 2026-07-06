@@ -1,4 +1,6 @@
-//! Internals for both Secret structs, like `SecretScalar` and `SecretEncodedPoint`. They have a different representation based on the presence of `alloc`: either a reference-counted nonmoving one, or a moving value
+//! Internals for Secret structs, like `SecretScalar` and `SecretEncodedPoint`.
+//! They have a different representation based on the presence of `alloc`:
+//! either a reference-counted pinned one, or an unpinned value
 
 #[cfg(feature = "alloc")]
 mod imp {
@@ -18,11 +20,11 @@ mod imp {
         value_on_heap
     }
 
-    pub fn inner<T>(x: Secret<T>) -> T
+    pub fn inner_ref<T>(x: &Secret<T>) -> &T
     where
-        T: zeroize::Zeroize + Clone,
+        T: zeroize::Zeroize,
     {
-        (**x).clone()
+        x.as_ref()
     }
 }
 #[cfg(not(feature = "alloc"))]
@@ -39,16 +41,16 @@ mod imp {
         value_new
     }
 
-    pub fn inner<T>(x: Secret<T>) -> T
+    pub fn inner_ref<T>(x: &Secret<T>) -> &T
     where
-        T: zeroize::Zeroize + Clone,
+        T: zeroize::Zeroize,
     {
-        (*x).clone()
+        x.as_ref()
     }
 }
 
 /// Unwrap the Secret into the underlying type
-pub(crate) use imp::inner;
+pub(crate) use imp::inner_ref;
 /// Wrap the underlying type into the Secret repr
 pub(crate) use imp::new;
 /// Type used as the representation

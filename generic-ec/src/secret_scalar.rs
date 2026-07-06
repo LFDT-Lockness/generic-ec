@@ -97,6 +97,17 @@ impl<E: Curve> SecretScalar<E> {
         Self::random(&mut rng)
     }
 
+    /// Obtain the reference to the scalar, which you can use for any operations
+    /// necessary. This bypasses all the secrecy guarantees, so be careful when
+    /// handling the resulting value; ideally this reference should not be held
+    /// for longer than one expression
+    ///
+    /// The [`AsRef`] impl uses this method under the hood, and is provided as a
+    /// less explicit but very convenient alternative
+    pub fn as_nonsecret(&self) -> &Scalar<E> {
+        secret::inner_ref(&self.0)
+    }
+
     /// Encodes scalar as bytes in big-endian order
     pub fn to_be_bytes(&self) -> EncodedSecretScalar<E> {
         let bytes = self.as_ref().to_be_bytes();
@@ -124,7 +135,7 @@ impl<E: Curve> SecretScalar<E> {
 
 impl<E: Curve> AsRef<Scalar<E>> for SecretScalar<E> {
     fn as_ref(&self) -> &Scalar<E> {
-        &self.0
+        self.as_nonsecret()
     }
 }
 

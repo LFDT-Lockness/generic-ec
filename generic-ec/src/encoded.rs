@@ -189,14 +189,18 @@ impl<E: Curve> EncodedSecretPoint<E> {
     }
 
     /// Obtain the reference to the encoded bytes. This bypasses all the secrecy
-    /// guarantees, so be careful when handling them
-    pub fn as_bytes(&self) -> &[u8] {
+    /// guarantees, so be careful when handling them; ideally this reference should not be
+    /// held for longer than one expression
+    pub fn as_nonsecret_bytes(&self) -> &[u8] {
         self.0.as_bytes()
     }
 
-    /// Convert the representation into not-secret, dropping all guarantees
-    pub fn into_not_secret(self) -> EncodedPoint<E> {
-        secret::inner(self.0)
+    /// Obtain the reference to the encoded point, which you can use as bytes
+    /// when necessary. This bypasses all the secrecy guarantees, so be careful
+    /// when handling the resulting value; ideally this reference should not be
+    /// held for longer than one expression
+    pub fn as_nonsecret(&self) -> &EncodedPoint<E> {
+        secret::inner_ref(&self.0)
     }
 }
 
@@ -230,14 +234,18 @@ impl<E: Curve> EncodedSecretScalar<E> {
     }
 
     /// Obtain the reference to the encoded bytes. This bypasses all the secrecy
-    /// guarantees, so be careful when handling them
-    pub fn as_bytes(&self) -> &[u8] {
+    /// guarantees, so be careful when handling them; ideally this reference should not be
+    /// held for longer than one expression
+    pub fn as_nonsecret_bytes(&self) -> &[u8] {
         self.0.as_bytes()
     }
 
-    /// Convert the representation into not-secret, dropping all guarantees
-    pub fn into_not_secret(self) -> EncodedScalar<E> {
-        secret::inner(self.0)
+    /// Obtain the reference to the encoded scalar, which you can use as bytes
+    /// when necessary. This bypasses all the secrecy guarantees, so be careful
+    /// when handling the resulting value; ideally this reference should not be
+    /// held for longer than one expression
+    pub fn as_nonsecret(&self) -> &EncodedScalar<E> {
+        secret::inner_ref(&self.0)
     }
 }
 

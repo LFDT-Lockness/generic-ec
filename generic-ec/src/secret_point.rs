@@ -54,6 +54,17 @@ impl<E: Curve> SecretPoint<E> {
         Self::new(&mut Point::zero())
     }
 
+    /// Obtain the reference to the point, which you can use for any operations
+    /// necessary. This bypasses all the secrecy guarantees, so be careful when
+    /// handling the resulting value; ideally this reference should not be held
+    /// for longer than one expression
+    ///
+    /// The [`AsRef`] impl uses this method under the hood, and is provided as a
+    /// less explicit but very convenient alternative
+    pub fn as_nonsecret(&self) -> &Point<E> {
+        secret::inner_ref(&self.0)
+    }
+
     /// Encodes a point as bytes
     pub fn to_bytes(&self, compressed: bool) -> EncodedSecretPoint<E> {
         let bytes = self.as_ref().to_bytes(compressed);
@@ -69,7 +80,7 @@ impl<E: Curve> SecretPoint<E> {
 
 impl<E: Curve> AsRef<Point<E>> for SecretPoint<E> {
     fn as_ref(&self) -> &Point<E> {
-        &self.0
+        self.as_nonsecret()
     }
 }
 
