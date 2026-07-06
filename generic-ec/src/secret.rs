@@ -45,7 +45,7 @@ mod imp {
     where
         T: zeroize::Zeroize,
     {
-        x.as_ref()
+        core::ops::Deref::deref(x)
     }
 }
 
