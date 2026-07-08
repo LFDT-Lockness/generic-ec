@@ -3,7 +3,7 @@ mod tests {
     use core::iter;
 
     use generic_ec::{
-        curves::{Ed25519, Secp256k1, Secp256r1, Secp384r1, Stark},
+        curves::{Ed25519, Ed448, Secp256k1, Secp256r1, Secp384r1, Stark},
         multiscalar::{Dalek, MultiscalarMul, Naive, Straus},
         Curve, Point, Scalar,
     };
@@ -43,4 +43,6 @@ mod tests {
     mod ed25519_straus {}
     #[instantiate_tests(<Ed25519, Dalek>)]
     mod ed25519_dalek {}
+    #[instantiate_tests(<Ed448, Straus>)]
+    mod ed448_straus {}
 }

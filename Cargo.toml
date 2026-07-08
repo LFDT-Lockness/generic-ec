@@ -43,3 +43,7 @@ rand_dev = "0.1"
 package = "curve25519-dalek"
 version = "4"
 default-features = false
+
+[workspace.dependencies.ed448-goldilocks-plus]
+version = "0.16"
+default-features = false

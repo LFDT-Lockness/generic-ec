@@ -185,8 +185,16 @@ impl<E: Curve> NafMatrix<E> {
     /// Adds a scalar into matrix
     fn add_scalar(&mut self, scalar: &Scalar<E>) {
         let scalar_bytes = scalar.to_le_bytes();
-        let mut x_u64 = vec![0u64; scalar_bytes.len() / 8 + 1];
-        read_le_u64_into(&scalar_bytes, &mut x_u64[0..scalar_bytes.len() / 8]);
+        let full_u64s = scalar_bytes.len() / 8;
+        let mut x_u64 = vec![0u64; full_u64s + 1];
+        read_le_u64_into(&scalar_bytes[..full_u64s * 8], &mut x_u64[..full_u64s]);
+        // Handle any remaining bytes (when scalar byte length is not a multiple of 8)
+        let rem = scalar_bytes.len() % 8;
+        if rem != 0 {
+            let mut last = [0u8; 8];
+            last[..rem].copy_from_slice(&scalar_bytes[full_u64s * 8..]);
+            x_u64[full_u64s] = u64::from_le_bytes(last);
+        }
 
         let offset = self.matrix.len();
         debug_assert!(

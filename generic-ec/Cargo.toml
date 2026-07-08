@@ -56,7 +56,8 @@ curve-secp256r1 = ["curves", "generic-ec-curves/secp256r1"]
 curve-secp384r1 = ["curves", "generic-ec-curves/secp384r1"]
 curve-stark = ["curves", "generic-ec-curves/stark"]
 curve-ed25519 = ["curves", "generic-ec-curves/ed25519", "curve25519"]
-all-curves = ["curve-secp256k1", "curve-secp256r1", "curve-secp384r1", "curve-stark", "curve-ed25519"]
+curve-ed448 = ["curves", "generic-ec-curves/ed448"]
+all-curves = ["curve-secp256k1", "curve-secp256r1", "curve-secp384r1", "curve-stark", "curve-ed25519", "curve-ed448"]
 
 hash-to-scalar = ["dep:rand_hash", "dep:digest", "udigest"]
 

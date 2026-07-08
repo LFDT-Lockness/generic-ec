@@ -11,6 +11,7 @@ fn random(c: &mut criterion::Criterion) {
     random_for_curve::<curves::Secp384r1>(c, &mut rng, "secp384r1");
     random_for_curve::<curves::Stark>(c, &mut rng, "stark");
     random_for_curve::<curves::Ed25519>(c, &mut rng, "ed25519");
+    random_for_curve::<curves::Ed448>(c, &mut rng, "ed448");
 }
 
 fn random_for_curve<E: generic_ec::Curve>(

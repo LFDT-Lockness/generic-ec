@@ -70,19 +70,21 @@ multiplying `NonZero<Point<E>>` at `NonZero<Scalar<E>>` returns `NonZero<Point<E
 
 Crate provides support for following elliptic curves out of box:
 
-| Curve        | Feature            | Backend           |
-|--------------|--------------------|-------------------|
-| secp256k1    | `curve-secp256k1`  | [RustCrypto/k256] |
-| secp256r1    | `curve-secp256r1`  | [RustCrypto/p256] |
-| secp384r1    | `curve-secp384r1`  | [RustCrypto/p384] |
-| stark-curve  | `curve-stark`      | [Dfns/stark]      |
-| Ed25519      | `curve-ed25519`    | [curve25519-dalek]|
+| Curve        | Feature            | Backend                  |
+|--------------|--------------------|--------------------------|
+| secp256k1    | `curve-secp256k1`  | [RustCrypto/k256]        |
+| secp256r1    | `curve-secp256r1`  | [RustCrypto/p256]        |
+| secp384r1    | `curve-secp384r1`  | [RustCrypto/p384]        |
+| stark-curve  | `curve-stark`      | [Dfns/stark]             |
+| Ed25519      | `curve-ed25519`    | [curve25519-dalek]       |
+| Ed448        | `curve-ed448`      | [ed448-goldilocks-plus]  |
 
 [RustCrypto/k256]: https://github.com/RustCrypto/elliptic-curves/tree/master/k256
 [RustCrypto/p256]: https://github.com/RustCrypto/elliptic-curves/tree/master/p256
 [RustCrypto/p384]: https://github.com/RustCrypto/elliptic-curves/tree/master/p384
 [Dfns/stark]: https://github.com/LFDT-Lockness/stark-curve/
 [curve25519-dalek]: https://docs.rs/curve25519-dalek/
+[ed448-goldilocks-plus]: https://crates.io/crates/ed448-goldilocks-plus
 
 In order to use one of the supported curves, you need to turn on corresponding feature. E.g. if you want
 to use secp256k1 curve, add this to Cargo.toml:
