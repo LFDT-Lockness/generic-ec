@@ -1,3 +1,10 @@
+## v0.5.1
+* Add `SecretPoint`, `EncodedSecretPoint`, `EncodedSecretScalar`; add more
+  methods to `SecretScalar` [#92]
+* `EncodedPoint` and `EncodedScalar` are now `Zeroize` [#92]
+
+[#92]: https://github.com/LFDT-Lockness/generic-ec/pull/92
+
 ## v0.5.0
 * Hash to scalar: guarantee reproducibility on all platforms [#55]
 * Use reproducible & constant-time algorithm for random scalar
