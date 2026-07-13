@@ -6,7 +6,7 @@ permissions:
 on:
   pull_request:
     branches: [ "*" ]
-    
+
 env:
   CARGO_TERM_COLOR: always
   CARGO_NET_GIT_FETCH_WITH_CLI: true
@@ -15,11 +15,12 @@ jobs:
   check_readme:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 #v6.0.3
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
     - name: Install cargo-rdme
-      uses: baptiste0928/cargo-install@77fc781ff2a66b362d815793ec7bd69b50d0e549 #v1
+      uses: baptiste0928/cargo-install@f204293d9709061b7bc1756fec3ec4e2cd57dec0 #v3.4.0
       with:
         crate: cargo-rdme
+        version: "=1.5.1"
     - name: Check that readme matches lib.rs
       run: |
         (cd generic-ec; cargo rdme -r ../README.md --check)
