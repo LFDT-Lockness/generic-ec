@@ -40,12 +40,13 @@
 //! always enforced. E.g. if you're deserializing a sequence of bytes that represents an invalid point,
 //! deserialization will result into error.
 //!
-//! ### `SecretScalar<E>`
+//! ### `SecretScalar<E>` and `SecretPoint<E>`
 //!
 //! Sometimes your scalar represents some sensitive value like secret key, and you want to keep it safer.
 //! `SecretScalar<E>` is in-place replacement of `Scalar<E>` that enforces additional security by storing
 //! the scalar value on the heap, and erasing it on drop. Its advantage is that it doesn't leave any trace
-//! in memory dump after it's dropped (which is not guaranteed by regular `Scalar<E>`).
+//! in memory dump after it's dropped (which is not guaranteed by regular `Scalar<E>`). `SecretPoint<E>`
+//! is a similar structure, except it acts as a replacement for `Point<E>`.
 //!
 //! But keep in mind that we can't control the OS which could potentially load RAM page containing sensitive value
 //! to the swap disk (i.e. on your HDD/SSD) if you're running low on memory. Or it could do any other fancy stuff.
@@ -207,6 +208,8 @@ pub mod multiscalar;
 mod non_zero;
 mod point;
 mod scalar;
+mod secret;
+mod secret_point;
 mod secret_scalar;
 
 mod _unused_deps {
@@ -261,12 +264,13 @@ pub mod serde;
 
 pub use self::{
     core::Curve,
-    encoded::{EncodedPoint, EncodedScalar},
+    encoded::{EncodedPoint, EncodedScalar, EncodedSecretPoint, EncodedSecretScalar},
     generator::Generator,
     non_zero::definition::NonZero,
     point::definition::Point,
     scalar::{Radix16Iter, Scalar},
-    secret_scalar::definition::SecretScalar,
+    secret_point::SecretPoint,
+    secret_scalar::SecretScalar,
 };
 
 /// Curves supported out of the box
@@ -324,6 +328,10 @@ pub mod curves {
                 #[doc = stringify!($curve)]
                 /// `](E) curve
                 pub type Point = crate::Point<super::$curve>;
+                /// Secret point on [`
+                #[doc = stringify!($curve)]
+                /// `](E) curve
+                pub type SecretPoint = crate::SecretPoint<super::$curve>;
                 /// Scalar in [`
                 #[doc = stringify!($curve)]
                 /// `](E) curve large prime subgroup

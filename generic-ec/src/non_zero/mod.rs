@@ -10,7 +10,7 @@ use crate::{
     as_raw::FromRaw,
     core::{ByteArray, FromUniformBytes},
     errors::{ZeroPoint, ZeroScalar},
-    Curve, Point, Scalar, SecretScalar,
+    Curve, Point, Scalar, SecretPoint, SecretScalar,
 };
 
 use self::definition::NonZero;
@@ -37,6 +37,44 @@ impl<E: Curve> NonZero<Point<E>> {
         // it's actually non-zero, `CtOption` never exposes it, so `NonZero` with
         // zero value is not accessible by anyone
         CtOption::new(Self::new_unchecked(point), is_non_zero)
+    }
+
+    /// Convert this value into a `NonZero<SecretPoint<E>>`. You should do this at the end
+    /// of computations that produce a secret, like a key exchange
+    #[inline(always)] // Prevent a byte copy in most cases
+    pub fn into_secret(self) -> NonZero<SecretPoint<E>> {
+        let mut point = self.into_inner();
+        let secret_point = SecretPoint::new(&mut point);
+        // Correctness: `point` was checked to be nonzero
+        NonZero::new_unchecked(secret_point)
+    }
+}
+
+impl<E: Curve> NonZero<SecretPoint<E>> {
+    /// Returns the generator defined in the curve specs
+    pub fn generator() -> Self {
+        // Correctness: generator of a non-degenerate group is not zero
+        Self::new_unchecked(SecretPoint::generator())
+    }
+
+    /// Constructs non-zero point
+    ///
+    /// Returns `None` if point is zero
+    pub fn from_secret_point(point: SecretPoint<E>) -> Option<Self> {
+        Self::ct_from_secret_point(point).into()
+    }
+
+    /// Constructs non-zero point (constant time)
+    ///
+    /// Returns `None` if point is zero
+    pub fn ct_from_secret_point(secret_point: SecretPoint<E>) -> CtOption<Self> {
+        let zero = Point::zero();
+        let is_non_zero = !secret_point.as_ref().ct_eq(&zero);
+
+        // Correctness: although we technically construct `NonZero` regardless if
+        // it's actually non-zero, `CtOption` never exposes it, so `NonZero` with
+        // zero value is not accessible by anyone
+        CtOption::new(Self::new_unchecked(secret_point), is_non_zero)
     }
 }
 
@@ -139,6 +177,7 @@ impl<E: Curve> NonZero<Scalar<E>> {
     }
 
     /// Upgrades the non-zero scalar into non-zero [`SecretScalar`]
+    #[inline(always)] // Prevent a byte copy in most cases
     pub fn into_secret(self) -> NonZero<SecretScalar<E>> {
         let mut scalar = self.into_inner();
         let secret_scalar = SecretScalar::new(&mut scalar);
@@ -204,6 +243,12 @@ impl<E: Curve> From<NonZero<Point<E>>> for Point<E> {
     }
 }
 
+impl<E: Curve> From<NonZero<SecretPoint<E>>> for SecretPoint<E> {
+    fn from(secret_point: NonZero<SecretPoint<E>>) -> Self {
+        secret_point.into_inner()
+    }
+}
+
 impl<E: Curve> From<NonZero<Scalar<E>>> for Scalar<E> {
     fn from(scalar: NonZero<Scalar<E>>) -> Self {
         scalar.into_inner()
@@ -221,6 +266,14 @@ impl<E: Curve> TryFrom<Point<E>> for NonZero<Point<E>> {
 
     fn try_from(point: Point<E>) -> Result<Self, Self::Error> {
         Self::from_point(point).ok_or(ZeroPoint)
+    }
+}
+
+impl<E: Curve> TryFrom<SecretPoint<E>> for NonZero<SecretPoint<E>> {
+    type Error = ZeroPoint;
+
+    fn try_from(secret_point: SecretPoint<E>) -> Result<Self, Self::Error> {
+        Self::from_secret_point(secret_point).ok_or(ZeroPoint)
     }
 }
 
@@ -307,6 +360,21 @@ impl<'s, E: Curve> Sum<&'s NonZero<Point<E>>> for Point<E> {
     }
 }
 
+impl<E: Curve> Sum<NonZero<SecretPoint<E>>> for SecretPoint<E> {
+    fn sum<I: Iterator<Item = NonZero<SecretPoint<E>>>>(iter: I) -> Self {
+        let mut out = Point::zero();
+        iter.for_each(|x| out += x);
+        SecretPoint::new(&mut out)
+    }
+}
+impl<'s, E: Curve> Sum<&'s NonZero<SecretPoint<E>>> for SecretPoint<E> {
+    fn sum<I: Iterator<Item = &'s NonZero<SecretPoint<E>>>>(iter: I) -> Self {
+        let mut out = Point::zero();
+        iter.for_each(|x| out += x);
+        SecretPoint::new(&mut out)
+    }
+}
+
 impl<E: Curve> crate::traits::Samplable for NonZero<Scalar<E>> {
     fn random<R: RngCore>(rng: &mut R) -> Self {
         Self::random(rng)
@@ -342,6 +410,13 @@ impl<E: Curve> crate::traits::One for NonZero<Scalar<E>> {
 
     fn is_one(x: &Self) -> subtle::Choice {
         x.ct_eq(&Self::one())
+    }
+}
+
+impl<E: Curve> AsRef<Point<E>> for NonZero<SecretPoint<E>> {
+    fn as_ref(&self) -> &Point<E> {
+        let secret_point: &SecretPoint<E> = self.as_ref();
+        secret_point.as_ref()
     }
 }
 
@@ -394,7 +469,8 @@ macro_rules! impl_reverse_partial_eq_cmp {
     )*};
 }
 
-// Note: not implemented for SecretScalar as it doesn't implement `PartialEq` for security reasons.
+// Note: not implemented for SecretScalar and SecretPoint as they don't
+// implement `PartialEq` for security reasons.
 impl_reverse_partial_eq_cmp!(Point<E>, Scalar<E>);
 
 impl<T: ConstantTimeEq> ConstantTimeEq for NonZero<T> {
@@ -405,7 +481,7 @@ impl<T: ConstantTimeEq> ConstantTimeEq for NonZero<T> {
 
 #[cfg(all(test, feature = "serde"))]
 mod non_zero_is_serializable {
-    use crate::{Curve, NonZero, Point, Scalar, SecretScalar};
+    use crate::{Curve, NonZero, Point, Scalar, SecretPoint, SecretScalar};
 
     fn impls_serde<T>()
     where
@@ -416,6 +492,7 @@ mod non_zero_is_serializable {
     #[allow(dead_code)]
     fn ensure_non_zero_is_serde<E: Curve>() {
         impls_serde::<NonZero<Point<E>>>();
+        impls_serde::<NonZero<SecretPoint<E>>>();
         impls_serde::<NonZero<Scalar<E>>>();
         impls_serde::<NonZero<SecretScalar<E>>>();
     }

@@ -44,7 +44,7 @@ pub trait MultiscalarMul<E: Curve> {
     /// algorithm for multiscalar multiplication, preallocate memory, etc. If iterator size is not
     /// correct, it may worsen performance or lead to runtime panic.
     ///
-    /// Note that the multiscalar algorithm is not necessarily constant-time, thus is should not be
+    /// Note that the multiscalar algorithm is not necessarily constant-time, thus it should not be
     /// used with [`SecretScalar<E>`](crate::SecretScalar).
     fn multiscalar_mul<S, P>(scalar_points: impl ExactSizeIterator<Item = (S, P)>) -> Point<E>
     where
