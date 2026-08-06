@@ -1,3 +1,8 @@
+## v0.5.2
+* Fix `docs.rs` build [#95]
+
+[#95]: https://github.com/LFDT-Lockness/generic-ec/pull/95
+
 ## v0.5.1
 * Add `SecretPoint`, `EncodedSecretPoint`, `EncodedSecretScalar`; add more
   methods to `SecretScalar` [#92]

@@ -69,7 +69,7 @@ impl<E: Curve> SecretScalar<E> {
         Self::new(&mut scalar)
     }
 
-    #[doc = include_str!("../../docs/hash_to_scalar.md")]
+    #[doc = include_str!("../docs/hash_to_scalar.md")]
     ///
     /// ## Example
     /// ```rust
