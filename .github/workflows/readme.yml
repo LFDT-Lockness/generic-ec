@@ -15,9 +15,9 @@ jobs:
   check_readme:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 #v7.0.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
     - name: Install cargo-rdme
-      uses: baptiste0928/cargo-install@f204293d9709061b7bc1756fec3ec4e2cd57dec0 #v3.4.0
+      uses: baptiste0928/cargo-install@8195d4f734a149db85385bb4102b42efcd373759 #v3.5.0
       with:
         crate: cargo-rdme
         version: "=1.5.1"
