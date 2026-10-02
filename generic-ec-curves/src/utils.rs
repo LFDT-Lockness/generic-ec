@@ -40,21 +40,19 @@ where
         65.. => {
             let two_to_512 = S::add(&S::from_le_array_mod_order(&[0xff; 64]), one);
 
-            let chunks = bytes.chunks_exact(64);
-            let remainder = if !chunks.remainder().is_empty() {
+            let (chunks, remainder) = bytes.as_chunks::<64>();
+            let remainder = if !remainder.is_empty() {
                 Some(scalar_from_le_bytes_mod_order_reducing_32_64::<S>(
-                    chunks.remainder(),
-                    one,
+                    remainder, one,
                 ))
             } else {
                 None
             };
 
-            let chunks = chunks.rev().map(|chunk| {
-                #[allow(clippy::expect_used)]
-                let chunk: &[u8; 64] = chunk.try_into().expect("wrong chunk size");
-                S::from_le_array_mod_order(chunk)
-            });
+            let chunks = chunks
+                .iter()
+                .rev()
+                .map(|chunk: &[u8; 64]| S::from_le_array_mod_order(chunk));
 
             remainder
                 .into_iter()
@@ -156,21 +154,19 @@ where
     } else {
         let two_to_8n = S::add(&S::from_le_array_mod_order(&[0xff; N]), one);
 
-        let chunks = bytes.chunks_exact(N);
-        let remainder = if !chunks.remainder().is_empty() {
+        let (chunks, remainder) = bytes.as_chunks::<N>();
+        let remainder = if !remainder.is_empty() {
             Some(scalar_from_le_bytes_mod_order_reducing::<S, N>(
-                chunks.remainder(),
-                one,
+                remainder, one,
             ))
         } else {
             None
         };
 
-        let chunks = chunks.rev().map(|chunk| {
-            #[allow(clippy::expect_used)]
-            let chunk: &[u8; N] = chunk.try_into().expect("wrong chunk size");
-            S::from_le_array_mod_order(chunk)
-        });
+        let chunks = chunks
+            .iter()
+            .rev()
+            .map(|chunk: &[u8; N]| S::from_le_array_mod_order(chunk));
 
         remainder
             .into_iter()
